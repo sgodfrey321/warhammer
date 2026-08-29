@@ -83,6 +83,15 @@ button.primary {
   font-weight: 600;
 }
 
+.battle-history {
+  margin-top: 0.6rem;
+  font-size: 0.9em;
+}
+
+.battle-history a {
+  color: var(--accent2);
+}
+
 button.link-button {
   background: none;
   border: none;
@@ -197,12 +206,28 @@ section {
   margin-left: 0.4rem;
 }
 
+.battle-info {
+  margin-top: 1rem;
+}
+
+.battle-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.5rem;
+}
+
+.battle-round {
+  font-weight: 700;
+}
+
 .phase-banner {
   background: var(--panel);
   border: 1px solid var(--border);
+  border-left: 6px solid var(--border);
   border-radius: 6px;
   padding: 1rem 1.25rem;
-  margin: 1rem 0;
+  margin: 1.5rem 0 1rem;
 }
 
 .phase-name {
@@ -212,8 +237,30 @@ section {
   color: var(--accent2);
 }
 
+.phase-command { border-left-color: #d4af37; }
+.phase-movement { border-left-color: #4a90d9; }
+.phase-shooting { border-left-color: #e0763c; }
+.phase-charge { border-left-color: #9b59b6; }
+.phase-fight { border-left-color: #c0392b; }
+
+.phase-command .phase-name { color: #d4af37; }
+.phase-movement .phase-name { color: #4a90d9; }
+.phase-shooting .phase-name { color: #e0763c; }
+.phase-charge .phase-name { color: #9b59b6; }
+.phase-fight .phase-name { color: #c0392b; }
+
 .phase-banner button {
   margin-top: 0.75rem;
+}
+
+.phase-nav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.muted.small {
+  font-size: 0.8em;
+  margin-top: 0.4rem;
 }
 
 .synergy-banner {

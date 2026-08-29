@@ -177,12 +177,27 @@ def _weapon_profiles(
     Confirmed against real data: a weapon can be embedded directly on a nested model entry
     (Dire Avenger's "Close Combat Weapon"), reached via that entry's own `entryLinks` (Dire
     Avenger's "Avenger shuriken catapult"), or referenced via `infoLinks[type=="profile"]`
-    into `sharedProfiles` (same mechanism as `_info_link_stats`, not yet directly confirmed
-    for a weapon specifically but handled the same way for consistency). For a unit with
-    mutually-exclusive weapon options (e.g. Windriders' 3 weapon variants), every option is
-    collected -- this deliberately doesn't model the option/constraint system, just the set
-    of profiles a unit is associated with. `visited` guards against cycles (id-based); none
-    seen in real data, but the recursion has no other depth bound.
+    into `sharedProfiles` (confirmed for a weapon specifically: the Bloodthirster's "Axe of
+    Khorne" option). For a unit with mutually-exclusive weapon options (e.g. Windriders' 3
+    weapon variants), every option is collected -- this deliberately doesn't model the
+    option/constraint system, just the set of profiles a unit is associated with.
+
+    Groups can nest inside groups, arbitrarily deep -- confirmed on the Bloodthirster, whose
+    real structure is `Wargear` (group) -> `Replace great axe` (a *group nested inside that
+    group*, not one of its selectionEntries) -> `Axe and flail` (an entry that's really just
+    another wrapper) -> `Axe of Khorne` (the actual weapon, via infoLinks). An earlier version
+    of this function only walked one level of `entry.selectionEntryGroups` and missed
+    `group.selectionEntryGroups` entirely, silently dropping the Bloodthirster's melee weapon
+    choice -- entries and groups are now walked identically (both can carry `selectionEntries`,
+    `selectionEntryGroups`, and `entryLinks`) so there's no depth where this can happen again.
+
+    Some weapons carry more than one firing/attack-mode profile under names like "➤ Axe of
+    Khorne - strike" / "➤ Axe of Khorne - sweep" (57 instances across Aeldari + World Eaters,
+    not a rare case) -- both are collected as distinct `Weapon`s; matching one back to a
+    roster's plain-named loadout item ("Axe of Khorne") is the caller's job, not resolved here.
+
+    `visited` guards against cycles (id-based); none seen in real data, but the recursion has
+    no other depth bound.
     """
     if visited is None:
         visited = set()
@@ -217,16 +232,25 @@ def _weapon_profiles(
                 )
             )
 
-    nested_groups = [entry] + list(entry.get("selectionEntryGroups") or [])
-    for group in nested_groups:
-        for sub in group.get("selectionEntries") or []:
-            weapons.extend(_weapon_profiles(sub, combined_index, profile_index, visited=visited))
-        for link in group.get("entryLinks") or []:
-            if link.get("type") != "selectionEntry":
-                continue
-            target = combined_index.get(link.get("targetId"))
-            if target is not None:
-                weapons.extend(_weapon_profiles(target, combined_index, profile_index, visited=visited))
+    for sub in entry.get("selectionEntries") or []:
+        weapons.extend(_weapon_profiles(sub, combined_index, profile_index, visited=visited))
+
+    # Groups are walked the same way entries are: a group can itself carry selectionEntries,
+    # nested selectionEntryGroups, and entryLinks (see docstring -- this is what the
+    # Bloodthirster's group-inside-a-group melee weapon choice needs).
+    for group in entry.get("selectionEntryGroups") or []:
+        weapons.extend(_weapon_profiles(group, combined_index, profile_index, visited=visited))
+
+    for link in entry.get("entryLinks") or []:
+        # Only "selectionEntry" links resolve here -- combined_index is built from
+        # sharedSelectionEntries only, not sharedSelectionEntryGroups, so a
+        # "selectionEntryGroup"-type link (e.g. an "Enhancements" group) has nowhere to
+        # resolve against; harmless to skip since enhancements aren't weapon profiles anyway.
+        if link.get("type") != "selectionEntry":
+            continue
+        target = combined_index.get(link.get("targetId"))
+        if target is not None:
+            weapons.extend(_weapon_profiles(target, combined_index, profile_index, visited=visited))
 
     seen_names: set[str] = set()
     deduped: list[Weapon] = []

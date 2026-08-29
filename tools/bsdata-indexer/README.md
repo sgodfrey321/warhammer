@@ -163,9 +163,25 @@ Runs entirely against small hand-trimmed fixtures in `tests/fixtures/` — no ne
   Avenger squad's Exarch options — Diresword, Power Glaive — all show up together), not a
   chosen loadout; a specific roster's actual equipped weapons are separate, roster-instance
   data (see `backend/app/battlescribe_import.py`'s `ParsedEntry.loadout`). Real coverage:
-  95/102 Aeldari, 58/64 World Eaters units got at least one weapon; the remaining ~7% (mostly
-  named Crucible-of-Battle/narrative cards and a couple of Character entries) use some other
-  shape not yet identified — same caveat as the stats heuristics above.
+  98/102 Aeldari, 59/64 World Eaters units got at least one weapon; the remaining few (mostly
+  named Crucible-of-Battle/narrative cards) use some other shape not yet identified — same
+  caveat as the stats heuristics above.
+  - **Real bug found and fixed, not just a coverage gap**: groups can nest inside groups,
+    arbitrarily deep — a group's own `selectionEntryGroups` weren't being walked at all, only
+    an entry's. Found on the Bloodthirster, whose melee weapon choice (Axe of Khorne /
+    Bloodflail / Lash of Khorne) lives 3 levels of grouping deep (`Wargear` → `Replace great
+    axe` → `Axe and flail`/`Axe and lash`) — it was silently coming back with only its ranged
+    weapon (Hellfire breath), one weapon short of the real datasheet, not caught until a user
+    spotted the missing melee option in the running app. Entries and groups are now walked
+    identically (both can carry `selectionEntries`, `selectionEntryGroups`, and `entryLinks`),
+    which is what actually closes this rather than special-casing one more level.
+  - **Some weapons carry more than one attack-mode profile** — named like `"➤ Axe of Khorne -
+    strike"` / `"➤ Axe of Khorne - sweep"` (57 instances across both factions, not rare). Both
+    modes are indexed as distinct `Weapon`s (correct — they really are different stat lines);
+    matching one back to a roster's plain-named loadout item (`"Axe of Khorne"`) needed the
+    arrow prefix and `" - mode"` suffix stripped before comparing, done app-side in
+    `frontend/src/pages/BattleTracker.tsx`'s `weaponBaseName()` rather than in the indexer, so
+    the indexer's own output stays a faithful, unopinionated copy of what the catalogue says.
 - Two catalogue-config entries per faction (roughly) resolve to real targets but aren't actual
   units — a `"Detachment"` picker, a `"Battle Focus - Agile Manoeuvres"`-style faction rule —
   and were leaking into `units[]` looking like empty, unmatched real units. Fixed by checking

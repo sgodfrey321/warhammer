@@ -125,6 +125,20 @@ def test_resolve_faction_collects_weapons_via_shared_profile_info_link():
     assert names == {"Twin shuriken catapult", "Scatter laser"}
 
 
+def test_resolve_faction_collects_weapons_nested_inside_a_group_inside_a_group():
+    # Real bug, found on the Bloodthirster: a weapon can be nested inside a group that is
+    # itself nested inside another group ("Wargear" -> "Replace weapon" -> the actual weapon),
+    # not just one level of entry.selectionEntryGroups -> selectionEntries. An earlier version
+    # of _weapon_profiles only walked one level and silently dropped weapons at this depth.
+    faction_doc = load("craftworlds.json")
+    resolved = catalogue.resolve_faction(faction_doc, library_index(), profile_index())
+    by_name = {e.name: e for e in resolved}
+
+    avatar = by_name["Avatar of Khaine"]
+    names = {w.name for w in avatar.weapons}
+    assert names == {"The Wailing Doom", "➤ The Wailing Doom - Strike", "➤ The Wailing Doom - Sweep"}
+
+
 def test_resolve_faction_excludes_non_unit_config_entries():
     faction_doc = load("craftworlds.json")
     resolved = catalogue.resolve_faction(faction_doc, library_index(), profile_index())

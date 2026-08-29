@@ -73,6 +73,13 @@ def test_parse_roster_extracts_actual_equipped_loadout():
     assert da_loadout.get("Close Combat Weapon", 0) == 10  # 1 Exarch + 9 rank-and-file
     assert da_loadout.get("Avenger shuriken catapult", 0) == 10  # 1 Exarch + 9 rank-and-file
 
+    # Single-model Character: no model-group wrapper exists at all (there's only ever one
+    # model), so its wargear sits one level shallower than a squad's -- a real bug found
+    # live: this previously came back as an empty loadout for every single-model unit.
+    asurmen = by_name["Asurmen"]
+    asurmen_loadout = {item["name"]: item["count"] for item in asurmen.loadout}
+    assert asurmen_loadout == {"The Bloody Twins": 1, "The Sword of Asur": 1}
+
 
 def test_parse_roster_ids_match_indexer_source_entry_ids():
     parsed = parse_roster(_load_hank())

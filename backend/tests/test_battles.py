@@ -10,6 +10,22 @@ def _advance(client, battle_id, n=1):
     return battle
 
 
+def test_list_battles_filters_by_roster_and_orders_most_recent_first(client):
+    roster_a = client.post("/rosters", json={"name": "A", "faction": "Aeldari - Craftworlds"}).json()
+    roster_b = client.post("/rosters", json={"name": "B", "faction": "Aeldari - Craftworlds"}).json()
+
+    battle_a1 = client.post("/battles", json={"roster_id": roster_a["id"]}).json()
+    battle_a2 = client.post("/battles", json={"roster_id": roster_a["id"]}).json()
+    client.post("/battles", json={"roster_id": roster_b["id"]}).json()
+
+    resp = client.get("/battles", params={"roster_id": roster_a["id"]})
+    assert resp.status_code == 200
+    ids = [b["id"] for b in resp.json()]
+    assert ids == [battle_a2["id"], battle_a1["id"]]  # most recent first
+
+    assert len(client.get("/battles").json()) == 3  # unfiltered lists every battle
+
+
 def test_phase_round_and_turn_sequence(client):
     battle = client.post("/battles", json={}).json()
     battle_id = battle["id"]
@@ -35,6 +51,29 @@ def test_phase_round_and_turn_sequence(client):
     # One more step: battle round increments, back to player 1's command phase.
     b = _advance(client, battle_id, 1)
     assert (b["current_phase"], b["active_player"], b["battle_round"]) == ("command", 1, 2)
+
+
+def test_retreat_phase_mirrors_advance_and_stops_at_the_start(client):
+    battle = client.post("/battles", json={}).json()
+    battle_id = battle["id"]
+
+    b = _advance(client, battle_id, 3)
+    assert (b["current_phase"], b["active_player"], b["battle_round"]) == ("charge", 1, 1)
+
+    b = client.patch(f"/battles/{battle_id}/retreat-phase").json()
+    assert (b["current_phase"], b["active_player"], b["battle_round"]) == ("shooting", 1, 1)
+
+    b = client.patch(f"/battles/{battle_id}/retreat-phase").json()
+    b = client.patch(f"/battles/{battle_id}/retreat-phase").json()
+    assert (b["current_phase"], b["active_player"], b["battle_round"], b["global_step"]) == (
+        "command",
+        1,
+        1,
+        0,
+    )
+
+    resp = client.patch(f"/battles/{battle_id}/retreat-phase")
+    assert resp.status_code == 422
 
 
 def test_until_next_command_phase_effect_survives_opponents_turn(client):

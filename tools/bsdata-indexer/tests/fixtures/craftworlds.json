@@ -75,6 +75,13 @@
         "hidden": false,
         "type": "selectionEntry",
         "targetId": "target-warlock"
+      },
+      {
+        "id": "entrylink-avatar",
+        "name": "Avatar of Khaine",
+        "hidden": false,
+        "type": "selectionEntry",
+        "targetId": "target-avatar"
       }
     ]
   }

@@ -42,21 +42,38 @@ class ParsedRoster:
 
 def _loadout(sel: dict) -> list[dict]:
     """Aggregates the unit's actually-equipped wargear by name, summed across every
-    model-group. Confirmed against a real export: a unit selection's own `selections` are
-    model-groups (each carrying a `number` of models, e.g. "3x Windrider with Twin Shuriken
-    Catapult"), and each model-group's own `selections` are its equipped items (each also
-    carrying a `number`, e.g. "3x Twin shuriken catapult"). Aggregated to unit-level totals,
-    not kept per-model-group -- matches the app's existing granularity (UnitTurnState tracks
-    a whole unit's turn state, not individual models); a non-uniform squad (different
-    Exarch weapon) still contributes correctly since each model-group is walked separately,
-    just merged into one count per weapon name at the end."""
+    model-group. Two different shapes confirmed against a real export, both handled here:
+
+    - A multi-model squad's own `selections` are model-groups (each carrying a `number` of
+      models, e.g. "3x Windrider with Twin Shuriken Catapult", `type: "model"`), and each
+      model-group's own `selections` are its equipped items (each also carrying a `number`,
+      e.g. "3x Twin shuriken catapult") -- two levels deep.
+    - A single-model Character/vehicle has no model-group wrapper at all (there's only ever
+      one model, so BattleScribe doesn't need one) -- its equipped items sit directly in the
+      unit's own `selections`, one level shallower (confirmed on Asurmen: "The Bloody Twins"/
+      "The Sword of Asur" are direct children, `type: "upgrade"`, not nested under a
+      `type: "model"` wrapper). An earlier version of this function only ever looked two
+      levels deep, so every single-model unit's loadout silently came back empty.
+
+    `type == "model"` on a direct child is the signal that it's a model-group wrapper (go one
+    level deeper); anything else is treated as an equipped item directly. Aggregated to
+    unit-level totals, not kept per-model-group -- matches the app's existing granularity
+    (UnitTurnState tracks a whole unit's turn state, not individual models); a non-uniform
+    squad (different Exarch weapon) still contributes correctly since each model-group is
+    walked separately, just merged into one count per weapon name at the end."""
     counts: dict[str, int] = {}
-    for model_group in sel.get("selections") or []:
-        for item in model_group.get("selections") or []:
-            name = item.get("name")
-            if not name:
-                continue
-            counts[name] = counts.get(name, 0) + (item.get("number") or 0)
+
+    def add(name: str | None, count: int) -> None:
+        if name:
+            counts[name] = counts.get(name, 0) + count
+
+    for child in sel.get("selections") or []:
+        if child.get("type") == "model":
+            for item in child.get("selections") or []:
+                add(item.get("name"), item.get("number") or 0)
+        else:
+            add(child.get("name"), child.get("number") or 0)
+
     return [{"name": name, "count": count} for name, count in counts.items()]
 
 

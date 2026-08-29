@@ -71,8 +71,10 @@ export const api = {
 
   createBattle: (rosterId?: number) =>
     request<BattleOut>("/battles", { method: "POST", body: JSON.stringify({ roster_id: rosterId ?? null }) }),
+  listBattlesForRoster: (rosterId: number) => request<BattleOut[]>(`/battles?roster_id=${rosterId}`),
   getBattle: (id: number) => request<BattleOut>(`/battles/${id}`),
   advancePhase: (id: number) => request<BattleOut>(`/battles/${id}/advance-phase`, { method: "PATCH" }),
+  retreatPhase: (id: number) => request<BattleOut>(`/battles/${id}/retreat-phase`, { method: "PATCH" }),
   updatePlayer: (
     battleId: number,
     playerNumber: number,

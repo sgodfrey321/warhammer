@@ -405,6 +405,79 @@
           },
           "name": "Hellfire breath",
           "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "7",
+            "AP": "-4",
+            "D": "D6+2",
+            "Range": "Melee",
+            "S": "16",
+            "WS": "2+"
+          },
+          "name": "➤ Great axe of Khorne - strike",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "14",
+            "AP": "-2",
+            "D": "2",
+            "Range": "Melee",
+            "S": "10",
+            "WS": "2+"
+          },
+          "name": "➤ Great axe of Khorne - sweep",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "8",
+            "AP": "-4",
+            "D": "D3+1",
+            "Range": "Melee",
+            "S": "14",
+            "WS": "2+"
+          },
+          "name": "➤ Axe of Khorne - strike",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "16",
+            "AP": "-2",
+            "D": "1",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "2+"
+          },
+          "name": "➤ Axe of Khorne - sweep",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "2+",
+            "D": "D6+1",
+            "Keywords": "Devastating Wounds",
+            "Range": "12\"",
+            "S": "16"
+          },
+          "name": "Bloodflail",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "9",
+            "AP": "-1",
+            "BS": "2+",
+            "D": "2",
+            "Range": "12\"",
+            "S": "8"
+          },
+          "name": "Lash of Khorne",
+          "range_type": "Ranged Weapons"
         }
       ]
     },
@@ -492,6 +565,70 @@
         },
         {
           "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Sustained Hits 1",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Heavy bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "-1",
+            "BS": "N/A",
+            "D": "1",
+            "Keywords": "Ignores Cover, Torrent",
+            "Range": "12\"",
+            "S": "5"
+          },
+          "name": "Heavy flamer",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-4",
+            "BS": "3+",
+            "D": "D6",
+            "Keywords": "Melta 2",
+            "Range": "18\"",
+            "S": "9"
+          },
+          "name": "Multi-melta",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "0",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Rapid Fire 2",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Storm bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "D6+1",
+            "Range": "48\"",
+            "S": "12"
+          },
+          "name": "Lascannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
             "A": "6",
             "AP": "0",
             "D": "1",
@@ -574,6 +711,32 @@
             "S": "12"
           },
           "name": "Soulshatter lascannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "0",
+            "BS": "4+",
+            "D": "1",
+            "Keywords": "Rapid Fire 4",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Combi-bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "0",
+            "BS": "4+",
+            "D": "1",
+            "Keywords": "Anti-Infantry 4+, Devastating Wounds, Rapid Fire 1",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Combi-weapon",
           "range_type": "Ranged Weapons"
         },
         {
@@ -665,6 +828,57 @@
         },
         {
           "characteristics": {
+            "A": "2",
+            "AP": "0",
+            "BS": "4+",
+            "D": "1",
+            "Keywords": "Rapid Fire 4",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Combi-bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "0",
+            "BS": "4+",
+            "D": "1",
+            "Keywords": "Anti-Infantry 4+, Devastating Wounds, Rapid Fire 1",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Combi-weapon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "4+",
+            "D": "2",
+            "Keywords": "Rapid Fire 2, Sustained Hits 1",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Heavy bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "4+",
+            "D": "D6+1",
+            "Range": "48\"",
+            "S": "12"
+          },
+          "name": "Lascannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
             "A": "6",
             "AP": "0",
             "D": "1",
@@ -751,6 +965,57 @@
         },
         {
           "characteristics": {
+            "A": "2",
+            "AP": "0",
+            "BS": "4+",
+            "D": "1",
+            "Keywords": "Rapid Fire 4",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Combi-bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "0",
+            "BS": "4+",
+            "D": "1",
+            "Keywords": "Anti-Infantry 4+, Devastating Wounds, Rapid Fire 1",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Combi-weapon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "4+",
+            "D": "2",
+            "Keywords": "Rapid Fire 2, Sustained Hits 1",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Heavy bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "4+",
+            "D": "D6+1",
+            "Range": "48\"",
+            "S": "12"
+          },
+          "name": "Lascannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
             "A": "6",
             "AP": "0",
             "D": "1",
@@ -826,18 +1091,6 @@
       "weapons": [
         {
           "characteristics": {
-            "A": "6",
-            "AP": "0",
-            "D": "1",
-            "Range": "Melee",
-            "S": "6",
-            "WS": "3+"
-          },
-          "name": "Armoured tracks",
-          "range_type": "Melee Weapons"
-        },
-        {
-          "characteristics": {
             "A": "2",
             "AP": "0",
             "BS": "4+",
@@ -848,6 +1101,31 @@
           },
           "name": "Combi-bolter",
           "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "0",
+            "BS": "4+",
+            "D": "1",
+            "Keywords": "Anti-Infantry 4+, Devastating Wounds, Rapid Fire 1",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Combi-weapon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "6",
+            "WS": "3+"
+          },
+          "name": "Armoured tracks",
+          "range_type": "Melee Weapons"
         },
         {
           "characteristics": {
@@ -1115,6 +1393,45 @@
         "W": "30"
       },
       "weapons": [
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "-2",
+            "BS": "3+",
+            "D": "3",
+            "Keywords": "Anti-Fly 3+",
+            "Range": "72\"",
+            "S": "8"
+          },
+          "name": "Hellstrike missile array",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6+6",
+            "AP": "-2",
+            "BS": "3+",
+            "D": "3",
+            "Keywords": "Blast",
+            "Range": "48\"",
+            "S": "10"
+          },
+          "name": "Thunderhawk heavy cannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D3+1",
+            "AP": "-4",
+            "BS": "3+",
+            "D": "D6+6",
+            "Keywords": "Blast",
+            "Range": "96\"",
+            "S": "20"
+          },
+          "name": "Turbo-laser destructor",
+          "range_type": "Ranged Weapons"
+        },
         {
           "characteristics": {
             "A": "6",
@@ -1482,6 +1799,136 @@
           },
           "name": "Shearing claws - sweep",
           "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2D6",
+            "AP": "-1",
+            "BS": "4+",
+            "D": "1",
+            "Keywords": "Blast, Rapid Fire 3",
+            "Range": "48\"",
+            "S": "5"
+          },
+          "name": "➤ Heavy missile launcher - frag",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-2",
+            "BS": "4+",
+            "D": "D6+1",
+            "Keywords": "Rapid Fire 1",
+            "Range": "48\"",
+            "S": "10"
+          },
+          "name": "➤ Heavy missile launcher - krak",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "7",
+            "AP": "-2",
+            "D": "2",
+            "Keywords": "Extra Attacks, Sustained Hits 2",
+            "Range": "Melee",
+            "S": "12",
+            "WS": "3+"
+          },
+          "name": "Electroscourge",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-3",
+            "BS": "4+",
+            "D": "D6+1",
+            "Keywords": "Rapid Fire 1",
+            "Range": "48\"",
+            "S": "12"
+          },
+          "name": "Hades lascannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "-1",
+            "BS": "4+",
+            "D": "3",
+            "Keywords": "Devastating Wounds, Rapid Fire 2, Sustained Hits 1",
+            "Range": "48\"",
+            "S": "9"
+          },
+          "name": "Heavy reaper autocannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6+3",
+            "AP": "-1",
+            "BS": "4+",
+            "D": "3",
+            "Keywords": "Blast, Rapid Fire 3",
+            "Range": "48\"",
+            "S": "10"
+          },
+          "name": "Hades battle cannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "-3",
+            "BS": "4+",
+            "D": "3",
+            "Keywords": "Blast, Rapid Fire 2",
+            "Range": "36\"",
+            "S": "12"
+          },
+          "name": "Ectoplasma destructor",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6+3",
+            "AP": "-2",
+            "BS": "N/A",
+            "D": "2",
+            "Keywords": "Ignores Cover, Torrent",
+            "Range": "12\"",
+            "S": "7"
+          },
+          "name": "Heavy baleflamer",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "-1",
+            "BS": "4+",
+            "D": "2",
+            "Keywords": "Rapid Fire 3",
+            "Range": "36\"",
+            "S": "6"
+          },
+          "name": "Excruciator cannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-4",
+            "BS": "4+",
+            "D": "D6",
+            "Keywords": "Melta 2, Rapid Fire 1",
+            "Range": "12\"",
+            "S": "9"
+          },
+          "name": "Magma cutter",
+          "range_type": "Ranged Weapons"
         }
       ]
     },
@@ -1517,6 +1964,121 @@
         "W": "12"
       },
       "weapons": [
+        {
+          "characteristics": {
+            "A": "D6+3",
+            "AP": "0",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Blast",
+            "Range": "48\"",
+            "S": "5"
+          },
+          "name": "Aiolos missile launcher",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "D6+1",
+            "Keywords": "Anti-FLY 2+",
+            "Range": "48\"",
+            "S": "12"
+          },
+          "name": "Boreas air defence missiles",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Sustained Hits 1, Twin-linked",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Twin heavy bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "-1",
+            "BS": "N/A",
+            "D": "1",
+            "Keywords": "Ignores Cover, Torrent, Twin-linked",
+            "Range": "12\"",
+            "S": "5"
+          },
+          "name": "Twin heavy flamer",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "3",
+            "Keywords": "Twin-linked",
+            "Range": "48\"",
+            "S": "9"
+          },
+          "name": "Anvilus autocannon battery",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "D6+1",
+            "Range": "48\"",
+            "S": "12"
+          },
+          "name": "Arachnus heavy lascannon battery",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Devastating Wounds",
+            "Range": "30\"",
+            "S": "9"
+          },
+          "name": "Volkite falconet battery",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "-2",
+            "BS": "3+",
+            "D": "2",
+            "Range": "36\"",
+            "S": "7"
+          },
+          "name": "➤ Hellfire plasma carronade - standard",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "3",
+            "Keywords": "Hazardous",
+            "Range": "36\"",
+            "S": "8"
+          },
+          "name": "➤ Hellfire plasma carronade - supercharge",
+          "range_type": "Ranged Weapons"
+        },
         {
           "characteristics": {
             "A": "6",
@@ -1776,6 +2338,109 @@
         },
         {
           "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Sustained Hits 1, Twin-linked",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Twin heavy bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "-1",
+            "BS": "N/A",
+            "D": "1",
+            "Keywords": "Ignores Cover, Torrent, Twin-linked",
+            "Range": "12\"",
+            "S": "5"
+          },
+          "name": "Twin heavy flamer",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Sustained Hits 1",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Heavy bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "-1",
+            "BS": "N/A",
+            "D": "1",
+            "Keywords": "Ignores Cover, Torrent",
+            "Range": "12\"",
+            "S": "5"
+          },
+          "name": "Heavy flamer",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-4",
+            "BS": "3+",
+            "D": "D6",
+            "Keywords": "Melta 2",
+            "Range": "18\"",
+            "S": "9"
+          },
+          "name": "Multi-melta",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "0",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Rapid Fire 2",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Storm bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "D6+1",
+            "Range": "48\"",
+            "S": "12"
+          },
+          "name": "Quad lascannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-4",
+            "BS": "3+",
+            "D": "D6+1",
+            "Keywords": "Heavy",
+            "Range": "36\"",
+            "S": "14"
+          },
+          "name": "Laser destroyer",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
             "A": "6",
             "AP": "0",
             "D": "1",
@@ -1858,6 +2523,135 @@
         },
         {
           "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Sustained Hits 1, Twin-linked",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Twin heavy bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "-1",
+            "BS": "N/A",
+            "D": "1",
+            "Keywords": "Ignores Cover, Torrent, Twin-linked",
+            "Range": "12\"",
+            "S": "5"
+          },
+          "name": "Twin heavy flamer",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Sustained Hits 1",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Heavy bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "-1",
+            "BS": "N/A",
+            "D": "1",
+            "Keywords": "Ignores Cover, Torrent",
+            "Range": "12\"",
+            "S": "5"
+          },
+          "name": "Heavy flamer",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-4",
+            "BS": "3+",
+            "D": "D6",
+            "Keywords": "Melta 2",
+            "Range": "18\"",
+            "S": "9"
+          },
+          "name": "Multi-melta",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "0",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Rapid Fire 2",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Storm bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "0",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Anti-INFANTRY 3+, Devastating Wounds, Rapid Fire 1",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Combi-weapon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "D6+1",
+            "Range": "48\"",
+            "S": "12"
+          },
+          "name": "Quad lascannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-4",
+            "BS": "3+",
+            "D": "D6+1",
+            "Keywords": "Heavy",
+            "Range": "36\"",
+            "S": "14"
+          },
+          "name": "Laser destroyer",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Sustained Hits 1, Twin-linked",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Quad heavy bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
             "A": "6",
             "AP": "0",
             "D": "1",
@@ -1924,6 +2718,58 @@
             "S": "6"
           },
           "name": "Twin avenger bolt cannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "3",
+            "Keywords": "Twin-linked",
+            "Range": "48\"",
+            "S": "9"
+          },
+          "name": "Twin autocannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Twin-linked, Sustained Hits 1",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Quad heavy bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "D6",
+            "Keywords": "Anti-Fly 2+, Twin-linked",
+            "Range": "72\"",
+            "S": "10"
+          },
+          "name": "Twin hellstrike launcher",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "D6+1",
+            "Keywords": "Twin-linked",
+            "Range": "48\"",
+            "S": "12"
+          },
+          "name": "Twin lascannon",
           "range_type": "Ranged Weapons"
         },
         {
@@ -2060,7 +2906,58 @@
         "T": "10",
         "W": "12"
       },
-      "weapons": []
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "D3",
+            "AP": "-3",
+            "BS": "4+",
+            "D": "3",
+            "Keywords": "Blast, Rapid Fire 1",
+            "Range": "36\"",
+            "S": "10"
+          },
+          "name": "Ectoplasma cannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "-1",
+            "BS": "4+",
+            "D": "2",
+            "Keywords": "Rapid Fire 4",
+            "Range": "36\"",
+            "S": "8"
+          },
+          "name": "Hades autocannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "6",
+            "WS": "3+"
+          },
+          "name": "Forgefiend claws",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "8",
+            "AP": "-1",
+            "D": "2",
+            "Range": "Melee",
+            "S": "7",
+            "WS": "3+"
+          },
+          "name": "Forgefiend jaws",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -2311,6 +3208,159 @@
           },
           "name": "Close combat weapon",
           "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "-2",
+            "D": "3",
+            "Range": "Melee",
+            "S": "12",
+            "WS": "3+"
+          },
+          "name": "Helbrute fist",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "0",
+            "BS": "4+",
+            "D": "1",
+            "Keywords": "Rapid Fire 4",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Combi-bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "-1",
+            "BS": "N/A",
+            "D": "1",
+            "Keywords": "Ignores Cover, Torrent",
+            "Range": "12\"",
+            "S": "5"
+          },
+          "name": "Heavy flamer",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "0",
+            "BS": "4+",
+            "D": "1",
+            "Keywords": "Blast, Rapid Fire 3",
+            "Range": "48\"",
+            "S": "4"
+          },
+          "name": "➤ Missile launcher - frag",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-2",
+            "BS": "4+",
+            "D": "D6",
+            "Keywords": "Rapid Fire 1",
+            "Range": "48\"",
+            "S": "9"
+          },
+          "name": "➤ Missile launcher - krak",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "-3",
+            "D": "D6+1",
+            "Range": "Melee",
+            "S": "14",
+            "WS": "4+"
+          },
+          "name": "Helbrute hammer",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "10",
+            "AP": "-1",
+            "D": "2",
+            "Range": "Melee",
+            "S": "7",
+            "WS": "3+"
+          },
+          "name": "Power scourge",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-4",
+            "BS": "4+",
+            "D": "D6",
+            "Keywords": "Melta 2, Rapid Fire 1",
+            "Range": "18\"",
+            "S": "9"
+          },
+          "name": "Multi-melta",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-1",
+            "BS": "4+",
+            "D": "3",
+            "Keywords": "Rapid Fire 2, Twin-linked",
+            "Range": "48\"",
+            "S": "9"
+          },
+          "name": "Twin autocannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D3",
+            "AP": "-3",
+            "BS": "4+",
+            "D": "3",
+            "Keywords": "Blast, Hazardous, Rapid Fire D3",
+            "Range": "36\"",
+            "S": "8"
+          },
+          "name": "Plasma cannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "4+",
+            "D": "2",
+            "Keywords": "Rapid Fire 2, Sustained Hits 1, Twin-linked",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Twin heavy bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "4+",
+            "D": "D6+1",
+            "Keywords": "Rapid Fire 1, Twin-linked",
+            "Range": "48\"",
+            "S": "12"
+          },
+          "name": "Twin lascannon",
+          "range_type": "Ranged Weapons"
         }
       ]
     },
@@ -2367,6 +3417,32 @@
           },
           "name": "Heldrake claws",
           "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6+3",
+            "AP": "-1",
+            "BS": "N/A",
+            "D": "2",
+            "Keywords": "Ignores Cover, Torrent",
+            "Range": "12\"",
+            "S": "6"
+          },
+          "name": "Baleflamer",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "-1",
+            "BS": "4+",
+            "D": "2",
+            "Keywords": "Rapid Fire 4",
+            "Range": "36\"",
+            "S": "8"
+          },
+          "name": "Hades autocannon",
+          "range_type": "Ranged Weapons"
         }
       ]
     },
@@ -2415,6 +3491,31 @@
           },
           "name": "Armoured hull",
           "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "3",
+            "Range": "48\"",
+            "S": "9"
+          },
+          "name": "Autocannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "0",
+            "BS": "4+",
+            "D": "1",
+            "Keywords": "Blast",
+            "Range": "48\"",
+            "S": "5"
+          },
+          "name": "Havoc launcher",
+          "range_type": "Ranged Weapons"
         },
         {
           "characteristics": {
@@ -2476,6 +3577,32 @@
           },
           "name": "Armoured hull",
           "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "3",
+            "Keywords": "Twin-linked",
+            "Range": "48\"",
+            "S": "9"
+          },
+          "name": "Twin autocannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "4+",
+            "D": "D6+1",
+            "Keywords": "Rapid Fire 1, Twin-linked",
+            "Range": "48\"",
+            "S": "12"
+          },
+          "name": "Twin lascannon",
+          "range_type": "Ranged Weapons"
         }
       ]
     },
@@ -2674,18 +3801,6 @@
       "weapons": [
         {
           "characteristics": {
-            "A": "4",
-            "AP": "-1",
-            "D": "1",
-            "Range": "Melee",
-            "S": "4",
-            "WS": "3+"
-          },
-          "name": "Chainblade",
-          "range_type": "Melee Weapons"
-        },
-        {
-          "characteristics": {
             "A": "1",
             "AP": "-2",
             "BS": "4+",
@@ -2722,6 +3837,30 @@
           },
           "name": "Bolt pistol",
           "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "-1",
+            "D": "1",
+            "Range": "Melee",
+            "S": "4",
+            "WS": "3+"
+          },
+          "name": "Chainblade",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-2",
+            "D": "2",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "3+"
+          },
+          "name": "Khornate eviscerator",
+          "range_type": "Melee Weapons"
         }
       ]
     },
@@ -2801,6 +3940,71 @@
           },
           "name": "➤ Great cleaver of Khorne - sweep",
           "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "12",
+            "AP": "-2",
+            "BS": "4+",
+            "D": "2",
+            "Keywords": "Rapid Fire 6, Sustained Hits 1",
+            "Range": "48\"",
+            "S": "8"
+          },
+          "name": "Hades gatling cannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2D6",
+            "AP": "-3",
+            "BS": "4+",
+            "D": "3",
+            "Keywords": "Rapid Fire 3",
+            "Range": "60\"",
+            "S": "14"
+          },
+          "name": "Skullhurler",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6+3",
+            "AP": "-2",
+            "BS": "4+",
+            "D": "3",
+            "Keywords": "Blast, Rapid Fire 3",
+            "Range": "24\"",
+            "S": "10"
+          },
+          "name": "Gorestorm cannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "-4",
+            "BS": "4+",
+            "D": "D6+2",
+            "Keywords": "Blast, Rapid Fire 3",
+            "Range": "18\"",
+            "S": "14"
+          },
+          "name": "Daemongore cannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2D6",
+            "AP": "-2",
+            "BS": "4+",
+            "D": "2",
+            "Keywords": "Blast, Rapid Fire 4",
+            "Range": "48\"",
+            "S": "7"
+          },
+          "name": "Ichor cannon",
+          "range_type": "Ranged Weapons"
         }
       ]
     },
@@ -2929,15 +4133,41 @@
       "weapons": [
         {
           "characteristics": {
-            "A": "6",
-            "AP": "0",
-            "D": "1",
-            "Range": "Melee",
-            "S": "8",
-            "WS": "4+"
+            "A": "3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Sustained Hits 1",
+            "Range": "36\"",
+            "S": "5"
           },
-          "name": "Armoured tracks",
-          "range_type": "Melee Weapons"
+          "name": "Heavy bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "0",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Devastating Wounds",
+            "Range": "24\"",
+            "S": "5"
+          },
+          "name": "Volkite caliver",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "D6+1",
+            "Range": "48\"",
+            "S": "12"
+          },
+          "name": "Lascannon",
+          "range_type": "Ranged Weapons"
         },
         {
           "characteristics": {
@@ -2950,6 +4180,148 @@
           },
           "name": "Autocannon",
           "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-4",
+            "BS": "3+",
+            "D": "D6+3",
+            "Keywords": "Heavy",
+            "Range": "36\"",
+            "S": "18"
+          },
+          "name": "➤ Kratos battlecannon - AP",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6+3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "3",
+            "Keywords": "Blast",
+            "Range": "36\"",
+            "S": "10"
+          },
+          "name": "➤ Kratos battlecannon - HE",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "-4",
+            "BS": "3+",
+            "D": "D6",
+            "Keywords": "Melta 2",
+            "Range": "24\"",
+            "S": "12"
+          },
+          "name": "Melta blast-gun",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "9",
+            "AP": "0",
+            "BS": "3+",
+            "D": "3",
+            "Keywords": "Devastating Wounds",
+            "Range": "36\"",
+            "S": "9"
+          },
+          "name": "Volkite cardanelle",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "0",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Twin-linked",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Twin boltgun",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "0",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Anti-INFANTRY 3+, Devastating Wounds, Rapid Fire 1",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Combi-weapon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "-1",
+            "BS": "N/A",
+            "D": "1",
+            "Keywords": "Ignores Cover, Torrent",
+            "Range": "12\"",
+            "S": "5"
+          },
+          "name": "Heavy flamer",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-4",
+            "BS": "3+",
+            "D": "D6",
+            "Keywords": "Melta 2",
+            "Range": "18\"",
+            "S": "9"
+          },
+          "name": "Multi-melta",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "0",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Blast",
+            "Range": "48\"",
+            "S": "5"
+          },
+          "name": "Havoc launcher",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "0",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Devastating Wounds",
+            "Range": "36\"",
+            "S": "6"
+          },
+          "name": "Volkite culverin",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "4+"
+          },
+          "name": "Armoured tracks",
+          "range_type": "Melee Weapons"
         },
         {
           "characteristics": {
@@ -3095,6 +4467,84 @@
         },
         {
           "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Sustained Hits 1",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Heavy bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Sustained Hits 1, Twin-linked",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Twin heavy bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-4",
+            "BS": "3+",
+            "D": "D6",
+            "Keywords": "Melta 2",
+            "Range": "18\"",
+            "S": "9"
+          },
+          "name": "Multi-melta",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "-1",
+            "BS": "N/A",
+            "D": "1",
+            "Keywords": "Ignores Cover, Torrent, Twin-linked",
+            "Range": "12\"",
+            "S": "5"
+          },
+          "name": "Twin heavy flamer",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "0",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Devastating Wounds, Twin-linked",
+            "Range": "36\"",
+            "S": "6"
+          },
+          "name": "Twin volkite culverin",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-4",
+            "BS": "3+",
+            "D": "D6",
+            "Keywords": "Melta 2, Twin-linked",
+            "Range": "18\"",
+            "S": "9"
+          },
+          "name": "Twin multi-melta",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
             "A": "6",
             "AP": "0",
             "D": "1",
@@ -3158,6 +4608,58 @@
         "W": "16"
       },
       "weapons": [
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Sustained Hits 1",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Heavy bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Sustained Hits 1, Twin-linked",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Twin heavy bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-4",
+            "BS": "3+",
+            "D": "D6",
+            "Keywords": "Melta 2",
+            "Range": "18\"",
+            "S": "9"
+          },
+          "name": "Multi-melta",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "-1",
+            "BS": "N/A",
+            "D": "1",
+            "Keywords": "Ignores Cover, Torrent, Twin-linked",
+            "Range": "12\"",
+            "S": "5"
+          },
+          "name": "Twin heavy flamer",
+          "range_type": "Ranged Weapons"
+        },
         {
           "characteristics": {
             "A": "6",
@@ -3243,6 +4745,109 @@
         "W": "12"
       },
       "weapons": [
+        {
+          "characteristics": {
+            "A": "2D3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Anti-Vehicle 2+, Blast",
+            "Range": "24\"",
+            "S": "8"
+          },
+          "name": "Grav-flux bombard",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "-4",
+            "BS": "3+",
+            "D": "D6",
+            "Keywords": "Melta 2",
+            "Range": "18\"",
+            "S": "9"
+          },
+          "name": "Cyclonic melta-lance",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "3",
+            "Keywords": "Twin-linked",
+            "Range": "36\"",
+            "S": "9"
+          },
+          "name": "Storm cannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "5",
+            "AP": "-2",
+            "D": "3",
+            "Range": "Melee",
+            "S": "12",
+            "WS": "3+"
+          },
+          "name": "Leviathan siege claw",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-4",
+            "BS": "3+",
+            "D": "D6",
+            "Keywords": "Melta 2",
+            "Range": "12\"",
+            "S": "9"
+          },
+          "name": "Meltagun",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "-2",
+            "D": "3",
+            "Keywords": "Anti-VEHICLE 3+",
+            "Range": "Melee",
+            "S": "12",
+            "WS": "3+"
+          },
+          "name": "Leviathan siege drill",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "-1",
+            "BS": "N/A",
+            "D": "1",
+            "Keywords": "Ignores Cover, Torrent",
+            "Range": "12\"",
+            "S": "5"
+          },
+          "name": "Heavy flamer",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "0",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Devastating Wounds, Twin-linked",
+            "Range": "24\"",
+            "S": "5"
+          },
+          "name": "Twin volkite caliver",
+          "range_type": "Ranged Weapons"
+        },
         {
           "characteristics": {
             "A": "6",
@@ -3599,6 +5204,57 @@
         },
         {
           "characteristics": {
+            "A": "D6",
+            "AP": "-1",
+            "BS": "N/A",
+            "D": "1",
+            "Keywords": "Ignores Cover, Torrent",
+            "Range": "12\"",
+            "S": "5"
+          },
+          "name": "Heavy flamer",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "D6+1",
+            "Range": "48\"",
+            "S": "12"
+          },
+          "name": "Lascannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Sustained Hits 1",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Heavy bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "0",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Devastating Wounds",
+            "Range": "36\"",
+            "S": "6"
+          },
+          "name": "Volkite culverin",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
             "A": "6",
             "AP": "0",
             "D": "1",
@@ -3673,6 +5329,32 @@
           },
           "name": "Maulerfiend fists",
           "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-4",
+            "BS": "4+",
+            "D": "D6",
+            "Keywords": "Melta 2, Rapid Fire 1",
+            "Range": "6\"",
+            "S": "9"
+          },
+          "name": "Magma cutter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "-1",
+            "D": "1",
+            "Keywords": "Extra Attacks",
+            "Range": "Melee",
+            "S": "7",
+            "WS": "3+"
+          },
+          "name": "Lasher tendrils",
+          "range_type": "Melee Weapons"
         }
       ]
     },
@@ -3728,6 +5410,71 @@
           },
           "name": "Close combat weapon",
           "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "-2",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Anti-Vehicle 2+, Blast, Heavy",
+            "Range": "36\"",
+            "S": "6"
+          },
+          "name": "Graviton cannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-4",
+            "BS": "3+",
+            "D": "D6+1",
+            "Keywords": "Heavy",
+            "Range": "36\"",
+            "S": "14"
+          },
+          "name": "Laser destroyer",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Heavy, Twin-linked, Sustained Hits 1",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Quad heavy bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "-2",
+            "BS": "3+",
+            "D": "3",
+            "Keywords": "Heavy",
+            "Range": "24\"",
+            "S": "9"
+          },
+          "name": "➤ Quad launcher - shatter shells",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6+4",
+            "AP": "0",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Blast, Heavy, Indirect Fire",
+            "Range": "60\"",
+            "S": "5"
+          },
+          "name": "➤ Quad launcher - thunderfire shells",
+          "range_type": "Ranged Weapons"
         }
       ]
     },
@@ -3789,6 +5536,212 @@
         },
         {
           "characteristics": {
+            "A": "D3",
+            "AP": "-2",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Blast",
+            "Range": "36\"",
+            "S": "7"
+          },
+          "name": "➤ Heavy plasma cannon - standard",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D3",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "3",
+            "Keywords": "Blast, Hazardous",
+            "Range": "36\"",
+            "S": "8"
+          },
+          "name": "➤ Heavy plasma cannon - supercharge",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "3",
+            "Keywords": "Conversion, Sustained Hits D3",
+            "Range": "24\"",
+            "S": "7"
+          },
+          "name": "Conversion beam cannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Devastating Wounds",
+            "Range": "24\"",
+            "S": "7"
+          },
+          "name": "Kheres assault cannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "-2",
+            "D": "3",
+            "Keywords": "Anti-VEHICLE 3+",
+            "Range": "Melee",
+            "S": "12",
+            "WS": "3+"
+          },
+          "name": "Dreadnought chainfist",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "5",
+            "AP": "-2",
+            "D": "3",
+            "Range": "Melee",
+            "S": "12",
+            "WS": "3+"
+          },
+          "name": "Dreadnought combat weapon",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "3",
+            "Keywords": "Twin-linked",
+            "Range": "48\"",
+            "S": "9"
+          },
+          "name": "Twin autocannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Sustained Hits 1, Twin-linked",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Twin heavy bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "D6+1",
+            "Keywords": "Twin-linked",
+            "Range": "48\"",
+            "S": "12"
+          },
+          "name": "Twin lascannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-4",
+            "BS": "3+",
+            "D": "D6",
+            "Keywords": "Melta 2",
+            "Range": "18\"",
+            "S": "9"
+          },
+          "name": "Multi-melta",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "0",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Devastating Wounds, Twin-linked",
+            "Range": "36\"",
+            "S": "6"
+          },
+          "name": "Twin volkite culverin",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "0",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Rapid Fire 2",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Combi-bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-2",
+            "BS": "3+",
+            "D": "1",
+            "Range": "18\"",
+            "S": "7"
+          },
+          "name": "➤ Plasma blaster - standard",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Hazardous",
+            "Range": "18\"",
+            "S": "8"
+          },
+          "name": "➤ Plasma blaster - supercharge",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Anti-Vehicle 2+",
+            "Range": "18\"",
+            "S": "5"
+          },
+          "name": "Graviton blaster",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "-1",
+            "BS": "N/A",
+            "D": "1",
+            "Keywords": "Ignores Cover, Torrent",
+            "Range": "12\"",
+            "S": "5"
+          },
+          "name": "Heavy flamer",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
             "A": "6",
             "AP": "0",
             "D": "1",
@@ -3845,18 +5798,6 @@
         },
         {
           "characteristics": {
-            "A": "6",
-            "AP": "0",
-            "D": "1",
-            "Range": "Melee",
-            "S": "8",
-            "WS": "4+"
-          },
-          "name": "Armoured tracks",
-          "range_type": "Melee Weapons"
-        },
-        {
-          "characteristics": {
             "A": "3",
             "AP": "-1",
             "BS": "3+",
@@ -3867,6 +5808,30 @@
           },
           "name": "Heavy bolter",
           "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "D6+1",
+            "Range": "48\"",
+            "S": "12"
+          },
+          "name": "Lascannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "4+"
+          },
+          "name": "Armoured tracks",
+          "range_type": "Melee Weapons"
         },
         {
           "characteristics": {
@@ -3940,18 +5905,6 @@
         },
         {
           "characteristics": {
-            "A": "6",
-            "AP": "0",
-            "D": "1",
-            "Range": "Melee",
-            "S": "8",
-            "WS": "4+"
-          },
-          "name": "Armoured tracks",
-          "range_type": "Melee Weapons"
-        },
-        {
-          "characteristics": {
             "A": "3",
             "AP": "-1",
             "BS": "3+",
@@ -3962,6 +5915,30 @@
           },
           "name": "Heavy bolter",
           "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "D6+1",
+            "Range": "48\"",
+            "S": "12"
+          },
+          "name": "Lascannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "4+"
+          },
+          "name": "Armoured tracks",
+          "range_type": "Melee Weapons"
         },
         {
           "characteristics": {
@@ -4035,18 +6012,6 @@
         },
         {
           "characteristics": {
-            "A": "6",
-            "AP": "0",
-            "D": "1",
-            "Range": "Melee",
-            "S": "8",
-            "WS": "4+"
-          },
-          "name": "Armoured tracks",
-          "range_type": "Melee Weapons"
-        },
-        {
-          "characteristics": {
             "A": "3",
             "AP": "-1",
             "BS": "3+",
@@ -4057,6 +6022,30 @@
           },
           "name": "Heavy bolter",
           "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "D6+1",
+            "Range": "48\"",
+            "S": "12"
+          },
+          "name": "Lascannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "4+"
+          },
+          "name": "Armoured tracks",
+          "range_type": "Melee Weapons"
         },
         {
           "characteristics": {
@@ -4360,6 +6349,109 @@
       "weapons": [
         {
           "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Sustained Hits 1, Twin-linked",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Twin heavy bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "-1",
+            "BS": "N/A",
+            "D": "1",
+            "Keywords": "Ignores Cover, Torrent, Twin-linked",
+            "Range": "12\"",
+            "S": "5"
+          },
+          "name": "Twin heavy flamer",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Sustained Hits 1",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Heavy bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "-1",
+            "BS": "N/A",
+            "D": "1",
+            "Keywords": "Ignores Cover, Torrent",
+            "Range": "12\"",
+            "S": "5"
+          },
+          "name": "Heavy flamer",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-4",
+            "BS": "3+",
+            "D": "D6",
+            "Keywords": "Melta 2",
+            "Range": "18\"",
+            "S": "9"
+          },
+          "name": "Multi-melta",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "0",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Rapid Fire 2",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Storm bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "D6+1",
+            "Range": "48\"",
+            "S": "12"
+          },
+          "name": "Quad lascannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-4",
+            "BS": "3+",
+            "D": "D6+1",
+            "Keywords": "Heavy",
+            "Range": "36\"",
+            "S": "14"
+          },
+          "name": "Laser destroyer",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
             "A": "6",
             "AP": "0",
             "D": "1",
@@ -4414,6 +6506,83 @@
             "S": "6"
           },
           "name": "Vengeance launcher",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-4",
+            "BS": "3+",
+            "D": "D6",
+            "Keywords": "Melta 2, Twin-linked",
+            "Range": "18\"",
+            "S": "9"
+          },
+          "name": "Twin multi-melta",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2D6",
+            "AP": "0",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Blast",
+            "Range": "48\"",
+            "S": "4"
+          },
+          "name": "➤ Typhoon missile launcher - frag",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-2",
+            "BS": "3+",
+            "D": "D6",
+            "Range": "48\"",
+            "S": "9"
+          },
+          "name": "➤ Typhoon missile launcher - krak",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Sustained Hits 1, Twin-linked",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Twin heavy bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "D6",
+            "Keywords": "Anti-Fly 2+, Twin-linked",
+            "Range": "72\"",
+            "S": "10"
+          },
+          "name": "Twin hellstrike launcher",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "D6+1",
+            "Keywords": "Twin-linked",
+            "Range": "48\"",
+            "S": "12"
+          },
+          "name": "Twin lascannon",
           "range_type": "Ranged Weapons"
         },
         {
@@ -4485,6 +6654,45 @@
           },
           "name": "Terrax melta cutter",
           "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "0",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Rapid Fire 2",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Storm bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "-1",
+            "BS": "N/A",
+            "D": "1",
+            "Keywords": "Ignores Cover, Torrent",
+            "Range": "12\"",
+            "S": "5"
+          },
+          "name": "Heavy flamer",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "0",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Devastating Wounds, Twin-linked",
+            "Range": "18\"",
+            "S": "5"
+          },
+          "name": "Twin volkite charger",
+          "range_type": "Ranged Weapons"
         }
       ]
     },
@@ -4528,6 +6736,70 @@
             "S": "14"
           },
           "name": "Dreadhammer siege cannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Sustained Hits 1",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Heavy bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "-1",
+            "BS": "N/A",
+            "D": "1",
+            "Keywords": "Ignores Cover, Torrent",
+            "Range": "12\"",
+            "S": "5"
+          },
+          "name": "Heavy flamer",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-4",
+            "BS": "3+",
+            "D": "D6",
+            "Keywords": "Melta 2",
+            "Range": "18\"",
+            "S": "9"
+          },
+          "name": "Multi-melta",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "0",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Rapid Fire 2",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Storm bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "D6+1",
+            "Range": "48\"",
+            "S": "12"
+          },
+          "name": "Lascannon",
           "range_type": "Ranged Weapons"
         },
         {

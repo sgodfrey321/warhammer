@@ -18,12 +18,14 @@ Add to this list as more turn up; don't let it silently grow stale.
 
 - **No manual loadout editing for hand-built rosters.** `Unit.loadout` (weapon
   name/count) is only ever populated by `POST /rosters/import` -- a roster built from
-  scratch via `POST /rosters/{id}/units` gets `loadout: []` and stays that way, so the
-  Battle Tracker's weapons toggle never shows anything for it even though
-  `UnitDefinition.weapons` (the catalogue's possible loadouts) is right there to pick
-  from. Same shape of gap as attachments/synergies/pools already had before their
-  manual-add forms were built -- needs the same treatment (a small form in
-  `RosterEditor.tsx` letting you pick from `unit_definition.weapons` and a count).
+  scratch via `POST /rosters/{id}/units` gets `loadout: []` and stays that way. The
+  Battle Tracker's weapons toggle no longer shows *nothing* for these units (it falls
+  back to listing `unit_definition.weapons` as unconfirmed catalogue options, clearly
+  labeled "No chosen loadout on this roster"), but there's still no way to actually
+  *pick* a specific loadout for a manually-added unit the way import does automatically.
+  Same shape of gap as attachments/synergies/pools already had before their manual-add
+  forms were built -- needs the same treatment (a small form in `RosterEditor.tsx`
+  letting you pick from `unit_definition.weapons` and a count).
 
 ## Battle Tracker
 

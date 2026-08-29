@@ -63,6 +63,7 @@ def test_build_faction_joins_catalogue_and_mfm(monkeypatch):
         "Guardian Defenders",
         "Windriders",
         "Warlock",
+        "Avatar of Khaine",
     }
     # "Detachment" (type: "upgrade", a config picker with no stat line) must not appear
     # as if it were a real, empty-stats unit.
@@ -75,6 +76,11 @@ def test_build_faction_joins_catalogue_and_mfm(monkeypatch):
 
     dire_avenger_weapons = {w.name for w in units["Dire Avengers"].weapons}
     assert dire_avenger_weapons == {"Close Combat Weapon", "Avenger shuriken catapult"}
+
+    # Group-inside-a-group weapon (see catalogue.py's Bloodthirster note) flows through the
+    # full build pipeline, not just resolve_faction in isolation.
+    avatar_weapons = {w.name for w in units["Avatar of Khaine"].weapons}
+    assert "➤ The Wailing Doom - Strike" in avatar_weapons
 
     wraithlord = units["Wraithlord"]
     assert wraithlord.mfm_matched is True

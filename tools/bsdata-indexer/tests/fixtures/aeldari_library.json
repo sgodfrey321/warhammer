@@ -279,9 +279,98 @@
         "infoLinks": [
           { "id": "il3", "name": "Warlock", "type": "profile", "targetId": "profile-warlock" }
         ]
+      },
+      {
+        "id": "target-avatar",
+        "name": "Avatar of Khaine",
+        "type": "model",
+        "categoryLinks": [
+          { "id": "c12", "name": "Character", "targetId": "cat-character", "primary": true }
+        ],
+        "costs": [{ "name": "pts", "typeId": "pts-type", "value": 250 }],
+        "selectionEntryGroups": [
+          {
+            "id": "group-wargear",
+            "name": "Wargear",
+            "selectionEntries": [
+              {
+                "id": "target-wailing-doom-base",
+                "name": "The Wailing Doom",
+                "type": "upgrade",
+                "profiles": [
+                  {
+                    "name": "The Wailing Doom",
+                    "typeName": "Melee Weapons",
+                    "characteristics": [
+                      { "name": "Range", "typeId": "t-range", "$text": "Melee" },
+                      { "name": "A", "typeId": "t-a", "$text": "6" },
+                      { "name": "WS", "typeId": "t-ws", "$text": "2+" },
+                      { "name": "S", "typeId": "t-s", "$text": "9" },
+                      { "name": "AP", "typeId": "t-ap", "$text": "-2" },
+                      { "name": "D", "typeId": "t-d", "$text": "3" }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "selectionEntryGroups": [
+              {
+                "id": "group-replace-weapon",
+                "name": "Replace weapon",
+                "selectionEntries": [
+                  {
+                    "id": "target-wailing-doom-modes",
+                    "name": "The Wailing Doom (dual profile)",
+                    "type": "upgrade",
+                    "infoLinks": [
+                      {
+                        "id": "il-wd-strike",
+                        "name": "The Wailing Doom - Strike",
+                        "type": "profile",
+                        "targetId": "profile-wailing-doom-strike"
+                      },
+                      {
+                        "id": "il-wd-sweep",
+                        "name": "The Wailing Doom - Sweep",
+                        "type": "profile",
+                        "targetId": "profile-wailing-doom-sweep"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
       }
     ],
     "sharedProfiles": [
+      {
+        "id": "profile-wailing-doom-strike",
+        "name": "➤ The Wailing Doom - Strike",
+        "typeName": "Melee Weapons",
+        "characteristics": [
+          { "name": "Range", "typeId": "t-range", "$text": "Melee" },
+          { "name": "A", "typeId": "t-a", "$text": "6" },
+          { "name": "WS", "typeId": "t-ws", "$text": "2+" },
+          { "name": "S", "typeId": "t-s", "$text": "9" },
+          { "name": "AP", "typeId": "t-ap", "$text": "-2" },
+          { "name": "D", "typeId": "t-d", "$text": "3" }
+        ]
+      },
+      {
+        "id": "profile-wailing-doom-sweep",
+        "name": "➤ The Wailing Doom - Sweep",
+        "typeName": "Melee Weapons",
+        "characteristics": [
+          { "name": "Range", "typeId": "t-range", "$text": "Melee" },
+          { "name": "A", "typeId": "t-a", "$text": "12" },
+          { "name": "WS", "typeId": "t-ws", "$text": "2+" },
+          { "name": "S", "typeId": "t-s", "$text": "6" },
+          { "name": "AP", "typeId": "t-ap", "$text": "-1" },
+          { "name": "D", "typeId": "t-d", "$text": "1" }
+        ]
+      },
       {
         "id": "profile-windriders",
         "name": "Windriders",

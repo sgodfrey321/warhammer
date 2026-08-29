@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { api } from "../api";
-import { DURATION_TYPES, STAT_ORDER, WEAPON_STAT_ORDER } from "../types";
+import { DURATION_TYPES, PHASES, STAT_ORDER, WEAPON_STAT_ORDER } from "../types";
 import type { BattleOut, DeclaredStatePool, Phase, UnitAttachment, UnitOut, Weapon } from "../types";
 
 function statLine(stats: Record<string, string>): string {
@@ -12,6 +12,18 @@ function weaponLine(w: Weapon): string {
   return WEAPON_STAT_ORDER.filter((k) => w.characteristics[k])
     .map((k) => `${k} ${w.characteristics[k]}`)
     .join("  ");
+}
+
+// Some weapons carry more than one firing/attack-mode profile, named like
+// "➤ Axe of Khorne - strike" / "➤ Axe of Khorne - sweep" (confirmed common in real data --
+// 57 instances across Aeldari + World Eaters, not a rare case). A roster's actual equipped
+// loadout only ever names the plain weapon ("Axe of Khorne"), so matching a loadout item to
+// its catalogue profile(s) needs the arrow prefix and " - mode" suffix stripped first --
+// every matching mode should show, not just the first one found.
+function weaponBaseName(name: string): string {
+  const stripped = name.replace(/^➤\s*/, "");
+  const dashIndex = stripped.indexOf(" - ");
+  return dashIndex === -1 ? stripped : stripped.slice(0, dashIndex);
 }
 
 // GW/BattleScribe ability text markup, confirmed against real indexer output: "**bold**" is
@@ -61,6 +73,19 @@ function groupUnits(units: UnitOut[], attachments: UnitAttachment[]): UnitGroup[
     else groups.set(key, [u]);
   }
   return Array.from(groups, ([key, groupUnits]) => ({ key, units: groupUnits }));
+}
+
+// Mirrors backend/app/phases.py's pure functions so the nav buttons can name their
+// destination without a round-trip -- global_step is the only source of truth, these
+// just read it the same way the server does.
+function phaseAtStep(step: number): Phase {
+  return PHASES[((step % PHASES.length) + PHASES.length) % PHASES.length];
+}
+function activePlayerAtStep(step: number): number {
+  return Math.floor(step / PHASES.length) % 2 === 0 ? 1 : 2;
+}
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 const PHASE_CHECKLIST: Record<Phase, string[]> = {
@@ -138,6 +163,14 @@ export function BattleTracker() {
     }
   }
 
+  async function handleRetreat() {
+    try {
+      setBattle(await api.retreatPhase(battleId));
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
   async function handleAddEffect(e: React.FormEvent) {
     e.preventDefault();
     if (!label.trim()) return;
@@ -204,19 +237,74 @@ export function BattleTracker() {
 
   if (!battle) return <div className="page">Loading...</div>;
 
+  const nextStep = battle.global_step + 1;
+  const prevStep = battle.global_step - 1;
+  const nextPhase = phaseAtStep(nextStep);
+  const nextPlayer = activePlayerAtStep(nextStep);
+  const prevPhase = prevStep >= 0 ? phaseAtStep(prevStep) : null;
+  const prevPlayer = prevStep >= 0 ? activePlayerAtStep(prevStep) : null;
+
   return (
     <div className="page">
       <h1>Battle #{battle.id}</h1>
       {error && <p className="error">{error}</p>}
 
-      <div className="phase-banner">
-        <div className="phase-name">{battle.current_phase.toUpperCase()} PHASE</div>
-        <div className="muted">
-          Battle Round {battle.battle_round} — Player {battle.active_player}'s turn (step {battle.global_step})
+      <section className="battle-info">
+        <div className="battle-info-header">
+          <span className="battle-round">Battle Round {battle.battle_round}</span>
+          <span className="muted">Player {battle.active_player}'s turn</span>
         </div>
-        <button type="button" className="primary" onClick={handleAdvance}>
-          Advance Phase →
-        </button>
+        <div className="players">
+          {battle.players.map((p) => (
+            <div key={p.id} className="player-card">
+              <h3>Player {p.player_number}</h3>
+              <label>
+                CP Gained
+                <input
+                  type="number"
+                  value={p.cp_gained}
+                  onChange={(e) => handlePlayerChange(p.player_number, "cp_gained", Number(e.target.value))}
+                />
+              </label>
+              <label>
+                CP Spent
+                <input
+                  type="number"
+                  value={p.cp_spent}
+                  onChange={(e) => handlePlayerChange(p.player_number, "cp_spent", Number(e.target.value))}
+                />
+              </label>
+              <label>
+                VP
+                <input
+                  type="number"
+                  value={p.vp}
+                  onChange={(e) => handlePlayerChange(p.player_number, "vp", Number(e.target.value))}
+                />
+              </label>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <div className={`phase-banner phase-${battle.current_phase}`}>
+        <div className="phase-name">{battle.current_phase.toUpperCase()} PHASE</div>
+        <div className="muted">step {battle.global_step}</div>
+        <div className="phase-nav">
+          <button type="button" onClick={handleRetreat} disabled={prevStep < 0}>
+            {prevPhase
+              ? `← ${capitalize(prevPhase)}${prevPlayer !== battle.active_player ? ` (P${prevPlayer})` : ""}`
+              : "← Previous Phase"}
+          </button>
+          <button type="button" className="primary" onClick={handleAdvance}>
+            {capitalize(nextPhase)}
+            {nextPlayer !== battle.active_player ? ` (P${nextPlayer})` : ""} →
+          </button>
+        </div>
+        <div className="muted small">
+          Going back only moves the phase pointer — CP already granted and resource pools
+          already refilled/cleared crossing that boundary aren't undone.
+        </div>
       </div>
 
       <ul className="phase-checklist">
@@ -240,38 +328,6 @@ export function BattleTracker() {
           </ul>
         </div>
       )}
-
-      <section className="players">
-        {battle.players.map((p) => (
-          <div key={p.id} className="player-card">
-            <h3>Player {p.player_number}</h3>
-            <label>
-              CP Gained
-              <input
-                type="number"
-                value={p.cp_gained}
-                onChange={(e) => handlePlayerChange(p.player_number, "cp_gained", Number(e.target.value))}
-              />
-            </label>
-            <label>
-              CP Spent
-              <input
-                type="number"
-                value={p.cp_spent}
-                onChange={(e) => handlePlayerChange(p.player_number, "cp_spent", Number(e.target.value))}
-              />
-            </label>
-            <label>
-              VP
-              <input
-                type="number"
-                value={p.vp}
-                onChange={(e) => handlePlayerChange(p.player_number, "vp", Number(e.target.value))}
-              />
-            </label>
-          </div>
-        ))}
-      </section>
 
       {pools.length > 0 && (
         <section>
@@ -359,6 +415,25 @@ export function BattleTracker() {
                     const stats = u.unit_definition.stats;
                     const abilities = u.unit_definition.abilities;
                     const loadout = u.loadout;
+                    // Manually-added units (not from a BattleScribe import) never get a
+                    // chosen loadout -- fall back to the catalogue's full weapon list (no
+                    // counts, since we don't know what's actually equipped) rather than
+                    // showing nothing just because there's no confirmed loadout to join
+                    // against. Grouped by base name so a multi-mode weapon (strike/sweep)
+                    // still shows as one entry with both profiles, same as the loadout case.
+                    const hasLoadout = loadout.length > 0;
+                    const catalogueGroups = hasLoadout
+                      ? []
+                      : Array.from(
+                          u.unit_definition.weapons.reduce((map, w) => {
+                            const base = weaponBaseName(w.name);
+                            const arr = map.get(base) ?? [];
+                            arr.push(w);
+                            map.set(base, arr);
+                            return map;
+                          }, new Map<string, Weapon[]>()),
+                        );
+                    const weaponsCount = hasLoadout ? loadout.length : catalogueGroups.length;
                     const line = statLine(stats);
                     return (
                       <div key={u.id}>
@@ -374,9 +449,9 @@ export function BattleTracker() {
                               {expandedAbilities.has(u.id) ? "hide abilities" : `abilities (${abilities.length})`}
                             </button>
                           )}
-                          {loadout.length > 0 && (
+                          {weaponsCount > 0 && (
                             <button type="button" className="link-button" onClick={() => toggleWeapons(u.id)}>
-                              {expandedWeapons.has(u.id) ? "hide weapons" : `weapons (${loadout.length})`}
+                              {expandedWeapons.has(u.id) ? "hide weapons" : `weapons (${weaponsCount})`}
                             </button>
                           )}
                         </div>
@@ -389,23 +464,46 @@ export function BattleTracker() {
                             ))}
                           </ul>
                         )}
-                        {expandedWeapons.has(u.id) && (
+                        {expandedWeapons.has(u.id) && hasLoadout && (
                           <ul className="ability-list">
                             {loadout.map((item) => {
-                              const weapon = u.unit_definition.weapons.find((w) => w.name === item.name);
+                              // A weapon with multiple firing modes (strike/sweep etc.) has
+                              // more than one catalogue profile for one loadout item -- show
+                              // every matching mode, not just the first.
+                              const matches = u.unit_definition.weapons.filter(
+                                (w) => weaponBaseName(w.name) === item.name,
+                              );
                               return (
                                 <li key={item.name}>
                                   <strong>
                                     {item.count}x {item.name}
                                   </strong>
-                                  {weapon ? (
-                                    <span className="stat-line"> {weaponLine(weapon)}</span>
-                                  ) : (
-                                    <span className="muted"> profile not indexed</span>
-                                  )}
+                                  {matches.length === 0 && <span className="muted"> profile not indexed</span>}
+                                  {matches.map((w) => (
+                                    <div key={w.name} className="stat-line">
+                                      {matches.length > 1 ? `${w.name.replace(/^➤\s*/, "")}: ` : ""}
+                                      {weaponLine(w)}
+                                    </div>
+                                  ))}
                                 </li>
                               );
                             })}
+                          </ul>
+                        )}
+                        {expandedWeapons.has(u.id) && !hasLoadout && (
+                          <ul className="ability-list">
+                            <li className="muted">No chosen loadout on this roster — showing catalogue options.</li>
+                            {catalogueGroups.map(([base, profiles]) => (
+                              <li key={base}>
+                                <strong>{base}</strong>
+                                {profiles.map((w) => (
+                                  <div key={w.name} className="stat-line">
+                                    {profiles.length > 1 ? `${w.name.replace(/^➤\s*/, "")}: ` : ""}
+                                    {weaponLine(w)}
+                                  </div>
+                                ))}
+                              </li>
+                            ))}
                           </ul>
                         )}
                       </div>

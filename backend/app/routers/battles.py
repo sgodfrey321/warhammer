@@ -260,6 +260,19 @@ def _to_out(battle: BattleSession, session: Session) -> BattleOut:
     )
 
 
+@router.get("", response_model=list[BattleOut])
+def list_battles(roster_id: Optional[int] = None, session: Session = Depends(get_session)):
+    """The database has always persisted every battle (SQLite, durable across restarts) --
+    what was missing was any way to find one again without already knowing its id. Filter
+    by roster_id for "which battles has this roster played" (a roster can have more than
+    one, e.g. replaying the same list); omit it to list every battle."""
+    query = select(BattleSession)
+    if roster_id is not None:
+        query = query.where(BattleSession.roster_id == roster_id)
+    battles = session.exec(query.order_by(BattleSession.started_at.desc())).all()
+    return [_to_out(b, session) for b in battles]
+
+
 @router.post("", response_model=BattleOut)
 def create_battle(payload: BattleCreate, session: Session = Depends(get_session)):
     battle = BattleSession(roster_id=payload.roster_id)
@@ -334,6 +347,30 @@ def advance_phase(battle_id: int, session: Session = Depends(get_session)):
                     state = _get_or_create_pool_state(session, battle_id, pool, owner)
                     state.current_value = pool.max_value
                     session.add(state)
+
+    session.commit()
+    session.refresh(battle)
+    return _to_out(battle, session)
+
+
+@router.patch("/{battle_id}/retreat-phase", response_model=BattleOut)
+def retreat_phase(battle_id: int, session: Session = Depends(get_session)):
+    """Steps global_step back by one, for correcting a misclick -- not a true undo.
+
+    CP grants and DeclaredStatePool refill/clear that happened crossing that boundary
+    forward are NOT reversed (stacking pool entries cleared going forward are gone for
+    good; CP already granted stays granted). Both are already freely human-editable
+    (CP via the player fields, pools via spend/add) if a retreat leaves them looking
+    wrong -- matches the app's "bookkeeping, not a rules engine" philosophy.
+    """
+    battle = _get_battle_or_404(battle_id, session)
+    if battle.global_step == 0:
+        raise HTTPException(status_code=422, detail="Already at the start of the battle")
+    battle.global_step -= 1
+    session.add(battle)
+    session.commit()
+    session.refresh(battle)
+    return _to_out(battle, session)
 
     session.commit()
     session.refresh(battle)

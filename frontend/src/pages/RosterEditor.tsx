@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../api";
 import { UnitAutocomplete } from "../components/UnitAutocomplete";
 import { PHASES, POOL_SCOPES } from "../types";
-import type { DeclaredStatePool, Roster, UnitAttachment, UnitOut, UnitSynergy } from "../types";
+import type { BattleOut, DeclaredStatePool, Roster, UnitAttachment, UnitOut, UnitSynergy } from "../types";
 
 export function RosterEditor() {
   const { id } = useParams();
@@ -15,6 +15,7 @@ export function RosterEditor() {
   const [synergies, setSynergies] = useState<UnitSynergy[]>([]);
   const [pools, setPools] = useState<DeclaredStatePool[]>([]);
   const [attachments, setAttachments] = useState<UnitAttachment[]>([]);
+  const [battles, setBattles] = useState<BattleOut[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const [sourceUnitId, setSourceUnitId] = useState<number | "">("");
@@ -36,6 +37,7 @@ export function RosterEditor() {
     api.listSynergies(rosterId).then(setSynergies).catch((e) => setError(String(e)));
     api.listPools(rosterId).then(setPools).catch((e) => setError(String(e)));
     api.listAttachments(rosterId).then(setAttachments).catch((e) => setError(String(e)));
+    api.listBattlesForRoster(rosterId).then(setBattles).catch((e) => setError(String(e)));
   }
 
   useEffect(refresh, [rosterId]);
@@ -153,6 +155,20 @@ export function RosterEditor() {
       <button type="button" onClick={handleStartBattle} className="primary">
         Start Battle
       </button>
+
+      {battles.length > 0 && (
+        <div className="battle-history">
+          <span className="muted">Previous battles: </span>
+          {battles.map((b, i) => (
+            <span key={b.id}>
+              {i > 0 && ", "}
+              <Link to={`/battles/${b.id}`}>
+                #{b.id} (Round {b.battle_round}, {b.current_phase})
+              </Link>
+            </span>
+          ))}
+        </div>
+      )}
 
       <section>
         <h2>Units</h2>
