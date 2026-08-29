@@ -30,16 +30,25 @@ def build_library_index(catalogue_cache: RepoCache) -> dict[str, dict]:
     )
 
 
+def build_profile_index(catalogue_cache: RepoCache) -> dict[str, dict]:
+    """Fetch + merge every shared library's sharedProfiles once, reused across all factions --
+    see catalogue.py's _info_link_stats for why this is needed alongside build_library_index."""
+    return catalogue.build_global_profile_index(
+        lambda stem: catalogue.load_json(catalogue_cache.get(f"{stem}.json"))
+    )
+
+
 def build_faction(
     faction_stem: str,
     catalogue_cache: RepoCache,
     library_index: dict[str, dict],
+    profile_index: dict[str, dict],
     mfm_cache: RepoCache,
     *,
     available_mfm_slugs: set[str],
 ) -> BuildReport:
     faction_doc = catalogue.load_json(catalogue_cache.get(f"{faction_stem}.json"))
-    resolved_entries = catalogue.resolve_faction(faction_doc, library_index)
+    resolved_entries = catalogue.resolve_faction(faction_doc, library_index, profile_index)
 
     report = BuildReport(faction=faction_stem)
     slug, guessed = faction_map.resolve(faction_stem, available_mfm_slugs)
@@ -71,6 +80,7 @@ def build_faction(
                 is_legends=is_legends,
                 stats=entry.stats,
                 abilities=entry.abilities,
+                weapons=entry.weapons,
                 points=list(mfm_unit.points) if mfm_unit else [],
                 mfm_matched=mfm_unit is not None,
                 source_catalogue_id=entry.entrylink_id,

@@ -109,6 +109,11 @@ ul {
   font-weight: 600;
 }
 
+.loadout-summary {
+  font-size: 0.85em;
+  margin-top: 0.2rem;
+}
+
 .unit-points {
   color: var(--accent2);
   margin-left: 0.5rem;
@@ -221,6 +226,101 @@ section {
 
 .synergy-banner ul {
   margin: 0.3rem 0 0;
+}
+
+.phase-checklist {
+  list-style: disc;
+  padding-left: 1.4rem;
+  color: var(--muted);
+  font-size: 0.9em;
+  margin: 0.5rem 0 1rem;
+}
+
+.phase-checklist li {
+  margin: 0.2rem 0;
+}
+
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85em;
+  margin-left: 0.6rem;
+}
+
+.checkbox-label input {
+  width: auto;
+}
+
+.pool-list li,
+.turn-state-list li {
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.turn-state-list li.unit-group {
+  border: 1px solid var(--accent2);
+  border-radius: 6px;
+  padding: 0.6rem 0.8rem;
+  margin: 0.4rem 0;
+}
+
+.unit-group-label {
+  font-size: 0.75em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent2);
+  margin-bottom: 0.3rem;
+}
+
+.pool-entries {
+  display: inline-flex;
+  gap: 0.3rem;
+  margin: 0 0.5rem;
+}
+
+.warning {
+  color: var(--accent);
+  font-size: 0.85em;
+  margin-top: 0.3rem;
+}
+
+.unit-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.35rem;
+}
+
+.stat-line {
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.82em;
+  color: var(--accent2);
+}
+
+.ability-list {
+  list-style: none;
+  padding: 0.5rem 0.75rem;
+  margin: 0 0 0.5rem;
+  background: #10121a;
+  border-left: 2px solid var(--border);
+  font-size: 0.85em;
+  color: var(--muted);
+}
+
+.ability-list li {
+  margin: 0.3rem 0;
+}
+
+.ability-list strong {
+  color: var(--text);
+}
+
+.ability-keyword {
+  color: var(--accent2);
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
 }
 
 .players {

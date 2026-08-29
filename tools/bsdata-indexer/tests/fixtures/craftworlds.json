@@ -40,6 +40,41 @@
         "hidden": false,
         "type": "selectionEntry",
         "targetId": "target-does-not-exist"
+      },
+      {
+        "id": "entrylink-dire-avengers",
+        "name": "Dire Avengers",
+        "hidden": false,
+        "type": "selectionEntry",
+        "targetId": "target-dire-avengers"
+      },
+      {
+        "id": "entrylink-guardian-defenders",
+        "name": "Guardian Defenders",
+        "hidden": false,
+        "type": "selectionEntry",
+        "targetId": "target-guardian-defenders"
+      },
+      {
+        "id": "entrylink-detachment",
+        "name": "Detachment",
+        "hidden": false,
+        "type": "selectionEntry",
+        "targetId": "target-detachment"
+      },
+      {
+        "id": "entrylink-windriders",
+        "name": "Windriders",
+        "hidden": false,
+        "type": "selectionEntry",
+        "targetId": "target-windriders"
+      },
+      {
+        "id": "entrylink-warlock",
+        "name": "Warlock",
+        "hidden": false,
+        "type": "selectionEntry",
+        "targetId": "target-warlock"
       }
     ]
   }

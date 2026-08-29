@@ -23,6 +23,9 @@ class UnitDefinition(SQLModel, table=True):
     source_catalogue_id: str
     source_entry_id: str
     is_legends: bool = False
+    stats: dict[str, str] = Field(default_factory=dict, sa_column=Column(JSON))
+    abilities: list[dict] = Field(default_factory=list, sa_column=Column(JSON))
+    weapons: list[dict] = Field(default_factory=list, sa_column=Column(JSON))
 
 
 class Roster(SQLModel, table=True):
@@ -44,6 +47,7 @@ class Unit(SQLModel, table=True):
     unit_definition_id: str = Field(foreign_key="unitdefinition.id")
     quantity: int = 1
     notes: Optional[str] = None
+    loadout: list[dict] = Field(default_factory=list, sa_column=Column(JSON))  # [{"name","count"}], import-only
 
 
 class UnitSynergy(SQLModel, table=True):
@@ -53,6 +57,18 @@ class UnitSynergy(SQLModel, table=True):
     target_unit_id: int = Field(foreign_key="unit.id")
     trigger_phase: str
     note: Optional[str] = None
+
+
+class UnitAttachment(SQLModel, table=True):
+    """A Character attached to its bodyguard unit -- they act as one combined unit for
+    movement/shooting/charging/fighting (see BattleTracker's grouped Unit Turn States).
+    A led unit can have more than one leader (e.g. two characters both leading one
+    squad); a leader normally leads exactly one unit, but that's not DB-enforced here."""
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    roster_id: int = Field(foreign_key="roster.id")
+    leader_unit_id: int = Field(foreign_key="unit.id")
+    led_unit_id: int = Field(foreign_key="unit.id")
 
 
 class BattleSession(SQLModel, table=True):
@@ -91,4 +107,50 @@ class UnitTurnState(SQLModel, table=True):
     has_shot: bool = False
     has_charged: bool = False
     has_fought: bool = False
+    is_fights_first: bool = False  # informational tag only -- no activation-order enforcement
     flags: list[str] = Field(default_factory=list, sa_column=Column(JSON))
+
+
+class DeclaredStatePool(SQLModel, table=True):
+    """Definition of a roster-level resource pool (Battle Focus tokens, Blessings of
+    Khorne, etc.) -- roster-scoped, same tier as UnitSynergy. Not faction/indexer-derived
+    (nothing upstream produces this data yet); the player declares it on their own roster."""
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    roster_id: int = Field(foreign_key="roster.id")
+    name: str
+    max_value: int
+    scope: str  # "phase" | "turn" | "battle_round"
+    stacking: bool = False
+
+
+class DeclaredStatePoolState(SQLModel, table=True):
+    """Runtime value for a non-stacking pool: one row per (battle, pool, owning player)."""
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    battle_session_id: int = Field(foreign_key="battlesession.id")
+    pool_id: int = Field(foreign_key="declaredstatepool.id")
+    owner_player: int
+    current_value: int = 0
+
+
+class DeclaredStatePoolEntry(SQLModel, table=True):
+    """One accumulated instance for a stacking pool (e.g. one Blessings of Khorne roll)."""
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    battle_session_id: int = Field(foreign_key="battlesession.id")
+    pool_id: int = Field(foreign_key="declaredstatepool.id")
+    owner_player: int
+    value: int
+    created_at_step: int
+
+
+class SynergyAcknowledgment(SQLModel, table=True):
+    """Marks a UnitSynergy reminder dismissed for one specific phase instance (= one
+    global_step). Reappears automatically next time that phase is entered, since a new
+    instance has a different step -- no explicit reset needed."""
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    battle_session_id: int = Field(foreign_key="battlesession.id")
+    synergy_id: int = Field(foreign_key="unitsynergy.id")
+    step: int

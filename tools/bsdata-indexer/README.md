@@ -137,11 +137,40 @@ Runs entirely against small hand-trimmed fixtures in `tests/fixtures/` — no ne
 
 ## Known gaps (v1)
 
-- `sharedSelectionEntryGroups` (option groups, e.g. wargear choices) aren't resolved into —
-  only `sharedSelectionEntries`. SPEC.md flagged this shape as a possible gap; still unhandled.
-  Weapon profiles (Ranged/Melee Weapons-typed profiles) live under these for units with wargear
-  options, so they aren't captured yet either — only the top-level "Unit" stats and
-  "Abilities"-typed profiles embedded directly on the resolved entry are.
+- **Squad stats now resolve for every Aeldari unit checked (102/102)** — was 68/104 originally,
+  36 empty. Two distinct gaps, both fixed:
+  - A squad's own catalogue entry usually has no top-level `"Unit"` profile — the base model's
+    stat line lives one level down, in a nested `selectionEntry` (either directly under the
+    entry's own `selectionEntries`, e.g. Guardian Defenders → "Guardian Defender", or inside
+    `selectionEntryGroups[].selectionEntries`, e.g. Dire Avengers → group "4-9 Dire Avengers" →
+    "Dire Avenger"). `catalogue._nested_unit_stats()` handles both shapes, taking the first
+    nested model with a stat line as the squad's baseline (the rank-and-file model is listed
+    before upgrade options like an Exarch in every case checked).
+  - Some entries (nested or top-level) don't embed a `"Unit"` profile at all — they reference
+    one in the catalogue's separate `sharedProfiles` pool via `infoLinks[type == "profile"]`
+    instead. Confirmed on Windriders (each weapon-loadout variant links to one shared
+    "Windriders" profile) and Warlock (a single-model entry linking directly, no nesting
+    involved). `catalogue._info_link_stats()` resolves this, backed by a `build_profile_index()`
+    merged the same way as the existing library entry index.
+  - Both are heuristics/best-effort against real data actually inspected, not schema
+    guarantees — a future faction could still use a shape not yet seen. Check a faction's
+    output for `"stats": {}` before trusting a unit's stat line is populated.
+- **Weapon profiles now populate `UnitDefinition.weapons`** — `catalogue._weapon_profiles()`
+  recursively collects every `"Ranged Weapons"`/`"Melee Weapons"`-typed profile reachable from
+  a unit's own subtree (embedded directly, via `entryLinks`, or via `infoLinks` into
+  `sharedProfiles` — the same three resolution paths as the stats fix above), deduped by
+  weapon name. This is deliberately the *set of weapons a unit is associated with* (a Dire
+  Avenger squad's Exarch options — Diresword, Power Glaive — all show up together), not a
+  chosen loadout; a specific roster's actual equipped weapons are separate, roster-instance
+  data (see `backend/app/battlescribe_import.py`'s `ParsedEntry.loadout`). Real coverage:
+  95/102 Aeldari, 58/64 World Eaters units got at least one weapon; the remaining ~7% (mostly
+  named Crucible-of-Battle/narrative cards and a couple of Character entries) use some other
+  shape not yet identified — same caveat as the stats heuristics above.
+- Two catalogue-config entries per faction (roughly) resolve to real targets but aren't actual
+  units — a `"Detachment"` picker, a `"Battle Focus - Agile Manoeuvres"`-style faction rule —
+  and were leaking into `units[]` looking like empty, unmatched real units. Fixed by checking
+  the resolved target's own `type` field (must be `"unit"` or `"model"`, not `"upgrade"`) —
+  see `resolve_faction`'s docstring for how this was confirmed against real data.
 - Abilities only capture what's embedded directly on the unit's own entry. Universal/core rules
   referenced via `infoLinks` (e.g. Wraithlord's "Feel No Pain" — a `type: "rule"` link, not an
   embedded profile) aren't resolved: they live in the `sharedRules` pool, and for the units

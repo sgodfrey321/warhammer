@@ -32,13 +32,20 @@ def make_library_index(monkeypatch, catalogue_cache):
     return build.build_library_index(catalogue_cache)
 
 
+def make_profile_index(monkeypatch, catalogue_cache):
+    monkeypatch.setattr(build.catalogue, "LIBRARY_FILENAMES", ["Aeldari - Aeldari Library"])
+    return build.build_profile_index(catalogue_cache)
+
+
 def test_build_faction_joins_catalogue_and_mfm(monkeypatch):
     catalogue_cache, mfm_cache = make_caches()
     library_index = make_library_index(monkeypatch, catalogue_cache)
+    profile_index = make_profile_index(monkeypatch, catalogue_cache)
     report = build.build_faction(
         "Aeldari - Craftworlds",
         catalogue_cache,
         library_index,
+        profile_index,
         mfm_cache,
         available_mfm_slugs={"aeldari"},
     )
@@ -48,7 +55,26 @@ def test_build_faction_joins_catalogue_and_mfm(monkeypatch):
     assert report.unresolved_entrylinks == ["Totally New Unit"]
 
     units = {u.name: u for u in report.units}
-    assert set(units) == {"Wraithlord", "Wave Serpent", "Autarch Skyrunner [Legends]"}
+    assert set(units) == {
+        "Wraithlord",
+        "Wave Serpent",
+        "Autarch Skyrunner [Legends]",
+        "Dire Avengers",
+        "Guardian Defenders",
+        "Windriders",
+        "Warlock",
+    }
+    # "Detachment" (type: "upgrade", a config picker with no stat line) must not appear
+    # as if it were a real, empty-stats unit.
+    assert "Detachment" not in units
+
+    # Windriders/Warlock resolve their stats via a shared-profile infoLink, not an
+    # embedded "Unit" profile -- confirms build_faction actually wires profile_index through.
+    assert units["Windriders"].stats["M"] == '14"'
+    assert units["Warlock"].stats["M"] == '6"'
+
+    dire_avenger_weapons = {w.name for w in units["Dire Avengers"].weapons}
+    assert dire_avenger_weapons == {"Close Combat Weapon", "Avenger shuriken catapult"}
 
     wraithlord = units["Wraithlord"]
     assert wraithlord.mfm_matched is True
@@ -66,10 +92,12 @@ def test_build_faction_joins_catalogue_and_mfm(monkeypatch):
 def test_build_faction_unmapped_slug_flags_every_unit_unmatched(monkeypatch):
     catalogue_cache, mfm_cache = make_caches()
     library_index = make_library_index(monkeypatch, catalogue_cache)
+    profile_index = make_profile_index(monkeypatch, catalogue_cache)
     report = build.build_faction(
         "Aeldari - Craftworlds",
         catalogue_cache,
         library_index,
+        profile_index,
         mfm_cache,
         available_mfm_slugs=set(),  # simulate no MFM data available at all
     )
@@ -81,10 +109,12 @@ def test_build_faction_unmapped_slug_flags_every_unit_unmatched(monkeypatch):
 def test_emit_is_deterministic_and_git_diffable(monkeypatch, tmp_path):
     catalogue_cache, mfm_cache = make_caches()
     library_index = make_library_index(monkeypatch, catalogue_cache)
+    profile_index = make_profile_index(monkeypatch, catalogue_cache)
     report = build.build_faction(
         "Aeldari - Craftworlds",
         catalogue_cache,
         library_index,
+        profile_index,
         mfm_cache,
         available_mfm_slugs={"aeldari"},
     )

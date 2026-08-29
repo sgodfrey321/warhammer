@@ -5,7 +5,7 @@ import logging
 from pathlib import Path
 
 from . import faction_map
-from .build import BSDATA_ORG, CATALOGUE_REPO, MFM_REPO, build_faction, build_library_index, emit
+from .build import BSDATA_ORG, CATALOGUE_REPO, MFM_REPO, build_faction, build_library_index, build_profile_index, emit
 from .enrichment import pipeline as enrichment_pipeline
 from .enrichment import tier2
 from .fetch import RepoCache
@@ -68,6 +68,7 @@ def main(argv: list[str] | None = None) -> int:
 
     available_slugs = _mfm_slugs(mfm_cache)
     library_index = build_library_index(catalogue_cache)
+    profile_index = build_profile_index(catalogue_cache)
 
     enrich_client = None
     if args.enrich:
@@ -85,7 +86,12 @@ def main(argv: list[str] | None = None) -> int:
     for stem in stems:
         try:
             report = build_faction(
-                stem, catalogue_cache, library_index, mfm_cache, available_mfm_slugs=available_slugs
+                stem,
+                catalogue_cache,
+                library_index,
+                profile_index,
+                mfm_cache,
+                available_mfm_slugs=available_slugs,
             )
         except Exception as exc:  # noqa: BLE001 - per-faction isolation for a batch CLI run
             logger.error("%s: FAILED - %s", stem, exc)

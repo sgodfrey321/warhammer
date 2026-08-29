@@ -40,6 +40,9 @@ def import_faction_file(path: Path, session: Session) -> int:
             source_catalogue_id=unit["source_catalogue_id"],
             source_entry_id=unit["source_entry_id"],
             is_legends=unit.get("is_legends", False),
+            stats=unit.get("stats", {}),
+            abilities=unit.get("abilities", []),
+            weapons=unit.get("weapons", []),
         )
         if existing is None:
             session.add(UnitDefinition(id=unit["source_entry_id"], **fields))

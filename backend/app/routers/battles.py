@@ -8,7 +8,18 @@ from sqlmodel import Session, select
 
 from .. import phases
 from ..db import get_session
-from ..models import ActiveEffect, BattleSession, PlayerState, Unit, UnitSynergy, UnitTurnState
+from ..models import (
+    ActiveEffect,
+    BattleSession,
+    DeclaredStatePool,
+    DeclaredStatePoolEntry,
+    DeclaredStatePoolState,
+    PlayerState,
+    SynergyAcknowledgment,
+    Unit,
+    UnitSynergy,
+    UnitTurnState,
+)
 
 router = APIRouter(prefix="/battles", tags=["battles"])
 
@@ -35,7 +46,17 @@ class TurnStateUpdate(BaseModel):
     has_shot: Optional[bool] = None
     has_charged: Optional[bool] = None
     has_fought: Optional[bool] = None
+    is_fights_first: Optional[bool] = None
     flags: Optional[list[str]] = None
+
+
+class PoolSpend(BaseModel):
+    amount: int = 1
+
+
+class PoolAdd(BaseModel):
+    owner_player: int
+    value: int
 
 
 class ActiveEffectOut(BaseModel):
@@ -46,6 +67,39 @@ class ActiveEffectOut(BaseModel):
     created_at_step: int
     lifts_restriction: Optional[str]
     expired: bool
+
+
+class TurnStateOut(BaseModel):
+    id: int
+    unit_id: int
+    battle_round: int
+    turn_owner: int
+    move_type: Optional[str]
+    has_shot: bool
+    has_charged: bool
+    has_fought: bool
+    is_fights_first: bool
+    flags: list[str]
+    eligibility_warning: Optional[str]
+
+
+class PoolStateOut(BaseModel):
+    pool_id: int
+    name: str
+    max_value: int
+    scope: str
+    owner_player: int
+    current_value: int
+
+
+class PoolEntryOut(BaseModel):
+    id: int
+    pool_id: int
+    name: str
+    scope: str
+    owner_player: int
+    value: int
+    created_at_step: int
 
 
 class BattleOut(BaseModel):
@@ -59,6 +113,9 @@ class BattleOut(BaseModel):
     players: list[PlayerState]
     effects: list[ActiveEffectOut]
     active_synergies: list[UnitSynergy]
+    turn_states: list[TurnStateOut]
+    pool_states: list[PoolStateOut]
+    pool_entries: list[PoolEntryOut]
 
 
 def _get_battle_or_404(battle_id: int, session: Session) -> BattleSession:
@@ -68,17 +125,32 @@ def _get_battle_or_404(battle_id: int, session: Session) -> BattleSession:
     return battle
 
 
+def _to_turn_state_out(state: UnitTurnState) -> TurnStateOut:
+    return TurnStateOut(
+        id=state.id,
+        unit_id=state.unit_id,
+        battle_round=state.battle_round,
+        turn_owner=state.turn_owner,
+        move_type=state.move_type,
+        has_shot=state.has_shot,
+        has_charged=state.has_charged,
+        has_fought=state.has_fought,
+        is_fights_first=state.is_fights_first,
+        flags=state.flags,
+        eligibility_warning=phases.eligibility_warning(
+            move_type=state.move_type, has_shot=state.has_shot, has_charged=state.has_charged
+        ),
+    )
+
+
 def _to_out(battle: BattleSession, session: Session) -> BattleOut:
     step = battle.global_step
     phase = phases.current_phase(step)
+    round_ = phases.battle_round(step)
 
-    players = session.exec(
-        select(PlayerState).where(PlayerState.battle_session_id == battle.id)
-    ).all()
+    players = session.exec(select(PlayerState).where(PlayerState.battle_session_id == battle.id)).all()
 
-    effects = session.exec(
-        select(ActiveEffect).where(ActiveEffect.battle_session_id == battle.id)
-    ).all()
+    effects = session.exec(select(ActiveEffect).where(ActiveEffect.battle_session_id == battle.id)).all()
     effects_out = [
         ActiveEffectOut(
             id=e.id,
@@ -99,24 +171,92 @@ def _to_out(battle: BattleSession, session: Session) -> BattleOut:
 
     active_synergies: list[UnitSynergy] = []
     if battle.roster_id is not None:
-        active_synergies = session.exec(
-            select(UnitSynergy).where(
-                UnitSynergy.roster_id == battle.roster_id,
-                UnitSynergy.trigger_phase == phase,
+        acknowledged_ids = {
+            a.synergy_id
+            for a in session.exec(
+                select(SynergyAcknowledgment).where(
+                    SynergyAcknowledgment.battle_session_id == battle.id,
+                    SynergyAcknowledgment.step == step,
+                )
+            ).all()
+        }
+        active_synergies = [
+            s
+            for s in session.exec(
+                select(UnitSynergy).where(
+                    UnitSynergy.roster_id == battle.roster_id,
+                    UnitSynergy.trigger_phase == phase,
+                )
+            ).all()
+            if s.id not in acknowledged_ids
+        ]
+
+    turn_states = session.exec(
+        select(UnitTurnState).where(
+            UnitTurnState.battle_session_id == battle.id,
+            UnitTurnState.battle_round == round_,
+        )
+    ).all()
+
+    pools: list[DeclaredStatePool] = []
+    if battle.roster_id is not None:
+        pools = session.exec(select(DeclaredStatePool).where(DeclaredStatePool.roster_id == battle.roster_id)).all()
+    pools_by_id = {p.id: p for p in pools}
+
+    pool_states_out: list[PoolStateOut] = []
+    pool_entries_out: list[PoolEntryOut] = []
+    if pools:
+        pool_ids = list(pools_by_id)
+        for state in session.exec(
+            select(DeclaredStatePoolState).where(
+                DeclaredStatePoolState.battle_session_id == battle.id,
+                DeclaredStatePoolState.pool_id.in_(pool_ids),
             )
-        ).all()
+        ).all():
+            pool = pools_by_id[state.pool_id]
+            pool_states_out.append(
+                PoolStateOut(
+                    pool_id=pool.id,
+                    name=pool.name,
+                    max_value=pool.max_value,
+                    scope=pool.scope,
+                    owner_player=state.owner_player,
+                    current_value=state.current_value,
+                )
+            )
+        for entry in session.exec(
+            select(DeclaredStatePoolEntry).where(
+                DeclaredStatePoolEntry.battle_session_id == battle.id,
+                DeclaredStatePoolEntry.pool_id.in_(pool_ids),
+            )
+        ).all():
+            pool = pools_by_id[entry.pool_id]
+            pool_entries_out.append(
+                PoolEntryOut(
+                    id=entry.id,
+                    pool_id=pool.id,
+                    name=pool.name,
+                    scope=pool.scope,
+                    owner_player=entry.owner_player,
+                    value=entry.value,
+                    created_at_step=entry.created_at_step,
+                )
+            )
 
     return BattleOut(
         id=battle.id,
         started_at=battle.started_at.isoformat(),
         roster_id=battle.roster_id,
         global_step=step,
-        battle_round=phases.battle_round(step),
+        battle_round=round_,
         active_player=phases.active_player(step),
         current_phase=phase,
         players=players,
         effects=effects_out,
         active_synergies=active_synergies,
+        turn_states=[_to_turn_state_out(s) for s in turn_states],
+        pool_states=pool_states_out,
+        pool_entries=pool_entries_out,
     )
 
 
@@ -140,11 +280,61 @@ def get_battle(battle_id: int, session: Session = Depends(get_session)):
     return _to_out(battle, session)
 
 
+def _get_or_create_pool_state(
+    session: Session, battle_id: int, pool: DeclaredStatePool, owner_player: int
+) -> DeclaredStatePoolState:
+    """A pool starts full the first time it's referenced in a battle -- a Battle Focus
+    pool is available from turn 1, not empty until the first round boundary refills it."""
+    state = session.exec(
+        select(DeclaredStatePoolState).where(
+            DeclaredStatePoolState.battle_session_id == battle_id,
+            DeclaredStatePoolState.pool_id == pool.id,
+            DeclaredStatePoolState.owner_player == owner_player,
+        )
+    ).first()
+    if state is None:
+        state = DeclaredStatePoolState(
+            battle_session_id=battle_id, pool_id=pool.id, owner_player=owner_player, current_value=pool.max_value
+        )
+    return state
+
+
 @router.patch("/{battle_id}/advance-phase", response_model=BattleOut)
 def advance_phase(battle_id: int, session: Session = Depends(get_session)):
     battle = _get_battle_or_404(battle_id, session)
-    battle.global_step += 1
+    old_step = battle.global_step
+    transition = phases.transition_type(old_step)
+    battle.global_step = old_step + 1
     session.add(battle)
+
+    if phases.current_phase(battle.global_step) == "command":
+        # Both players gain Core CP every Command phase instance (once per player turn,
+        # so twice per round) -- not a once-per-round grant.
+        for player in session.exec(select(PlayerState).where(PlayerState.battle_session_id == battle_id)).all():
+            player.cp_gained += 1
+            session.add(player)
+
+    if battle.roster_id is not None:
+        ending = phases.scopes_ending(transition)
+        pools = session.exec(select(DeclaredStatePool).where(DeclaredStatePool.roster_id == battle.roster_id)).all()
+        for pool in pools:
+            if pool.scope not in ending:
+                continue
+            if pool.stacking:
+                entries = session.exec(
+                    select(DeclaredStatePoolEntry).where(
+                        DeclaredStatePoolEntry.battle_session_id == battle_id,
+                        DeclaredStatePoolEntry.pool_id == pool.id,
+                    )
+                ).all()
+                for entry in entries:
+                    session.delete(entry)
+            else:
+                for owner in (1, 2):
+                    state = _get_or_create_pool_state(session, battle_id, pool, owner)
+                    state.current_value = pool.max_value
+                    session.add(state)
+
     session.commit()
     session.refresh(battle)
     return _to_out(battle, session)
@@ -197,7 +387,66 @@ def dismiss_effect(battle_id: int, effect_id: int, session: Session = Depends(ge
     return _to_out(battle, session)
 
 
-@router.patch("/{battle_id}/units/{unit_id}/turn-state", response_model=UnitTurnState)
+@router.post("/{battle_id}/synergies/{synergy_id}/acknowledge", response_model=BattleOut)
+def acknowledge_synergy(battle_id: int, synergy_id: int, session: Session = Depends(get_session)):
+    battle = _get_battle_or_404(battle_id, session)
+    synergy = session.get(UnitSynergy, synergy_id)
+    if synergy is None:
+        raise HTTPException(status_code=404, detail="Synergy not found")
+    ack = session.exec(
+        select(SynergyAcknowledgment).where(
+            SynergyAcknowledgment.battle_session_id == battle_id,
+            SynergyAcknowledgment.synergy_id == synergy_id,
+        )
+    ).first()
+    if ack is None:
+        ack = SynergyAcknowledgment(battle_session_id=battle_id, synergy_id=synergy_id, step=battle.global_step)
+    else:
+        ack.step = battle.global_step
+    session.add(ack)
+    session.commit()
+    return _to_out(battle, session)
+
+
+@router.post("/{battle_id}/pools/{pool_id}/spend", response_model=BattleOut)
+def spend_pool(battle_id: int, pool_id: int, payload: PoolSpend, session: Session = Depends(get_session)):
+    battle = _get_battle_or_404(battle_id, session)
+    pool = session.get(DeclaredStatePool, pool_id)
+    if pool is None or pool.roster_id != battle.roster_id:
+        raise HTTPException(status_code=404, detail="Pool not found on this battle's roster")
+    if pool.stacking:
+        raise HTTPException(status_code=422, detail="Stacking pools use /add, not /spend")
+
+    spender = phases.active_player(battle.global_step)
+    state = _get_or_create_pool_state(session, battle_id, pool, spender)
+    state.current_value = max(0, state.current_value - payload.amount)
+    session.add(state)
+    session.commit()
+    return _to_out(battle, session)
+
+
+@router.post("/{battle_id}/pools/{pool_id}/add", response_model=BattleOut)
+def add_pool_entry(battle_id: int, pool_id: int, payload: PoolAdd, session: Session = Depends(get_session)):
+    battle = _get_battle_or_404(battle_id, session)
+    pool = session.get(DeclaredStatePool, pool_id)
+    if pool is None or pool.roster_id != battle.roster_id:
+        raise HTTPException(status_code=404, detail="Pool not found on this battle's roster")
+    if not pool.stacking:
+        raise HTTPException(status_code=422, detail="Non-stacking pools use /spend, not /add")
+
+    entry = DeclaredStatePoolEntry(
+        battle_session_id=battle_id,
+        pool_id=pool_id,
+        owner_player=payload.owner_player,
+        value=payload.value,
+        created_at_step=battle.global_step,
+    )
+    session.add(entry)
+    session.commit()
+    return _to_out(battle, session)
+
+
+@router.patch("/{battle_id}/units/{unit_id}/turn-state", response_model=TurnStateOut)
 def update_turn_state(
     battle_id: int, unit_id: int, payload: TurnStateUpdate, session: Session = Depends(get_session)
 ):
@@ -228,4 +477,4 @@ def update_turn_state(
     session.add(state)
     session.commit()
     session.refresh(state)
-    return state
+    return _to_turn_state_out(state)

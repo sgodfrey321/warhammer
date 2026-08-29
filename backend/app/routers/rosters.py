@@ -8,9 +8,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
-from .. import battlescribe_import
+from .. import battlescribe_import, phases
 from ..db import get_session
-from ..models import Roster, Unit, UnitDefinition, UnitSynergy
+from ..models import DeclaredStatePool, Roster, Unit, UnitAttachment, UnitDefinition, UnitSynergy
 
 router = APIRouter(prefix="/rosters", tags=["rosters"])
 
@@ -21,6 +21,7 @@ class UnitOut(BaseModel):
     unit_definition_id: str
     quantity: int
     notes: Optional[str]
+    loadout: list[dict]
     unit_definition: UnitDefinition
 
 
@@ -58,10 +59,23 @@ class SynergyCreate(BaseModel):
     note: Optional[str] = None
 
 
+class PoolCreate(BaseModel):
+    name: str
+    max_value: int
+    scope: str
+    stacking: bool = False
+
+
+class AttachmentCreate(BaseModel):
+    leader_unit_id: int
+    led_unit_id: int
+
+
 class RosterImportResult(BaseModel):
     roster: Roster
     imported: list[str]
     unmatched: list[str]
+    attachments_created: int
 
 
 def _get_roster_or_404(roster_id: int, session: Session) -> Roster:
@@ -121,13 +135,28 @@ def import_roster(payload: dict[str, Any], session: Session = Depends(get_sessio
     session.refresh(roster)
 
     imported: list[str] = []
+    unit_id_by_selection: dict[str, int] = {}
     for entry, definition in resolved:
-        session.add(Unit(roster_id=roster.id, unit_definition_id=definition.id, quantity=1))
+        unit = Unit(roster_id=roster.id, unit_definition_id=definition.id, quantity=1, loadout=entry.loadout)
+        session.add(unit)
+        session.flush()  # assigns unit.id without a full commit/attribute-expire
+        unit_id_by_selection[entry.roster_selection_id] = unit.id
         imported.append(definition.name)
-    session.commit()
-    session.refresh(roster)  # the commit above expired roster's attributes -- reload before serializing
 
-    return RosterImportResult(roster=roster, imported=imported, unmatched=unmatched)
+    attachments_created = 0
+    for leader_sel_id, led_sel_id in parsed.attachments:
+        leader_unit_id = unit_id_by_selection.get(leader_sel_id)
+        led_unit_id = unit_id_by_selection.get(led_sel_id)
+        if leader_unit_id is not None and led_unit_id is not None:
+            session.add(UnitAttachment(roster_id=roster.id, leader_unit_id=leader_unit_id, led_unit_id=led_unit_id))
+            attachments_created += 1
+
+    session.commit()
+    session.refresh(roster)  # the commits above expired roster's attributes -- reload before serializing
+
+    return RosterImportResult(
+        roster=roster, imported=imported, unmatched=unmatched, attachments_created=attachments_created
+    )
 
 
 @router.get("/{roster_id}", response_model=Roster)
@@ -162,6 +191,7 @@ def _to_unit_out(unit: Unit, session: Session) -> UnitOut:
         unit_definition_id=unit.unit_definition_id,
         quantity=unit.quantity,
         notes=unit.notes,
+        loadout=unit.loadout,
         unit_definition=definition,
     )
 
@@ -201,6 +231,13 @@ def delete_unit(roster_id: int, unit_id: int, session: Session = Depends(get_ses
     unit = session.get(Unit, unit_id)
     if unit is None or unit.roster_id != roster_id:
         raise HTTPException(status_code=404, detail="Unit not found on this roster")
+    for attachment in session.exec(
+        select(UnitAttachment).where(
+            UnitAttachment.roster_id == roster_id,
+            (UnitAttachment.leader_unit_id == unit_id) | (UnitAttachment.led_unit_id == unit_id),
+        )
+    ).all():
+        session.delete(attachment)
     session.delete(unit)
     session.commit()
 
@@ -227,4 +264,56 @@ def delete_synergy(roster_id: int, synergy_id: int, session: Session = Depends(g
     if synergy is None or synergy.roster_id != roster_id:
         raise HTTPException(status_code=404, detail="Synergy not found on this roster")
     session.delete(synergy)
+    session.commit()
+
+
+@router.get("/{roster_id}/attachments", response_model=list[UnitAttachment])
+def list_attachments(roster_id: int, session: Session = Depends(get_session)):
+    _get_roster_or_404(roster_id, session)
+    return session.exec(select(UnitAttachment).where(UnitAttachment.roster_id == roster_id)).all()
+
+
+@router.post("/{roster_id}/attachments", response_model=UnitAttachment)
+def add_attachment(roster_id: int, payload: AttachmentCreate, session: Session = Depends(get_session)):
+    _get_roster_or_404(roster_id, session)
+    attachment = UnitAttachment(roster_id=roster_id, **payload.model_dump())
+    session.add(attachment)
+    session.commit()
+    session.refresh(attachment)
+    return attachment
+
+
+@router.delete("/{roster_id}/attachments/{attachment_id}", status_code=204)
+def delete_attachment(roster_id: int, attachment_id: int, session: Session = Depends(get_session)):
+    attachment = session.get(UnitAttachment, attachment_id)
+    if attachment is None or attachment.roster_id != roster_id:
+        raise HTTPException(status_code=404, detail="Attachment not found on this roster")
+    session.delete(attachment)
+    session.commit()
+
+
+@router.get("/{roster_id}/pools", response_model=list[DeclaredStatePool])
+def list_pools(roster_id: int, session: Session = Depends(get_session)):
+    _get_roster_or_404(roster_id, session)
+    return session.exec(select(DeclaredStatePool).where(DeclaredStatePool.roster_id == roster_id)).all()
+
+
+@router.post("/{roster_id}/pools", response_model=DeclaredStatePool)
+def add_pool(roster_id: int, payload: PoolCreate, session: Session = Depends(get_session)):
+    _get_roster_or_404(roster_id, session)
+    if payload.scope not in phases.POOL_SCOPES:
+        raise HTTPException(status_code=422, detail=f"Unknown scope: {payload.scope}")
+    pool = DeclaredStatePool(roster_id=roster_id, **payload.model_dump())
+    session.add(pool)
+    session.commit()
+    session.refresh(pool)
+    return pool
+
+
+@router.delete("/{roster_id}/pools/{pool_id}", status_code=204)
+def delete_pool(roster_id: int, pool_id: int, session: Session = Depends(get_session)):
+    pool = session.get(DeclaredStatePool, pool_id)
+    if pool is None or pool.roster_id != roster_id:
+        raise HTTPException(status_code=404, detail="Pool not found on this roster")
+    session.delete(pool)
     session.commit()

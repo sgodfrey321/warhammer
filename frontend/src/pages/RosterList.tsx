@@ -94,7 +94,10 @@ export function RosterList() {
           <p>
             Imported <strong>{importResult.roster.name}</strong> — {importResult.imported.length} unit
             {importResult.imported.length === 1 ? "" : "s"} matched
-            {importResult.unmatched.length > 0 && `, ${importResult.unmatched.length} unmatched`}.
+            {importResult.unmatched.length > 0 && `, ${importResult.unmatched.length} unmatched`}
+            {importResult.attachments_created > 0 &&
+              `, ${importResult.attachments_created} leader attachment${importResult.attachments_created === 1 ? "" : "s"}`}
+            .
           </p>
           {importResult.unmatched.length > 0 && (
             <p className="muted">

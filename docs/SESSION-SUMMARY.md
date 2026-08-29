@@ -10,6 +10,7 @@ This is a continuity document, not the plan itself. Read this first to get orien
 | `tools/bsdata-indexer/SPEC.md` | Build spec for the indexer that turns BSData's BattleScribe catalogues + MFM points snapshots into clean `UnitDefinition` JSON |
 | `tools/synergy-enrichment/SPEC.md` | Build spec for the second-stage pipeline that extracts synergy *candidates* from ability text (keyword-matching + batch LLM extraction), chained after the indexer |
 | `docs/webapp-skeleton-spec.md` | Architecture decision + build spec for the actual app: FastAPI (pure JSON API) + separate React frontend, SQLite for v1, no auth. Defines a narrow "skeleton means these 5 things work end-to-end" scope rather than full v1. |
+| `docs/battle-engine-spec.md` | Detailed per-phase behavior for all 5 phases (post-PoC) — phase/turn/round transition logic, Active Effect boundary-checking algorithm, Unit Synergy surfacing, and a new `DeclaredStatePool` schema entity for Battle Focus/Blessings-of-Khorne-style pools that was never formalized before this. Explicitly flags Fight phase's Fights-First sequencing as still unresolved — outer shell only, no automated activation order. |
 
 The indexer is confirmed running (per your last message) — its output for Aeldari and World Eaters was reviewed directly in this session (see below).
 

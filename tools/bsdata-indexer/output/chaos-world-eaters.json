@@ -53,22 +53,35 @@
         "Sv": "2+",
         "T": "11",
         "W": "16"
-      }
-    },
-    {
-      "abilities": [],
-      "faction": "Chaos - World Eaters",
-      "id": "chaos-world-eaters/blessings-of-khorne-reference",
-      "is_legends": false,
-      "keywords": [
-        "Configuration"
-      ],
-      "mfm_matched": false,
-      "name": "Blessings of Khorne Reference",
-      "points": [],
-      "source_catalogue_id": "8d4f-a4cb-ec1c-7f95",
-      "source_entry_id": "5558-f47e-9f45-3fca",
-      "stats": {}
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "8",
+            "AP": "-3",
+            "D": "D6+2",
+            "Keywords": "Devastating Wounds",
+            "Range": "Melee",
+            "S": "14",
+            "WS": "2+"
+          },
+          "name": "➤ Samni’arius and Spinegrinder - strike",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "16",
+            "AP": "-2",
+            "D": "2",
+            "Keywords": "Devastating Wounds",
+            "Range": "Melee",
+            "S": "7",
+            "WS": "2+"
+          },
+          "name": "➤ Samni’arius and Spinegrinder - sweep",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -101,7 +114,47 @@
         "Sv": "3+",
         "T": "9",
         "W": "10"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-2",
+            "BS": "3+",
+            "D": "3",
+            "Keywords": "Anti-MONSTER 2+, Anti-VEHICLE 2+, Impaled",
+            "Range": "12\"",
+            "S": "12"
+          },
+          "name": "Impaler harpoon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "5",
+            "AP": "-3",
+            "D": "3",
+            "Range": "Melee",
+            "S": "12",
+            "WS": "3+"
+          },
+          "name": "Slaughter blade",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "5",
+            "AP": "-3",
+            "D": "3",
+            "Keywords": "Twin-linked",
+            "Range": "Melee",
+            "S": "12",
+            "WS": "3+"
+          },
+          "name": "Twin slaughter blade",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -160,7 +213,34 @@
         "Sv": "3+",
         "T": "7",
         "W": "4"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-2",
+            "D": "2",
+            "Range": "Melee",
+            "S": "5",
+            "WS": "3+"
+          },
+          "name": "Hellblade",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "-1",
+            "D": "1",
+            "Keywords": "Extra Attacks, Lance",
+            "Range": "Melee",
+            "S": "6",
+            "WS": "4+"
+          },
+          "name": "Bladed horn",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -198,7 +278,8 @@
         "Sv": "6+",
         "T": "4",
         "W": "3"
-      }
+      },
+      "weapons": []
     },
     {
       "abilities": [
@@ -239,7 +320,21 @@
         "Sv": "7+",
         "T": "4",
         "W": "1"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-2",
+            "D": "2",
+            "Range": "Melee",
+            "S": "5",
+            "WS": "3+"
+          },
+          "name": "Hellblade",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -296,7 +391,22 @@
         "Sv": "3+",
         "T": "11",
         "W": "18"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "-1",
+            "BS": "N/A",
+            "D": "1",
+            "Keywords": "Ignores Cover, Torrent",
+            "Range": "12\"",
+            "S": "5"
+          },
+          "name": "Hellfire breath",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -335,7 +445,8 @@
         "Sv": "3+",
         "T": "4",
         "W": "5"
-      }
+      },
+      "weapons": []
     },
     {
       "abilities": [
@@ -364,7 +475,34 @@
         "Sv": "2+",
         "T": "12",
         "W": "18"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-4",
+            "BS": "3+",
+            "D": "D6+3",
+            "Keywords": "Twin-linked",
+            "Range": "48\"",
+            "S": "16"
+          },
+          "name": "Cerberus neutron pulse array",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "4+"
+          },
+          "name": "Armoured tracks",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -411,7 +549,60 @@
         "Sv": "2+",
         "T": "12",
         "W": "16"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "9",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "3+"
+          },
+          "name": "Armoured tracks",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-3",
+            "BS": "4+",
+            "D": "D6+1",
+            "Keywords": "Rapid Fire 2",
+            "Range": "48\"",
+            "S": "12"
+          },
+          "name": "Soulshatter lascannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "0",
+            "BS": "4+",
+            "D": "1",
+            "Keywords": "Blast",
+            "Range": "48\"",
+            "S": "5"
+          },
+          "name": "Havoc launcher",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "4+",
+            "D": "2",
+            "Keywords": "Rapid Fire 2, Sustained Hits 1, Twin-linked",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Twin heavy bolter",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -457,7 +648,47 @@
         "Sv": "3+",
         "T": "10",
         "W": "11"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "4+",
+            "D": "D6+1",
+            "Keywords": "Rapid Fire 2, Twin-linked",
+            "Range": "48\"",
+            "S": "14"
+          },
+          "name": "Predator twin lascannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "6",
+            "WS": "3+"
+          },
+          "name": "Armoured tracks",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "0",
+            "BS": "4+",
+            "D": "1",
+            "Keywords": "Blast",
+            "Range": "48\"",
+            "S": "5"
+          },
+          "name": "Havoc launcher",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -503,7 +734,47 @@
         "Sv": "3+",
         "T": "10",
         "W": "11"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "-1",
+            "BS": "4+",
+            "D": "3",
+            "Keywords": "Rapid Fire 6",
+            "Range": "48\"",
+            "S": "9"
+          },
+          "name": "Predator autocannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "6",
+            "WS": "3+"
+          },
+          "name": "Armoured tracks",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "0",
+            "BS": "4+",
+            "D": "1",
+            "Keywords": "Blast",
+            "Range": "48\"",
+            "S": "5"
+          },
+          "name": "Havoc launcher",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -551,7 +822,47 @@
         "Sv": "3+",
         "T": "9",
         "W": "10"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "6",
+            "WS": "3+"
+          },
+          "name": "Armoured tracks",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "0",
+            "BS": "4+",
+            "D": "1",
+            "Keywords": "Rapid Fire 4",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Combi-bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "0",
+            "BS": "4+",
+            "D": "1",
+            "Keywords": "Blast",
+            "Range": "48\"",
+            "S": "5"
+          },
+          "name": "Havoc launcher",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -589,7 +900,21 @@
         "Sv": "4+",
         "T": "5",
         "W": "4"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "D6+4",
+            "AP": "-1",
+            "D": "2",
+            "Range": "Melee",
+            "S": "5",
+            "WS": "4+"
+          },
+          "name": "Hideous Mutations",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -647,7 +972,111 @@
         "Sv": "2+",
         "T": "5",
         "W": "3"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "0",
+            "BS": "4+",
+            "D": "1",
+            "Keywords": "Anti-Infantry 4+, Devastating Wounds, Rapid Fire 1",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Combi-weapon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-2",
+            "D": "2",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "3+"
+          },
+          "name": "Power fist",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "-2",
+            "D": "1",
+            "Range": "Melee",
+            "S": "5",
+            "WS": "3+"
+          },
+          "name": "Accursed weapon",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-3",
+            "D": "2",
+            "Keywords": "Anti-VEHICLE 3+",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "4+"
+          },
+          "name": "Chainfist",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "0",
+            "BS": "4+",
+            "D": "1",
+            "Keywords": "Rapid Fire 4",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Combi-bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "5",
+            "AP": "-2",
+            "D": "1",
+            "Keywords": "Twin-linked",
+            "Range": "Melee",
+            "S": "5",
+            "WS": "3+"
+          },
+          "name": "Paired accursed weapons",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "-1",
+            "BS": "4+",
+            "D": "1",
+            "Keywords": "Devastating Wounds, Rapid Fire 2, Sustained Hits 1",
+            "Range": "36\"",
+            "S": "7"
+          },
+          "name": "Reaper autocannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "-1",
+            "BS": "N/A",
+            "D": "1",
+            "Keywords": "Ignores Cover, Torrent",
+            "Range": "12\"",
+            "S": "5"
+          },
+          "name": "Heavy flamer",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -684,7 +1113,46 @@
         "Sv": "2+",
         "T": "12",
         "W": "30"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "4+"
+          },
+          "name": "Armoured hull",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "D6+1",
+            "Range": "48\"",
+            "S": "12"
+          },
+          "name": "Lascannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Sustained Hits 1, Twin-linked",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Twin heavy bolter",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -733,7 +1201,46 @@
         "Sv": "2+",
         "T": "10",
         "W": "10"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "8",
+            "AP": "-2",
+            "D": "3",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "2+"
+          },
+          "name": "➤ Hellforged weapons - strike",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "16",
+            "AP": "-1",
+            "D": "1",
+            "Range": "Melee",
+            "S": "6",
+            "WS": "2+"
+          },
+          "name": "➤ Hellforged weapons - sweep",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Rapid Fire 1",
+            "Range": "24\"",
+            "S": "5"
+          },
+          "name": "Infernal cannon",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -779,7 +1286,46 @@
         "Sv": "2+",
         "T": "9",
         "W": "10"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "8",
+            "AP": "-2",
+            "D": "3",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "2+"
+          },
+          "name": "➤ Hellforged weapons - strike",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "16",
+            "AP": "-1",
+            "D": "1",
+            "Range": "Melee",
+            "S": "6",
+            "WS": "2+"
+          },
+          "name": "➤ Hellforged weapons - sweep",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Rapid Fire 1",
+            "Range": "24\"",
+            "S": "5"
+          },
+          "name": "Infernal cannon",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -818,7 +1364,8 @@
         "Sv": "6+",
         "T": "7",
         "W": "8"
-      }
+      },
+      "weapons": []
     },
     {
       "abilities": [
@@ -858,7 +1405,8 @@
         "Sv": "7+",
         "T": "3",
         "W": "3"
-      }
+      },
+      "weapons": []
     },
     {
       "abilities": [
@@ -909,7 +1457,33 @@
         "Sv": "3+",
         "T": "11",
         "W": "18"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "-3",
+            "D": "D6+1",
+            "Range": "Melee",
+            "S": "16",
+            "WS": "3+"
+          },
+          "name": "Shearing claws - strike",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "12",
+            "AP": "-2",
+            "D": "1",
+            "Range": "Melee",
+            "S": "6",
+            "WS": "3+"
+          },
+          "name": "Shearing claws - sweep",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -941,22 +1515,21 @@
         "Sv": "2+",
         "T": "9",
         "W": "12"
-      }
-    },
-    {
-      "abilities": [],
-      "faction": "Chaos - World Eaters",
-      "id": "chaos-world-eaters/detachment",
-      "is_legends": false,
-      "keywords": [
-        "Configuration"
-      ],
-      "mfm_matched": false,
-      "name": "Detachment",
-      "points": [],
-      "source_catalogue_id": "d325-e694-6930-accb",
-      "source_entry_id": "84c8-b821-877d-72e6",
-      "stats": {}
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "6",
+            "WS": "3+"
+          },
+          "name": "Armoured feet",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -994,7 +1567,22 @@
         "Sv": "3+",
         "T": "6",
         "W": "7"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "-1",
+            "D": "2",
+            "Keywords": "Extra Attacks, Lance",
+            "Range": "Melee",
+            "S": "6",
+            "WS": "3+"
+          },
+          "name": "Bladed horn",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -1053,7 +1641,21 @@
         "Sv": "3+",
         "T": "6",
         "W": "3"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "5",
+            "AP": "-2",
+            "D": "2",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "3+"
+          },
+          "name": "Chainblades",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -1112,7 +1714,22 @@
         "Sv": "3+",
         "T": "6",
         "W": "3"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "-3",
+            "D": "2",
+            "Keywords": "Anti-MONSTER 3+, Anti-VEHICLE 3+",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "3+"
+          },
+          "name": "Chainblades",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -1142,7 +1759,34 @@
         "Sv": "2+",
         "T": "13",
         "W": "24"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "D3+1",
+            "AP": "-5",
+            "BS": "3+",
+            "D": "12",
+            "Keywords": "Blast, Twin-linked",
+            "Range": "120\"",
+            "S": "24"
+          },
+          "name": "Twin Falchion volcano cannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "4+"
+          },
+          "name": "Armoured tracks",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -1172,7 +1816,72 @@
         "Sv": "2+",
         "T": "13",
         "W": "24"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "D6+3",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "D6",
+            "Keywords": "Blast",
+            "Range": "24\"",
+            "S": "14"
+          },
+          "name": "Demolisher cannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "6",
+            "Range": "72\"",
+            "S": "14"
+          },
+          "name": "➤ Fellblade accelerator cannon - AP shells",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2D6",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Blast",
+            "Range": "72\"",
+            "S": "8"
+          },
+          "name": "➤ Fellblade accelerator cannon - HE shells",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "4+"
+          },
+          "name": "Armoured tracks",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "0",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Blast",
+            "Range": "48\"",
+            "S": "5"
+          },
+          "name": "Havoc launcher",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -1202,7 +1911,34 @@
         "Sv": "3+",
         "T": "10",
         "W": "18"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "10",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Twin-linked",
+            "Range": "36\"",
+            "S": "6"
+          },
+          "name": "Twin avenger bolt cannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "4+"
+          },
+          "name": "Armoured hull",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -1249,7 +1985,34 @@
         "Sv": "7+",
         "T": "4",
         "W": "2"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "D": "1",
+            "Range": "Melee",
+            "S": "5",
+            "WS": "3+"
+          },
+          "name": "Gore-drenched fangs",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6",
+            "AP": "0",
+            "BS": "N/A",
+            "D": "1",
+            "Keywords": "Ignores Cover, Torrent",
+            "Range": "12\"",
+            "S": "4"
+          },
+          "name": "Burning roar",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -1296,7 +2059,8 @@
         "Sv": "3+",
         "T": "10",
         "W": "12"
-      }
+      },
+      "weapons": []
     },
     {
       "abilities": [
@@ -1335,7 +2099,60 @@
         "Sv": "6+",
         "T": "4",
         "W": "1"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "0",
+            "BS": "4+",
+            "D": "1",
+            "Keywords": "Pistol",
+            "Range": "12\"",
+            "S": "3"
+          },
+          "name": "Autopistol",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "0",
+            "D": "1",
+            "Keywords": "Lance",
+            "Range": "Melee",
+            "S": "3",
+            "WS": "4+"
+          },
+          "name": "Chainblade",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "3",
+            "WS": "4+"
+          },
+          "name": "Close combat weapon",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-1",
+            "BS": "4+",
+            "D": "2",
+            "Keywords": "Assault, Sustained Hits D3",
+            "Range": "18\"",
+            "S": "5"
+          },
+          "name": "Blood harpoon",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -1373,7 +2190,72 @@
         "Sv": "3+",
         "T": "12",
         "W": "26"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "D6+3",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "D6",
+            "Keywords": "Blast",
+            "Range": "24\"",
+            "S": "14"
+          },
+          "name": "Demolisher cannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "-3",
+            "D": "6",
+            "Range": "Melee",
+            "S": "14",
+            "WS": "3+"
+          },
+          "name": "➤ Hellcrusher claws - strike",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "18",
+            "AP": "-2",
+            "D": "2",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "3+"
+          },
+          "name": "➤ Hellcrusher claws - sweep",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2D6",
+            "AP": "-1",
+            "BS": "N/A",
+            "D": "1",
+            "Keywords": "Ignores Cover, Torrent",
+            "Range": "12\"",
+            "S": "8"
+          },
+          "name": "Hellmaw flame cannons",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "15",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Sustained Hits 1",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Scorpion cannon",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -1416,7 +2298,21 @@
         "Sv": "2+",
         "T": "9",
         "W": "8"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "6",
+            "WS": "3+"
+          },
+          "name": "Close combat weapon",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -1457,7 +2353,22 @@
         "Sv": "3+",
         "T": "9",
         "W": "12"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "-1",
+            "D": "2",
+            "Keywords": "Anti-FLY 2+, Devastating Wounds",
+            "Range": "Melee",
+            "S": "7",
+            "WS": "3+"
+          },
+          "name": "Heldrake claws",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -1491,7 +2402,34 @@
         "Sv": "3+",
         "T": "9",
         "W": "14"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "6",
+            "WS": "4+"
+          },
+          "name": "Armoured hull",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "4+",
+            "D": "D6+1",
+            "Keywords": "Rapid Fire 1, Twin-linked",
+            "Range": "48\"",
+            "S": "12"
+          },
+          "name": "Twin lascannon",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -1525,7 +2463,21 @@
         "Sv": "3+",
         "T": "8",
         "W": "10"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "6",
+            "WS": "4+"
+          },
+          "name": "Armoured hull",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -1563,7 +2515,8 @@
         "Sv": "2+",
         "T": "10",
         "W": "10"
-      }
+      },
+      "weapons": []
     },
     {
       "abilities": [
@@ -1608,7 +2561,70 @@
         "Sv": "6+",
         "T": "4",
         "W": "1"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "0",
+            "BS": "4+",
+            "D": "1",
+            "Keywords": "Pistol",
+            "Range": "12\"",
+            "S": "3"
+          },
+          "name": "Autopistol",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "3",
+            "WS": "4+"
+          },
+          "name": "Chainblades",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "D": "2",
+            "Range": "Melee",
+            "S": "4",
+            "WS": "5+"
+          },
+          "name": "Mauler chainblade",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-1",
+            "D": "2",
+            "Range": "Melee",
+            "S": "4",
+            "WS": "4+"
+          },
+          "name": "Skullsmasher and mangler",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "4",
+            "WS": "4+"
+          },
+          "name": "Paired manglers",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -1647,7 +2663,67 @@
       ],
       "source_catalogue_id": "b250-a2f9-7098-353d",
       "source_entry_id": "f909-00c7-8ba4-018a",
-      "stats": {}
+      "stats": {
+        "LD": "6+",
+        "M": "8\"",
+        "OC": "2",
+        "Sv": "3+",
+        "T": "4",
+        "W": "2"
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "-1",
+            "D": "1",
+            "Range": "Melee",
+            "S": "4",
+            "WS": "3+"
+          },
+          "name": "Chainblade",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-2",
+            "BS": "4+",
+            "D": "1",
+            "Keywords": "Pistol",
+            "Range": "12\"",
+            "S": "7"
+          },
+          "name": "➤ Plasma pistol - standard",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "4+",
+            "D": "2",
+            "Keywords": "Hazardous, Pistol",
+            "Range": "12\"",
+            "S": "8"
+          },
+          "name": "➤ Plasma pistol - supercharge",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "0",
+            "BS": "4+",
+            "D": "1",
+            "Keywords": "Pistol",
+            "Range": "12\"",
+            "S": "4"
+          },
+          "name": "Bolt pistol",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -1700,7 +2776,33 @@
         "Sv": "3+",
         "T": "13",
         "W": "24"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "-4",
+            "D": "8",
+            "Range": "Melee",
+            "S": "16",
+            "WS": "3+"
+          },
+          "name": "➤ Great cleaver of Khorne - strike",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "18",
+            "AP": "-2",
+            "D": "2",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "3+"
+          },
+          "name": "➤ Great cleaver of Khorne - sweep",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -1754,7 +2856,47 @@
         "Sv": "3+",
         "T": "4",
         "W": "5"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "8",
+            "AP": "-2",
+            "D": "3",
+            "Range": "Melee",
+            "S": "7",
+            "WS": "2+"
+          },
+          "name": "Gorechild",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-2",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Pistol",
+            "Range": "12\"",
+            "S": "7"
+          },
+          "name": "➤ Plasma pistol - standard",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Hazardous, Pistol",
+            "Range": "12\"",
+            "S": "8"
+          },
+          "name": "➤ Plasma pistol - supercharge",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -1783,7 +2925,46 @@
         "Sv": "2+",
         "T": "12",
         "W": "18"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "4+"
+          },
+          "name": "Armoured tracks",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "3",
+            "Range": "48\"",
+            "S": "9"
+          },
+          "name": "Autocannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "2+",
+            "D": "D6",
+            "Keywords": "One Shot",
+            "Range": "48\"",
+            "S": "14"
+          },
+          "name": "Hunter-killer missile",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -1821,7 +3002,45 @@
         "Sv": "3+",
         "T": "12",
         "W": "24"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "-4",
+            "D": "6",
+            "Range": "Melee",
+            "S": "14",
+            "WS": "3+"
+          },
+          "name": "➤ Kytan cleaver - strike",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "12",
+            "AP": "-3",
+            "D": "2",
+            "Range": "Melee",
+            "S": "9",
+            "WS": "3+"
+          },
+          "name": "➤ Kytan cleaver - sweep",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "18",
+            "AP": "-2",
+            "BS": "3+",
+            "D": "2",
+            "Range": "36\"",
+            "S": "6"
+          },
+          "name": "Kytan gatling cannon",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [],
@@ -1847,7 +3066,72 @@
         "Sv": "2+",
         "T": "12",
         "W": "16"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "-2",
+            "BS": "3+",
+            "D": "3",
+            "Range": "24\"",
+            "S": "9"
+          },
+          "name": "➤ Quad launcher - shatter shells",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "D6+4",
+            "AP": "0",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Blast, Indirect Fire",
+            "Range": "60\"",
+            "S": "5"
+          },
+          "name": "➤ Quad launcher - thunderfire shells",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "4+"
+          },
+          "name": "Armoured tracks",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "2+",
+            "D": "D6",
+            "Keywords": "One Shot",
+            "Range": "48\"",
+            "S": "14"
+          },
+          "name": "Hunter-killer missile",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "0",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Rapid Fire 2",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Storm bolter",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [],
@@ -1872,7 +3156,60 @@
         "Sv": "2+",
         "T": "12",
         "W": "16"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "4+"
+          },
+          "name": "Armoured tracks",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "2+",
+            "D": "D6",
+            "Keywords": "One Shot",
+            "Range": "48\"",
+            "S": "14"
+          },
+          "name": "Hunter-killer missile",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "0",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Rapid Fire 2",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Storm bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "D6+1",
+            "Keywords": "Twin-linked",
+            "Range": "48\"",
+            "S": "12"
+          },
+          "name": "Twin lascannon",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -1904,7 +3241,34 @@
         "Sv": "2+",
         "T": "10",
         "W": "12"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "6",
+            "WS": "3+"
+          },
+          "name": "Armoured feet",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "2+",
+            "D": "D6",
+            "Keywords": "One Shot",
+            "Range": "48\"",
+            "S": "14"
+          },
+          "name": "Hunter-killer missile",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -1953,7 +3317,48 @@
         "Sv": "3+",
         "T": "6",
         "W": "8"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "0",
+            "BS": "2+",
+            "D": "1",
+            "Keywords": "Pistol",
+            "Range": "12\"",
+            "S": "4"
+          },
+          "name": "Bolt pistol",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "7",
+            "AP": "-2",
+            "D": "2",
+            "Keywords": "Devastating Wounds",
+            "Range": "Melee",
+            "S": "6",
+            "WS": "2+"
+          },
+          "name": "Coward's Bane",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "-1",
+            "D": "2",
+            "Keywords": "Extra Attacks, Lance",
+            "Range": "Melee",
+            "S": "6",
+            "WS": "3+"
+          },
+          "name": "Bladed horn",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -2001,7 +3406,60 @@
         "Sv": "3+",
         "T": "6",
         "W": "7"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "-1",
+            "D": "2",
+            "Keywords": "Extra Attacks, Lance",
+            "Range": "Melee",
+            "S": "6",
+            "WS": "3+"
+          },
+          "name": "Bladed horn",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "7",
+            "AP": "-1",
+            "D": "2",
+            "Range": "Melee",
+            "S": "6",
+            "WS": "2+"
+          },
+          "name": "Exalted chainblade",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-2",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Pistol",
+            "Range": "12\"",
+            "S": "7"
+          },
+          "name": "➤ Plasma pistol - standard",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Hazardous, Pistol",
+            "Range": "12\"",
+            "S": "8"
+          },
+          "name": "➤ Plasma pistol - supercharge",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -2048,7 +3506,35 @@
         "Sv": "3+",
         "T": "4",
         "W": "4"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "5",
+            "AP": "-2",
+            "D": "2",
+            "Keywords": "Devastating Wounds, Precision",
+            "Range": "Melee",
+            "S": "7",
+            "WS": "2+"
+          },
+          "name": "Axe of dismemberment",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "0",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Pistol",
+            "Range": "12\"",
+            "S": "4"
+          },
+          "name": "Bolt pistol",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -2083,7 +3569,47 @@
         "Sv": "2+",
         "T": "14",
         "W": "30"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "-4",
+            "BS": "3+",
+            "D": "D6",
+            "Keywords": "Melta 2",
+            "Range": "24\"",
+            "S": "9"
+          },
+          "name": "Siege melta array",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "8",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Anti-FLY 4+",
+            "Range": "48\"",
+            "S": "7"
+          },
+          "name": "Skyreaper battery",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "4+"
+          },
+          "name": "Armoured tracks",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -2134,7 +3660,21 @@
         "Sv": "3+",
         "T": "10",
         "W": "12"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "8",
+            "AP": "-2",
+            "D": "D6+1",
+            "Range": "Melee",
+            "S": "14",
+            "WS": "3+"
+          },
+          "name": "Maulerfiend fists",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -2163,7 +3703,33 @@
         "Sv": "2+",
         "T": "6",
         "W": "6"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "0",
+            "BS": "3+",
+            "D": "1",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Boltgun",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "4",
+            "WS": "3+"
+          },
+          "name": "Close combat weapon",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -2194,7 +3760,46 @@
         "Sv": "2+",
         "T": "9",
         "W": "10"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "2D6",
+            "AP": "0",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Blast",
+            "Range": "36\"",
+            "S": "4"
+          },
+          "name": "➤ Cyclone missile launcher - frag",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "-2",
+            "BS": "3+",
+            "D": "D6",
+            "Range": "36\"",
+            "S": "9"
+          },
+          "name": "➤ Cyclone missile launcher - krak",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "6",
+            "WS": "3+"
+          },
+          "name": "Armoured feet",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -2223,7 +3828,73 @@
         "Sv": "2+",
         "T": "11",
         "W": "14"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "3",
+            "Keywords": "Rapid Fire 2",
+            "Range": "48\"",
+            "S": "9"
+          },
+          "name": "Herakles-pattern autocannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "4+"
+          },
+          "name": "Armoured tracks",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Sustained Hits 1",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Heavy bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "2+",
+            "D": "D6",
+            "Keywords": "One Shot",
+            "Range": "48\"",
+            "S": "14"
+          },
+          "name": "Hunter-killer missile",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "0",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Rapid Fire 2",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Storm bolter",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -2252,7 +3923,73 @@
         "Sv": "2+",
         "T": "11",
         "W": "14"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "18",
+            "AP": "0",
+            "BS": "4+",
+            "D": "1",
+            "Keywords": "Devastating Wounds",
+            "Range": "36\"",
+            "S": "6"
+          },
+          "name": "Punisher rotary cannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "4+"
+          },
+          "name": "Armoured tracks",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Sustained Hits 1",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Heavy bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "2+",
+            "D": "D6",
+            "Keywords": "One Shot",
+            "Range": "48\"",
+            "S": "14"
+          },
+          "name": "Hunter-killer missile",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "0",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Rapid Fire 2",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Storm bolter",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -2281,7 +4018,73 @@
         "Sv": "2+",
         "T": "11",
         "W": "14"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-4",
+            "BS": "3+",
+            "D": "D3+3",
+            "Keywords": "Heavy",
+            "Range": "48\"",
+            "S": "16"
+          },
+          "name": "Venator neutron laser",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "4+"
+          },
+          "name": "Armoured tracks",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Sustained Hits 1",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Heavy bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "2+",
+            "D": "D6",
+            "Keywords": "One Shot",
+            "Range": "48\"",
+            "S": "14"
+          },
+          "name": "Hunter-killer missile",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "0",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Rapid Fire 2",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Storm bolter",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -2331,7 +4134,46 @@
         "Sv": "3+",
         "T": "11",
         "W": "20"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "2D6",
+            "AP": "-1",
+            "BS": "N/A",
+            "D": "1",
+            "Keywords": "Ignores Cover, Torrent",
+            "Range": "12\"",
+            "S": "8"
+          },
+          "name": "Bellow of endless fury",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "8",
+            "AP": "-4",
+            "D": "6",
+            "Range": "Melee",
+            "S": "16",
+            "WS": "2+"
+          },
+          "name": "➤ Slaughter and Carnage - strike",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "16",
+            "AP": "-2",
+            "D": "2",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "2+"
+          },
+          "name": "➤ Slaughter and Carnage - sweep",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -2385,7 +4227,21 @@
         "Sv": "3+",
         "T": "6",
         "W": "6"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "-2",
+            "D": "2",
+            "Range": "Melee",
+            "S": "10",
+            "WS": "2+"
+          },
+          "name": "Lacerator and daemonic claw",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -2422,7 +4278,60 @@
         "Sv": "2+",
         "T": "13",
         "W": "40"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "9",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "9",
+            "WS": "4+"
+          },
+          "name": "Armoured hull",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "4",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "D6",
+            "Keywords": "Anti-Fly 3+",
+            "Range": "48\"",
+            "S": "10"
+          },
+          "name": "Hellstrike missile battery",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Sustained Hits 1, Twin-linked",
+            "Range": "36\"",
+            "S": "5"
+          },
+          "name": "Twin heavy bolter",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "D6+1",
+            "Keywords": "Twin-linked",
+            "Range": "48\"",
+            "S": "12"
+          },
+          "name": "Twin lascannon",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [],
@@ -2447,7 +4356,21 @@
         "Sv": "2+",
         "T": "12",
         "W": "18"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "4+"
+          },
+          "name": "Armoured tracks",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -2478,7 +4401,34 @@
         "Sv": "3+",
         "T": "10",
         "W": "18"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "2D6",
+            "AP": "0",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Blast",
+            "Range": "48\"",
+            "S": "6"
+          },
+          "name": "Vengeance launcher",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "4+"
+          },
+          "name": "Armoured hull",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -2508,7 +4458,35 @@
         "Sv": "3+",
         "T": "10",
         "W": "14"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "-2",
+            "D": "D3+3",
+            "Keywords": "Anti-VEHICLE 3+",
+            "Range": "Melee",
+            "S": "14",
+            "WS": "4+"
+          },
+          "name": "Termite drill",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "5",
+            "AP": "-4",
+            "BS": "3+",
+            "D": "D6",
+            "Keywords": "Melta 2",
+            "Range": "12\"",
+            "S": "9"
+          },
+          "name": "Terrax melta cutter",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -2537,7 +4515,34 @@
         "Sv": "2+",
         "T": "12",
         "W": "18"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "D6+6",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "D6",
+            "Keywords": "Blast",
+            "Range": "24\"",
+            "S": "14"
+          },
+          "name": "Dreadhammer siege cannon",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "6",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "8",
+            "WS": "4+"
+          },
+          "name": "Armoured tracks",
+          "range_type": "Melee Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -2566,7 +4571,60 @@
         "Sv": "3+",
         "T": "10",
         "W": "11"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "2D3+3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "2",
+            "Keywords": "Blast, Indirect Fire",
+            "Range": "48\"",
+            "S": "6"
+          },
+          "name": "Scorpius multi-launcher",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "6",
+            "WS": "4+"
+          },
+          "name": "Armoured tracks",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "2+",
+            "D": "D6",
+            "Keywords": "One Shot",
+            "Range": "48\"",
+            "S": "14"
+          },
+          "name": "Hunter-killer missile",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "2",
+            "AP": "0",
+            "BS": "3+",
+            "D": "1",
+            "Keywords": "Rapid Fire 2",
+            "Range": "24\"",
+            "S": "4"
+          },
+          "name": "Storm bolter",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     },
     {
       "abilities": [
@@ -2596,7 +4654,47 @@
         "Sv": "3+",
         "T": "9",
         "W": "12"
-      }
+      },
+      "weapons": [
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "0",
+            "D": "1",
+            "Range": "Melee",
+            "S": "6",
+            "WS": "4+"
+          },
+          "name": "Armoured hull",
+          "range_type": "Melee Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "3",
+            "AP": "-1",
+            "BS": "3+",
+            "D": "3",
+            "Keywords": "Anti-FLY 2+",
+            "Range": "60\"",
+            "S": "7"
+          },
+          "name": "Xiphon missile battery",
+          "range_type": "Ranged Weapons"
+        },
+        {
+          "characteristics": {
+            "A": "1",
+            "AP": "-3",
+            "BS": "3+",
+            "D": "D6+1",
+            "Keywords": "Twin-linked",
+            "Range": "48\"",
+            "S": "12"
+          },
+          "name": "Twin lascannon",
+          "range_type": "Ranged Weapons"
+        }
+      ]
     }
   ],
   "unresolved_entrylinks": [

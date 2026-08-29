@@ -24,6 +24,17 @@ def test_import_real_aeldari_output(session):
     assert asurmen is not None
     assert asurmen.points_cost > 0
     assert "Phoenix Lord" in asurmen.keywords
+    assert asurmen.stats.get("M") == '7"'
+    assert any(a["name"] == "Hand of Asuryan" for a in asurmen.abilities)
+
+    # A squad unit -- stats resolved via the nested-model fallback (catalogue.py), not
+    # present directly on the squad's own entry.
+    dire_avengers = session.exec(select(UnitDefinition).where(UnitDefinition.name == "Dire Avengers")).first()
+    assert dire_avengers is not None
+    assert dire_avengers.stats.get("M") is not None
+
+    # Catalogue config entries (Detachment, Battle Focus rule) must not import as units.
+    assert session.exec(select(UnitDefinition).where(UnitDefinition.name == "Detachment")).first() is None
 
 
 def test_import_is_idempotent(session):

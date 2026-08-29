@@ -1,9 +1,12 @@
 import type {
   ActiveEffectOut,
   BattleOut,
+  DeclaredStatePool,
   PlayerState,
   Roster,
   RosterImportResult,
+  TurnStateOut,
+  UnitAttachment,
   UnitDefinition,
   UnitOut,
   UnitSynergy,
@@ -46,6 +49,23 @@ export const api = {
   deleteSynergy: (rosterId: number, synergyId: number) =>
     request<void>(`/rosters/${rosterId}/synergies/${synergyId}`, { method: "DELETE" }),
 
+  listAttachments: (rosterId: number) => request<UnitAttachment[]>(`/rosters/${rosterId}/attachments`),
+  addAttachment: (rosterId: number, leaderUnitId: number, ledUnitId: number) =>
+    request<UnitAttachment>(`/rosters/${rosterId}/attachments`, {
+      method: "POST",
+      body: JSON.stringify({ leader_unit_id: leaderUnitId, led_unit_id: ledUnitId }),
+    }),
+  deleteAttachment: (rosterId: number, attachmentId: number) =>
+    request<void>(`/rosters/${rosterId}/attachments/${attachmentId}`, { method: "DELETE" }),
+
+  listPools: (rosterId: number) => request<DeclaredStatePool[]>(`/rosters/${rosterId}/pools`),
+  addPool: (
+    rosterId: number,
+    payload: { name: string; max_value: number; scope: string; stacking: boolean },
+  ) => request<DeclaredStatePool>(`/rosters/${rosterId}/pools`, { method: "POST", body: JSON.stringify(payload) }),
+  deletePool: (rosterId: number, poolId: number) =>
+    request<void>(`/rosters/${rosterId}/pools/${poolId}`, { method: "DELETE" }),
+
   searchUnitDefinitions: (search: string) =>
     request<UnitDefinition[]>(`/unit-definitions?search=${encodeURIComponent(search)}`),
 
@@ -69,6 +89,30 @@ export const api = {
   ) => request<BattleOut>(`/battles/${battleId}/effects`, { method: "POST", body: JSON.stringify(payload) }),
   dismissEffect: (battleId: number, effectId: number) =>
     request<BattleOut>(`/battles/${battleId}/effects/${effectId}`, { method: "DELETE" }),
+
+  acknowledgeSynergy: (battleId: number, synergyId: number) =>
+    request<BattleOut>(`/battles/${battleId}/synergies/${synergyId}/acknowledge`, { method: "POST" }),
+
+  spendPool: (battleId: number, poolId: number, amount = 1) =>
+    request<BattleOut>(`/battles/${battleId}/pools/${poolId}/spend`, {
+      method: "POST",
+      body: JSON.stringify({ amount }),
+    }),
+  addPoolEntry: (battleId: number, poolId: number, ownerPlayer: number, value: number) =>
+    request<BattleOut>(`/battles/${battleId}/pools/${poolId}/add`, {
+      method: "POST",
+      body: JSON.stringify({ owner_player: ownerPlayer, value }),
+    }),
+
+  updateTurnState: (
+    battleId: number,
+    unitId: number,
+    payload: Partial<Pick<TurnStateOut, "move_type" | "has_shot" | "has_charged" | "has_fought" | "is_fights_first">>,
+  ) =>
+    request<TurnStateOut>(`/battles/${battleId}/units/${unitId}/turn-state`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }),
 };
 
 export type { ActiveEffectOut };

@@ -7,6 +7,7 @@
       {
         "id": "target-wraithlord",
         "name": "Wraithlord",
+        "type": "model",
         "categoryLinks": [
           { "id": "c1", "name": "Monster", "targetId": "cat-monster", "primary": true },
           { "id": "c2", "name": "Walker", "targetId": "cat-walker", "primary": false },
@@ -43,6 +44,7 @@
       {
         "id": "target-waveserpent",
         "name": "Wave Serpent",
+        "type": "model",
         "categoryLinks": [
           { "id": "c4", "name": "Vehicle", "targetId": "cat-vehicle", "primary": true },
           { "id": "c5", "name": "Transport", "targetId": "cat-transport", "primary": false }
@@ -52,10 +54,285 @@
       {
         "id": "target-autarch-skyrunner",
         "name": "Autarch Skyrunner",
+        "type": "model",
         "categoryLinks": [
           { "id": "c6", "name": "Character", "targetId": "cat-character", "primary": true }
         ],
         "costs": [{ "name": "pts", "typeId": "pts-type", "value": 75 }]
+      },
+      {
+        "id": "target-dire-avengers",
+        "name": "Dire Avengers",
+        "type": "unit",
+        "categoryLinks": [
+          { "id": "c7", "name": "Aspect Warrior", "targetId": "cat-aspect", "primary": true }
+        ],
+        "costs": [{ "name": "pts", "typeId": "pts-type", "value": 75 }],
+        "profiles": [
+          {
+            "name": "Bladestorm",
+            "typeName": "Abilities",
+            "characteristics": [
+              { "name": "Description", "typeId": "t-desc", "$text": "Sustained Hits 1 at half range." }
+            ]
+          }
+        ],
+        "selectionEntryGroups": [
+          {
+            "id": "group-rank-and-file",
+            "name": "4-9 Dire Avengers",
+            "selectionEntries": [
+              {
+                "id": "target-dire-avenger",
+                "name": "Dire Avenger",
+                "type": "model",
+                "profiles": [
+                  {
+                    "name": "Dire Avenger",
+                    "typeName": "Unit",
+                    "characteristics": [
+                      { "name": "M", "typeId": "t-m", "$text": "7\"" },
+                      { "name": "T", "typeId": "t-t", "$text": "3" },
+                      { "name": "Sv", "typeId": "t-sv", "$text": "4+" },
+                      { "name": "W", "typeId": "t-w", "$text": "2" },
+                      { "name": "LD", "typeId": "t-ld", "$text": "6+" },
+                      { "name": "OC", "typeId": "t-oc", "$text": "1" }
+                    ]
+                  }
+                ],
+                "entryLinks": [
+                  {
+                    "id": "el-avenger-shuriken",
+                    "name": "Avenger shuriken catapult",
+                    "type": "selectionEntry",
+                    "targetId": "target-avenger-shuriken-catapult"
+                  }
+                ],
+                "selectionEntries": [
+                  {
+                    "id": "target-dire-avenger-ccw",
+                    "name": "Close Combat Weapon",
+                    "type": "upgrade",
+                    "profiles": [
+                      {
+                        "name": "Close Combat Weapon",
+                        "typeName": "Melee Weapons",
+                        "characteristics": [
+                          { "name": "Range", "typeId": "t-range", "$text": "Melee" },
+                          { "name": "A", "typeId": "t-a", "$text": "2" },
+                          { "name": "WS", "typeId": "t-ws", "$text": "3+" },
+                          { "name": "S", "typeId": "t-s", "$text": "3" },
+                          { "name": "AP", "typeId": "t-ap", "$text": "0" },
+                          { "name": "D", "typeId": "t-d", "$text": "1" }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "group-exarch",
+            "name": "Dire Avenger Exarch",
+            "selectionEntries": [
+              {
+                "id": "target-dire-avenger-exarch",
+                "name": "Dire Avenger Exarch",
+                "type": "model",
+                "profiles": [
+                  {
+                    "name": "Dire Avenger Exarch",
+                    "typeName": "Unit",
+                    "characteristics": [
+                      { "name": "M", "typeId": "t-m", "$text": "7\"" },
+                      { "name": "T", "typeId": "t-t", "$text": "3" },
+                      { "name": "Sv", "typeId": "t-sv", "$text": "4+" },
+                      { "name": "W", "typeId": "t-w", "$text": "2" },
+                      { "name": "LD", "typeId": "t-ld", "$text": "6+" },
+                      { "name": "OC", "typeId": "t-oc", "$text": "1" }
+                    ]
+                  }
+                ],
+                "entryLinks": [
+                  {
+                    "id": "el-avenger-shuriken-exarch",
+                    "name": "Avenger shuriken catapult",
+                    "type": "selectionEntry",
+                    "targetId": "target-avenger-shuriken-catapult"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "target-guardian-defenders",
+        "name": "Guardian Defenders",
+        "type": "unit",
+        "categoryLinks": [
+          { "id": "c8", "name": "Battleline", "targetId": "cat-battleline", "primary": true }
+        ],
+        "costs": [{ "name": "pts", "typeId": "pts-type", "value": 90 }],
+        "selectionEntries": [
+          {
+            "id": "target-guardian-defender",
+            "name": "Guardian Defender",
+            "type": "model",
+            "profiles": [
+              {
+                "name": "Guardian Defender",
+                "typeName": "Unit",
+                "characteristics": [
+                  { "name": "M", "typeId": "t-m", "$text": "6\"" },
+                  { "name": "T", "typeId": "t-t", "$text": "3" },
+                  { "name": "Sv", "typeId": "t-sv", "$text": "4+" },
+                  { "name": "W", "typeId": "t-w", "$text": "1" },
+                  { "name": "LD", "typeId": "t-ld", "$text": "6+" },
+                  { "name": "OC", "typeId": "t-oc", "$text": "2" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "target-avenger-shuriken-catapult",
+        "name": "Avenger shuriken catapult",
+        "type": "upgrade",
+        "profiles": [
+          {
+            "name": "Avenger shuriken catapult",
+            "typeName": "Ranged Weapons",
+            "characteristics": [
+              { "name": "Range", "typeId": "t-range", "$text": "18\"" },
+              { "name": "A", "typeId": "t-a", "$text": "4" },
+              { "name": "BS", "typeId": "t-bs", "$text": "3+" },
+              { "name": "S", "typeId": "t-s", "$text": "4" },
+              { "name": "AP", "typeId": "t-ap", "$text": "-1" },
+              { "name": "D", "typeId": "t-d", "$text": "1" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "target-detachment",
+        "name": "Detachment",
+        "type": "upgrade",
+        "categoryLinks": [
+          { "id": "c9", "name": "Configuration", "targetId": "cat-config", "primary": true }
+        ],
+        "costs": []
+      },
+      {
+        "id": "target-windriders",
+        "name": "Windriders",
+        "type": "unit",
+        "categoryLinks": [
+          { "id": "c10", "name": "Aspect Warrior", "targetId": "cat-aspect", "primary": true }
+        ],
+        "costs": [{ "name": "pts", "typeId": "pts-type", "value": 80 }],
+        "selectionEntryGroups": [
+          {
+            "id": "group-windriders",
+            "name": "Windriders",
+            "selectionEntries": [
+              {
+                "id": "target-windrider-shuriken",
+                "name": "Windrider with Twin Shuriken Catapult",
+                "type": "model",
+                "profiles": [],
+                "infoLinks": [
+                  { "id": "il1", "name": "Windriders", "type": "profile", "targetId": "profile-windriders" },
+                  {
+                    "id": "il1w",
+                    "name": "Twin shuriken catapult",
+                    "type": "profile",
+                    "targetId": "profile-twin-shuriken-catapult"
+                  }
+                ]
+              },
+              {
+                "id": "target-windrider-laser",
+                "name": "Windrider with Scatter Laser",
+                "type": "model",
+                "profiles": [],
+                "infoLinks": [
+                  { "id": "il2", "name": "Windriders", "type": "profile", "targetId": "profile-windriders" },
+                  { "id": "il2w", "name": "Scatter laser", "type": "profile", "targetId": "profile-scatter-laser" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "target-warlock",
+        "name": "Warlock",
+        "type": "model",
+        "categoryLinks": [
+          { "id": "c11", "name": "Character", "targetId": "cat-character", "primary": true }
+        ],
+        "costs": [{ "name": "pts", "typeId": "pts-type", "value": 30 }],
+        "profiles": [],
+        "infoLinks": [
+          { "id": "il3", "name": "Warlock", "type": "profile", "targetId": "profile-warlock" }
+        ]
+      }
+    ],
+    "sharedProfiles": [
+      {
+        "id": "profile-windriders",
+        "name": "Windriders",
+        "typeName": "Unit",
+        "characteristics": [
+          { "name": "M", "typeId": "t-m", "$text": "14\"" },
+          { "name": "T", "typeId": "t-t", "$text": "4" },
+          { "name": "Sv", "typeId": "t-sv", "$text": "4+" },
+          { "name": "W", "typeId": "t-w", "$text": "2" },
+          { "name": "LD", "typeId": "t-ld", "$text": "7+" },
+          { "name": "OC", "typeId": "t-oc", "$text": "2" }
+        ]
+      },
+      {
+        "id": "profile-twin-shuriken-catapult",
+        "name": "Twin shuriken catapult",
+        "typeName": "Ranged Weapons",
+        "characteristics": [
+          { "name": "Range", "typeId": "t-range", "$text": "24\"" },
+          { "name": "A", "typeId": "t-a", "$text": "6" },
+          { "name": "BS", "typeId": "t-bs", "$text": "3+" },
+          { "name": "S", "typeId": "t-s", "$text": "4" },
+          { "name": "AP", "typeId": "t-ap", "$text": "0" },
+          { "name": "D", "typeId": "t-d", "$text": "1" }
+        ]
+      },
+      {
+        "id": "profile-scatter-laser",
+        "name": "Scatter laser",
+        "typeName": "Ranged Weapons",
+        "characteristics": [
+          { "name": "Range", "typeId": "t-range", "$text": "36\"" },
+          { "name": "A", "typeId": "t-a", "$text": "4" },
+          { "name": "BS", "typeId": "t-bs", "$text": "3+" },
+          { "name": "S", "typeId": "t-s", "$text": "6" },
+          { "name": "AP", "typeId": "t-ap", "$text": "-1" },
+          { "name": "D", "typeId": "t-d", "$text": "1" }
+        ]
+      },
+      {
+        "id": "profile-warlock",
+        "name": "Warlock",
+        "typeName": "Unit",
+        "characteristics": [
+          { "name": "M", "typeId": "t-m", "$text": "6\"" },
+          { "name": "T", "typeId": "t-t", "$text": "3" },
+          { "name": "Sv", "typeId": "t-sv", "$text": "4+" },
+          { "name": "W", "typeId": "t-w", "$text": "2" },
+          { "name": "LD", "typeId": "t-ld", "$text": "6+" },
+          { "name": "OC", "typeId": "t-oc", "$text": "1" }
+        ]
       }
     ]
   }
