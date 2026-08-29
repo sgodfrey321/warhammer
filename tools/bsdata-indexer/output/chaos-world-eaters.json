@@ -1,0 +1,2606 @@
+{
+  "faction": "Chaos - World Eaters",
+  "mfm_slug": "world-eaters",
+  "mfm_slug_guessed": false,
+  "units": [
+    {
+      "abilities": [
+        {
+          "name": "Reborn in Blood",
+          "text": "At the start of the battle round, when you make a Blessings of Khorne roll, if this model is destroyed, you can use a triple 6 from that roll to use this ability instead of activating any Blessings of Khorne at the start of that battle round. If you do, this model is no longer destroyed and in the Reinforcements step of your next Movement phase, it is set up anywhere on the battlefield using its Deep Strike ability, with 8 wounds remaining."
+        },
+        {
+          "name": "Wrathful Presence",
+          "text": "At the start of the battle round, select one Wrathful Presence ability. Until the start of the next battle round, this model has that ability."
+        },
+        {
+          "name": "Damaged: 1-6 wounds remaining",
+          "text": "While this model has 1-6 wounds remaining, each time this model makes an attack, subtract 1 from the Hit roll."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/angron",
+      "is_legends": false,
+      "keywords": [
+        "Faction: World Eaters",
+        "Monster",
+        "Fly",
+        "Character",
+        "Epic Hero",
+        "Chaos",
+        "Khorne",
+        "Daemon",
+        "Primarch",
+        "Angron"
+      ],
+      "mfm_matched": true,
+      "name": "Angron",
+      "points": [
+        {
+          "label": "Your Unit Costs",
+          "models": 1,
+          "points": 330,
+          "range": "[1,)"
+        }
+      ],
+      "source_catalogue_id": "37e4-799e-798f-19a8",
+      "source_entry_id": "f4b8-1179-de57-4d69",
+      "stats": {
+        "InSv": "4+",
+        "LD": "5+",
+        "M": "14\"",
+        "OC": "6",
+        "Sv": "2+",
+        "T": "11",
+        "W": "16"
+      }
+    },
+    {
+      "abilities": [],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/blessings-of-khorne-reference",
+      "is_legends": false,
+      "keywords": [
+        "Configuration"
+      ],
+      "mfm_matched": false,
+      "name": "Blessings of Khorne Reference",
+      "points": [],
+      "source_catalogue_id": "8d4f-a4cb-ec1c-7f95",
+      "source_entry_id": "5558-f47e-9f45-3fca",
+      "stats": {}
+    },
+    {
+      "abilities": [
+        {
+          "name": "Scuttling Gait",
+          "text": "Each time this unit Advances, do not make an Advance roll for it. Instead, until the end of the phase, add 6\" to the Move characteristic of models in this unit."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/blood-slaughterer-legends",
+      "is_legends": true,
+      "keywords": [
+        "Vehicle",
+        "Walker",
+        "Chaos",
+        "Khorne",
+        "Daemon",
+        "Blood Slaughterer"
+      ],
+      "mfm_matched": false,
+      "name": "Blood Slaughterer [Legends]",
+      "points": [],
+      "source_catalogue_id": "e2a-75fd-5a20-fffc",
+      "source_entry_id": "fdad-1104-a934-3812",
+      "stats": {
+        "InSv": "5+",
+        "LD": "6+",
+        "M": "12\"",
+        "OC": "3",
+        "Sv": "3+",
+        "T": "9",
+        "W": "10"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Brass Stampede",
+          "text": "Each time this unit ends a Charge move, select one enemy unit within Engagement Range of this unit and roll one D6 for each model in this unit: for each 4+, that enemy unit suffers D3 mortal wounds."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/bloodcrushers",
+      "is_legends": false,
+      "keywords": [
+        "Mounted",
+        "Chaos",
+        "Daemon",
+        "Khorne",
+        "Faction: Blood Legions",
+        "Summoned",
+        "Bloodcrushers"
+      ],
+      "mfm_matched": true,
+      "name": "Bloodcrushers",
+      "points": [
+        {
+          "label": "Your 1st To 2nd Units Cost",
+          "models": 3,
+          "points": 95,
+          "range": "[1,2]"
+        },
+        {
+          "label": "Your 1st To 2nd Units Cost",
+          "models": 6,
+          "points": 190,
+          "range": "[1,2]"
+        },
+        {
+          "label": "Your 3rd + Unit Costs",
+          "models": 3,
+          "points": 115,
+          "range": "[3,)"
+        },
+        {
+          "label": "Your 3rd + Unit Costs",
+          "models": 6,
+          "points": 210,
+          "range": "[3,)"
+        }
+      ],
+      "source_catalogue_id": "58cd-44ed-d3fb-3cf9",
+      "source_entry_id": "e65f-c7c7-1d18-1a60",
+      "stats": {
+        "InSv": "5+",
+        "LD": "7+",
+        "M": "10\"",
+        "OC": "2",
+        "Sv": "3+",
+        "T": "7",
+        "W": "4"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Aura of Dark Glory",
+          "text": "Models in this unit have an invulnerable save characteristic of 5+."
+        },
+        {
+          "name": "Leader",
+          "text": "This model can be attached to the following unit: ^^**Jakhals**^^"
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/bloodcult-champion-crucible",
+      "is_legends": false,
+      "keywords": [
+        "Faction: World Eaters",
+        "Infantry",
+        "Character",
+        "Grenades",
+        "Khorne",
+        "Bloodcult Champion",
+        "Crucible"
+      ],
+      "mfm_matched": false,
+      "name": "Bloodcult Champion [Crucible]",
+      "points": [],
+      "source_catalogue_id": "d7a2-5312-2091-050c",
+      "source_entry_id": "544e-3db3-4878-3db3",
+      "stats": {
+        "InSv": "5+",
+        "LD": "6+",
+        "M": "7\"",
+        "OC": "1",
+        "Sv": "6+",
+        "T": "4",
+        "W": "3"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Bane of Cowards",
+          "text": "Each time an enemy unit (excluding Monsters and Vehicles) within Engagement Range of one or more units from your army with this ability Falls Back, models in that enemy unit must take Desperate Escape tests. When doing so, if that enemy unit is also Battle-shocked, subtract 1 from each of those Desperate Escape tests."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/bloodletters",
+      "is_legends": false,
+      "keywords": [
+        "Infantry",
+        "Battleline",
+        "Chaos",
+        "Daemon",
+        "Khorne",
+        "Summoned",
+        "Faction: Blood Legions"
+      ],
+      "mfm_matched": true,
+      "name": "Bloodletters",
+      "points": [
+        {
+          "label": "Your Unit Costs",
+          "models": 10,
+          "points": 90,
+          "range": "[1,)"
+        }
+      ],
+      "source_catalogue_id": "0575-9800-5371-800c",
+      "source_entry_id": "9188-4709-00ba-e5e0",
+      "stats": {
+        "InSv": "5+",
+        "LD": "7+",
+        "M": "8\"",
+        "OC": "1",
+        "Sv": "7+",
+        "T": "4",
+        "W": "1"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Daemon Lord of Khorne (Aura)",
+          "text": "While a friendly ^^Blood Legions^^ unit is within 6\" of this model, each time a model in that unit makes a melee attack, add 1 to the Hit roll."
+        },
+        {
+          "name": "Relentless Carnage",
+          "text": "At the end of the Fight phase, you can select one enemy unit within Engagement Range of this model and roll eight D6: for each 4+, that enemy unit suffers 1 mortal wound."
+        },
+        {
+          "name": "Damaged: 1-6 wounds remaining",
+          "text": "While this model has 1-6 wounds remaining, each time this model makes an attack, subtract 1 from the Hit roll."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/bloodthirster",
+      "is_legends": false,
+      "keywords": [
+        "Monster",
+        "Character",
+        "Fly",
+        "Chaos",
+        "Daemon",
+        "Khorne",
+        "Faction: Blood Legions",
+        "Summoned",
+        "Bloodthirster"
+      ],
+      "mfm_matched": true,
+      "name": "Bloodthirster",
+      "points": [
+        {
+          "label": "Your 1st To 2nd Units Cost",
+          "models": 1,
+          "points": 320,
+          "range": "[1,2]"
+        },
+        {
+          "label": "Your 3rd + Unit Costs",
+          "models": 1,
+          "points": 335,
+          "range": "[3,)"
+        }
+      ],
+      "source_catalogue_id": "71c3-4281-83fc-fc74",
+      "source_entry_id": "4ad2-bd20-6dfe-776b",
+      "stats": {
+        "InSv": "4+",
+        "LD": "6+",
+        "M": "12\"",
+        "OC": "5",
+        "Sv": "3+",
+        "T": "11",
+        "W": "18"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Endless Hatred",
+          "text": "You can re-roll Charge rolls made for this model's unit."
+        },
+        {
+          "name": "Leader",
+          "text": "This model can be attached to the following unit: ^^**Khorne Berzerkers**^^"
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/butcherlord-crucible",
+      "is_legends": false,
+      "keywords": [
+        "Faction: World Eaters",
+        "Infantry",
+        "Character",
+        "Grenades",
+        "Chaos",
+        "Khorne",
+        "Butcherlord",
+        "Crucible"
+      ],
+      "mfm_matched": false,
+      "name": "Butcherlord [Crucible]",
+      "points": [],
+      "source_catalogue_id": "1210-041d-8576-2808",
+      "source_entry_id": "85e5-721a-d505-3881",
+      "stats": {
+        "InSv": "4+",
+        "LD": "6+",
+        "M": "8\"",
+        "OC": "1",
+        "Sv": "3+",
+        "T": "4",
+        "W": "5"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Atomantic Arc-reactor",
+          "text": "Each time this unit shoots its Cerberus neutron pulse array in your Shooting phase, provided it Remained Stationary this turn, that weapon has the [LETHAL HITS] ability."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/cerberus-legends",
+      "is_legends": true,
+      "keywords": [
+        "Vehicle",
+        "Smoke",
+        "Cerberus"
+      ],
+      "mfm_matched": false,
+      "name": "Cerberus [Legends]",
+      "points": [],
+      "source_catalogue_id": "f924-6fa9-cee4-b6ee",
+      "source_entry_id": "4044-b458-fb4d-d05b",
+      "stats": {
+        "LD": "6+",
+        "M": "10\"",
+        "OC": "6",
+        "Sv": "2+",
+        "T": "12",
+        "W": "18"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Assault Ramp",
+          "text": "Each time a unit disembarks from this model after it has made a Normal move, that unit is still eligible to declare a charge this turn."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/chaos-land-raider",
+      "is_legends": false,
+      "keywords": [
+        "Faction: World Eaters",
+        "Vehicle",
+        "Transport",
+        "Smoke",
+        "Chaos",
+        "Khorne",
+        "Land Raider",
+        "Frame"
+      ],
+      "mfm_matched": true,
+      "name": "Chaos Land Raider",
+      "points": [
+        {
+          "label": "Your 1st To 2nd Units Cost",
+          "models": 1,
+          "points": 220,
+          "range": "[1,2]"
+        },
+        {
+          "label": "Your 3rd + Unit Costs",
+          "models": 1,
+          "points": 240,
+          "range": "[3,)"
+        }
+      ],
+      "source_catalogue_id": "79da-4515-ca6e-ce6c",
+      "source_entry_id": "4251-bd4f-f7ac-9487",
+      "stats": {
+        "LD": "6+",
+        "M": "10\"",
+        "OC": "5",
+        "Sv": "2+",
+        "T": "12",
+        "W": "16"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Blood-hungry Annihilator",
+          "text": "Each time this model makes a ranged attack that targets the closest eligible ^^**Monster^^** or ^^**Vehicle^^** target within 18\", you can re-roll the Wound roll and you can re-roll the Damage roll."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/chaos-predator-annihilator",
+      "is_legends": false,
+      "keywords": [
+        "Faction: World Eaters",
+        "Vehicle",
+        "Smoke",
+        "Chaos",
+        "Khorne",
+        "Predator Annihilator",
+        "Frame"
+      ],
+      "mfm_matched": true,
+      "name": "Chaos Predator Annihilator",
+      "points": [
+        {
+          "label": "Your 1st To 2nd Units Cost",
+          "models": 1,
+          "points": 130,
+          "range": "[1,2]"
+        },
+        {
+          "label": "Your 3rd + Unit Costs",
+          "models": 1,
+          "points": 140,
+          "range": "[3,)"
+        }
+      ],
+      "source_catalogue_id": "2036-652e-faf4-0d0e",
+      "source_entry_id": "497c-f787-5a7e-1020",
+      "stats": {
+        "LD": "6+",
+        "M": "10\"",
+        "OC": "3",
+        "Sv": "3+",
+        "T": "10",
+        "W": "11"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Punishing Suppression",
+          "text": "In your Shooting phase, after this model has shot, select one enemy unit hit by one or more of those attacks (excluding ^^**Monsters^^** and ^^**Vehicles^^*). Until the start of your next turn, that enemy unit is suppressed. While a unit is suppressed, each time a model in that unit makes an attack, subtract 1 from the Hit roll."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/chaos-predator-destructor",
+      "is_legends": false,
+      "keywords": [
+        "Faction: World Eaters",
+        "Vehicle",
+        "Smoke",
+        "Chaos",
+        "Khorne",
+        "Predator Destructor",
+        "Frame"
+      ],
+      "mfm_matched": true,
+      "name": "Chaos Predator Destructor",
+      "points": [
+        {
+          "label": "Your 1st To 2nd Units Cost",
+          "models": 1,
+          "points": 130,
+          "range": "[1,2]"
+        },
+        {
+          "label": "Your 3rd + Unit Costs",
+          "models": 1,
+          "points": 140,
+          "range": "[3,)"
+        }
+      ],
+      "source_catalogue_id": "0b05-8696-2b92-85a5",
+      "source_entry_id": "04a0-269e-3bab-2c61",
+      "stats": {
+        "LD": "6+",
+        "M": "10\"",
+        "OC": "3",
+        "Sv": "3+",
+        "T": "10",
+        "W": "11"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Meet Any Challenge",
+          "text": "In your opponent's Movement phase, each time an enemy unit is set up or ends a Normal, Advance or Fall Back move within 8\" of this model, any units embarked within it can disembark."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/chaos-rhino",
+      "is_legends": false,
+      "keywords": [
+        "Faction: World Eaters",
+        "Vehicle",
+        "Transport",
+        "Dedicated Transport",
+        "Smoke",
+        "Chaos",
+        "Khorne",
+        "Rhino",
+        "Frame"
+      ],
+      "mfm_matched": true,
+      "name": "Chaos Rhino",
+      "points": [
+        {
+          "label": "Your 1st To 3rd Units Cost",
+          "models": 1,
+          "points": 75,
+          "range": "[1,3]"
+        },
+        {
+          "label": "Your 4th + Unit Costs",
+          "models": 1,
+          "points": 85,
+          "range": "[4,)"
+        }
+      ],
+      "source_catalogue_id": "891d-f175-70de-994e",
+      "source_entry_id": "e849-ce40-ee43-7623",
+      "stats": {
+        "LD": "6+",
+        "M": "12\"",
+        "OC": "2",
+        "Sv": "3+",
+        "T": "9",
+        "W": "10"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "To Slake Its Rage",
+          "text": "This unit is eligible to declare a charge in a turn in which it Advanced."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/chaos-spawn",
+      "is_legends": false,
+      "keywords": [
+        "Faction: World Eaters",
+        "Beast",
+        "Chaos",
+        "Khorne",
+        "Spawn"
+      ],
+      "mfm_matched": true,
+      "name": "Chaos Spawn",
+      "points": [
+        {
+          "label": "Your Unit Costs",
+          "models": 2,
+          "points": 95,
+          "range": "[1,)"
+        }
+      ],
+      "source_catalogue_id": "4d07-d613-ee8a-1a27",
+      "source_entry_id": "edde-57bf-bccc-d8b2",
+      "stats": {
+        "LD": "7+",
+        "M": "10\"",
+        "OC": "1",
+        "Sv": "4+",
+        "T": "5",
+        "W": "4"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Bloody Fury",
+          "text": "- This unit’s ranged attacks that target the closest eligible target can re-roll **hit rolls**.\n- When this unit **declares a charge**, you can use this part of this ability. \nIf you do: \n-- This unit can re-roll that **charge roll**.\n-- This unit must end that **charge move engaged** with the closest **charge target**."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/chaos-terminators",
+      "is_legends": false,
+      "keywords": [
+        "Faction: World Eaters",
+        "Infantry",
+        "Chaos",
+        "Khorne",
+        "Terminator",
+        "Terminator Squad"
+      ],
+      "mfm_matched": true,
+      "name": "Chaos Terminators",
+      "points": [
+        {
+          "label": "Your 1st To 2nd Units Cost",
+          "models": 5,
+          "points": 165,
+          "range": "[1,2]"
+        },
+        {
+          "label": "Your 1st To 2nd Units Cost",
+          "models": 10,
+          "points": 330,
+          "range": "[1,2]"
+        },
+        {
+          "label": "Your 3rd + Unit Costs",
+          "models": 5,
+          "points": 175,
+          "range": "[3,)"
+        },
+        {
+          "label": "Your 3rd + Unit Costs",
+          "models": 10,
+          "points": 340,
+          "range": "[3,)"
+        }
+      ],
+      "source_catalogue_id": "94b7-fa73-a8cd-5b9d",
+      "source_entry_id": "45f6-8429-a1d9-2a51",
+      "stats": {
+        "InSv": "4+",
+        "LD": "6+",
+        "M": "7\"",
+        "OC": "1",
+        "Sv": "2+",
+        "T": "5",
+        "W": "3"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Damaged: 1-10 wounds remaining",
+          "text": "While this model has 1-10 wounds remaining, each time this model makes an attack, subtract 1 from the Hit roll."
+        },
+        {
+          "name": "Aerial Assault",
+          "text": "Each time a unit with the Deep Strike ability disembarks from this model after it has made a Normal move, that unit is still eligible to declare a charge this turn."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/chaos-thunderhawk-legends",
+      "is_legends": true,
+      "keywords": [
+        "Vehicle",
+        "Titanic",
+        "Fly",
+        "Aircraft",
+        "Transport",
+        "Chaos",
+        "Thunderhawk"
+      ],
+      "mfm_matched": false,
+      "name": "Chaos Thunderhawk [Legends]",
+      "points": [],
+      "source_catalogue_id": "f7dd-51f2-3195-dca4",
+      "source_entry_id": "6844-986c-b0ea-6dd5",
+      "stats": {
+        "LD": "6+",
+        "M": "20\"+",
+        "OC": "0",
+        "Sv": "2+",
+        "T": "12",
+        "W": "30"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Lord of Murder",
+          "text": "While this model is within 3\" of one or more friendly ^^**World Eaters Infantry**^^ units, this model has the Lone Operative ability."
+        },
+        {
+          "name": "Devastating Assault",
+          "text": "Each time this model makes a Charge move, until the end of the turn, its hellforged weapons have the [DEVASTATING WOUNDS] ability."
+        },
+        {
+          "name": "Direct the Slaughter",
+          "text": "Once per battle round, one model from your army with this ability can use it when a friendly ^^**World Eaters^^** unit within 12\" of this model is targeted with a Stratagem. If it does, reduce the CP cost of that Stratagem by 1CP."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/daemon-prince-of-khorne",
+      "is_legends": false,
+      "keywords": [
+        "Faction: World Eaters",
+        "Monster",
+        "Character",
+        "Chaos",
+        "Khorne",
+        "Daemon",
+        "Daemon Prince"
+      ],
+      "mfm_matched": true,
+      "name": "Daemon Prince of Khorne",
+      "points": [
+        {
+          "label": "Your Unit Costs",
+          "models": 1,
+          "points": 200,
+          "range": "[1,)"
+        }
+      ],
+      "source_catalogue_id": "9537-27cc-2058-3ccc",
+      "source_entry_id": "40c5-9ebd-6d42-2855",
+      "stats": {
+        "InSv": "4+",
+        "LD": "6+",
+        "M": "10\"",
+        "OC": "3",
+        "Sv": "2+",
+        "T": "10",
+        "W": "10"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Bloodied Terror",
+          "text": "At the start of the Fight phase, each enemy unit within Engagement Range of this model must take a Battle-shock test, subtracting 1 if that enemy unit is Below Half-strength."
+        },
+        {
+          "name": "Swooping Predator",
+          "text": "Each time this model ends a Normal or Advance move, you can select one enemy unit that it moved over during that move and roll 6 D6: for each 4+, that enemy unit suffers 1 mortal wound."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/daemon-prince-of-khorne-with-wings",
+      "is_legends": false,
+      "keywords": [
+        "Faction: World Eaters",
+        "Monster",
+        "Character",
+        "Chaos",
+        "Khorne",
+        "Daemon",
+        "Daemon Prince",
+        "Fly"
+      ],
+      "mfm_matched": true,
+      "name": "Daemon Prince of Khorne with wings",
+      "points": [
+        {
+          "label": "Your Unit Costs",
+          "models": 1,
+          "points": 170,
+          "range": "[1,)"
+        }
+      ],
+      "source_catalogue_id": "7541-4d29-df98-afc4",
+      "source_entry_id": "0294-61a4-c6ed-b2e8",
+      "stats": {
+        "InSv": "4+",
+        "LD": "6+",
+        "M": "14\"",
+        "OC": "3",
+        "Sv": "2+",
+        "T": "9",
+        "W": "10"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Malefic Impact",
+          "text": "Melee weapons equipped by models in this unit have the [^^Lance^^] ability."
+        },
+        {
+          "name": "Leader",
+          "text": "This model can be attached to the following unit: ^^**Mounted Daemon**^^ units which share one of the following keywords with this model ^^**Khorne, Nurgle, Slaanesh, Tzeentch**^^"
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/daemonic-charioteer-crucible",
+      "is_legends": false,
+      "keywords": [
+        "Character",
+        "Chaos",
+        "Daemon",
+        "Crucible",
+        "Mounted",
+        "Daemonic Charioteer",
+        "Faction: Legiones Daemonica",
+        "Shadow Legion",
+        "Non-Monster Character"
+      ],
+      "mfm_matched": false,
+      "name": "Daemonic Charioteer [Crucible]",
+      "points": [],
+      "source_catalogue_id": "d5c7-8476-f068-925d",
+      "source_entry_id": "8597-d6dd-511e-80ae",
+      "stats": {
+        "LD": "7+",
+        "M": "6\"",
+        "OC": "3",
+        "Sv": "6+",
+        "T": "7",
+        "W": "8"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Daemonic Locus",
+          "text": "While this model is leading a unit, in your Command phase, you can return 1 destroyed Bodyguard model, or D3 destroyed models with the ^^**Battleline**^^ keyword, to that unit."
+        },
+        {
+          "name": "Leader",
+          "text": "This model can be attached to the following units: ^^**Infantry Daemon**^^ units (excluding ^^**Possessed**^^ units) which share one of the following keywords with this model ^^**Khorne, Nurgle, Slaanesh, Tzeentch**^^"
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/daemonic-herald-crucible",
+      "is_legends": false,
+      "keywords": [
+        "Character",
+        "Infantry",
+        "Chaos",
+        "Daemon",
+        "Summoned",
+        "Daemonic Herald",
+        "Crucible",
+        "Faction: Legiones Daemonica",
+        "Shadow Legion",
+        "Non-Monster Character"
+      ],
+      "mfm_matched": false,
+      "name": "Daemonic Herald [Crucible]",
+      "points": [],
+      "source_catalogue_id": "b069-cadc-4a08-a736",
+      "source_entry_id": "3a39-0b56-25e0-eff8",
+      "stats": {
+        "LD": "7+",
+        "M": "6\"",
+        "OC": "1",
+        "Sv": "7+",
+        "T": "3",
+        "W": "3"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Scuttling Walker",
+          "text": "Each time this unit makes a Normal, Advance or Fall Back move, it can move through models (excluding ^^**Titanic**^^ models) and terrain features. When doing so, it can move within Engagement Range of enemy models, but cannot end that move within Engagement Range of them, and any Desperate Escape test is automatically passed."
+        },
+        {
+          "name": "Unleash Wrath",
+          "text": "At the end of your opponent's Movement phase, you can select one enemy unit that was set up on the battlefield within 12\" of this model; this model can then either:\n- Shoot at that unit, but only if it is an eligible target.\n- Declare a charge against that unit (note that even if this charge is successful, this model does not receive any Charge bonus this turn)."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/defiler",
+      "is_legends": false,
+      "keywords": [
+        "Faction: World Eaters",
+        "Vehicle",
+        "Walker",
+        "Chaos",
+        "Khorne",
+        "Daemon",
+        "Defiler"
+      ],
+      "mfm_matched": true,
+      "name": "Defiler",
+      "points": [
+        {
+          "label": "Your 1st Unit Costs",
+          "models": 1,
+          "points": 270,
+          "range": "[1,1]"
+        },
+        {
+          "label": "Your 2nd + Unit Costs",
+          "models": 1,
+          "points": 310,
+          "range": "[2,)"
+        }
+      ],
+      "source_catalogue_id": "9b39-b485-dbc8-fcf9",
+      "source_entry_id": "ea51-5575-9e74-9346",
+      "stats": {
+        "InSv": "5+",
+        "LD": "6+",
+        "M": "14\"",
+        "OC": "5",
+        "Sv": "3+",
+        "T": "11",
+        "W": "18"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Deredeo Strike",
+          "text": "Each time this model makes a ranged attack that targets a unit that is not Below Half-strength, you can re-roll the Hit roll."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/deredeo-dreadnought-legends",
+      "is_legends": true,
+      "keywords": [
+        "Vehicle",
+        "Walker",
+        "Smoke",
+        "Dreadnought",
+        "Deredeo Dreadnought"
+      ],
+      "mfm_matched": false,
+      "name": "Deredeo Dreadnought [Legends]",
+      "points": [],
+      "source_catalogue_id": "e86a-63b2-d572-270b",
+      "source_entry_id": "d38d-c3a2-f753-efea",
+      "stats": {
+        "InSv": "5+",
+        "LD": "6+",
+        "M": "6\"",
+        "OC": "3",
+        "Sv": "2+",
+        "T": "9",
+        "W": "12"
+      }
+    },
+    {
+      "abilities": [],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/detachment",
+      "is_legends": false,
+      "keywords": [
+        "Configuration"
+      ],
+      "mfm_matched": false,
+      "name": "Detachment",
+      "points": [],
+      "source_catalogue_id": "d325-e694-6930-accb",
+      "source_entry_id": "84c8-b821-877d-72e6",
+      "stats": {}
+    },
+    {
+      "abilities": [
+        {
+          "name": "Bloodthirst",
+          "text": "Add 2 to Charge rolls made for this unit."
+        },
+        {
+          "name": "Leader",
+          "text": "This model can be attached to the following unit: ^^**Khorne Berzerkers**^^"
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/eight-blessed-lord-crucible",
+      "is_legends": false,
+      "keywords": [
+        "Faction: World Eaters",
+        "Character",
+        "Chaos",
+        "Khorne",
+        "Mounted",
+        "Eight-blessed Lord",
+        "Crucible"
+      ],
+      "mfm_matched": false,
+      "name": "Eight-blessed Lord [Crucible]",
+      "points": [],
+      "source_catalogue_id": "52c4-64d7-5103-b34c",
+      "source_entry_id": "71ad-8562-f833-5872",
+      "stats": {
+        "InSv": "4+",
+        "LD": "6+",
+        "M": "10\"",
+        "OC": "2",
+        "Sv": "3+",
+        "T": "6",
+        "W": "7"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Beacons of Rage (Aura)",
+          "text": "While a friendly ^^**World Eaters^^** unit is within 6\" of this unit, each time a model in that unit makes a melee attack that targets a unit (excluding ^^**Monsters^^** and ^^**Vehicles^^**), add 1 to the Hit roll. If that attack targets a unit that is Below Half-strength, add 1 to the Wound roll as well."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/eightbound",
+      "is_legends": false,
+      "keywords": [
+        "Faction: World Eaters",
+        "Infantry",
+        "Chaos",
+        "Khorne",
+        "Daemon",
+        "Eightbound",
+        "Possessed"
+      ],
+      "mfm_matched": true,
+      "name": "Eightbound",
+      "points": [
+        {
+          "label": "Your 1st To 2nd Units Cost",
+          "models": 3,
+          "points": 125,
+          "range": "[1,2]"
+        },
+        {
+          "label": "Your 1st To 2nd Units Cost",
+          "models": 6,
+          "points": 255,
+          "range": "[1,2]"
+        },
+        {
+          "label": "Your 3rd + Unit Costs",
+          "models": 3,
+          "points": 140,
+          "range": "[3,)"
+        },
+        {
+          "label": "Your 3rd + Unit Costs",
+          "models": 6,
+          "points": 270,
+          "range": "[3,)"
+        }
+      ],
+      "source_catalogue_id": "96aa-4baa-2cb2-da3d",
+      "source_entry_id": "9435-1f44-7e5b-d510",
+      "stats": {
+        "InSv": "5+",
+        "LD": "6+",
+        "M": "10\"",
+        "OC": "1",
+        "Sv": "3+",
+        "T": "6",
+        "W": "3"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Rend and Tear",
+          "text": "Each time a model in this unit makes a melee attack that targets a ^^**Monster^^** or ^^**Vehicle^^** unit, until the end of the phase, improve the Damage characteristic of that attack by 1."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/exalted-eightbound",
+      "is_legends": false,
+      "keywords": [
+        "Faction: World Eaters",
+        "Infantry",
+        "Chaos",
+        "Khorne",
+        "Daemon",
+        "Exalted Eightbound",
+        "Possessed"
+      ],
+      "mfm_matched": true,
+      "name": "Exalted Eightbound",
+      "points": [
+        {
+          "label": "Your 1st To 2nd Units Cost",
+          "models": 3,
+          "points": 130,
+          "range": "[1,2]"
+        },
+        {
+          "label": "Your 1st To 2nd Units Cost",
+          "models": 6,
+          "points": 265,
+          "range": "[1,2]"
+        },
+        {
+          "label": "Your 3rd + Unit Costs",
+          "models": 3,
+          "points": 145,
+          "range": "[3,)"
+        },
+        {
+          "label": "Your 3rd + Unit Costs",
+          "models": 6,
+          "points": 280,
+          "range": "[3,)"
+        }
+      ],
+      "source_catalogue_id": "e213-0676-347e-9292",
+      "source_entry_id": "9932-3d2b-1e47-d53b",
+      "stats": {
+        "InSv": "5+",
+        "LD": "6+",
+        "M": "10\"",
+        "OC": "1",
+        "Sv": "3+",
+        "T": "6",
+        "W": "3"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Titan-killer",
+          "text": "Each time this model makes a ranged attack with its twin Falchion volcano cannon that targets a MONSTER or VEHICLE unit, that attack has the [DEVASTATING WOUNDS] ability."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/falchion-legends",
+      "is_legends": true,
+      "keywords": [
+        "Vehicle",
+        "Titanic",
+        "Smoke",
+        "Falchion"
+      ],
+      "mfm_matched": false,
+      "name": "Falchion [Legends]",
+      "points": [],
+      "source_catalogue_id": "bcb4-5b55-e4f1-1257",
+      "source_entry_id": "625b-29e4-7be7-db5a",
+      "stats": {
+        "LD": "6+",
+        "M": "9\"",
+        "OC": "8",
+        "Sv": "2+",
+        "T": "13",
+        "W": "24"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Rolling Fortress",
+          "text": "Each time a ranged attack is allocated to a model from your army, if that model is not fully visible to every model in the attacking unit because of this Fellblade model, that model has the Benefit of Cover against that attack."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/fellblade-legends",
+      "is_legends": true,
+      "keywords": [
+        "Vehicle",
+        "Titanic",
+        "Smoke",
+        "Fellblade"
+      ],
+      "mfm_matched": false,
+      "name": "Fellblade [Legends]",
+      "points": [],
+      "source_catalogue_id": "46f-4b79-2b39-41ac",
+      "source_entry_id": "585d-722b-4304-2f63",
+      "stats": {
+        "LD": "6+",
+        "M": "9\"",
+        "OC": "8",
+        "Sv": "2+",
+        "T": "13",
+        "W": "24"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Strafing Run",
+          "text": "Each time this model makes a ranged attack that targets a unit that cannot FLY, add 1 to the Hit roll."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/fire-raptor-gunship-legends",
+      "is_legends": true,
+      "keywords": [
+        "Vehicle",
+        "Fly",
+        "Aircraft",
+        "Fire Raptor Gunship"
+      ],
+      "mfm_matched": false,
+      "name": "Fire Raptor Gunship [Legends]",
+      "points": [],
+      "source_catalogue_id": "306-db45-d47c-f0e9",
+      "source_entry_id": "1fc7-7880-e4d4-acbf",
+      "stats": {
+        "LD": "6+",
+        "M": "20+\"",
+        "OC": "0",
+        "Sv": "3+",
+        "T": "10",
+        "W": "18"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Hunters from the Warp",
+          "text": "At the end of your opponent’s turn, if this unit is not within Engagement Range of one or more enemy units, you can remove it from the battlefield and place it into Strategic Reserves."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/flesh-hounds",
+      "is_legends": false,
+      "keywords": [
+        "Beast",
+        "Chaos",
+        "Daemon",
+        "Khorne",
+        "Faction: Blood Legions",
+        "Summoned",
+        "Flesh Hounds"
+      ],
+      "mfm_matched": true,
+      "name": "Flesh Hounds",
+      "points": [
+        {
+          "label": "Your Unit Costs",
+          "models": 5,
+          "points": 75,
+          "range": "[1,)"
+        },
+        {
+          "label": "Your Unit Costs",
+          "models": 10,
+          "points": 150,
+          "range": "[1,)"
+        }
+      ],
+      "source_catalogue_id": "6977-dedc-7051-b76d",
+      "source_entry_id": "b657-1743-6e3a-0838",
+      "stats": {
+        "InSv": "5+",
+        "LD": "7+",
+        "M": "12\"",
+        "OC": "1",
+        "Sv": "7+",
+        "T": "4",
+        "W": "2"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Furious Onslaught",
+          "text": "Each time this model makes a ranged attack that targets the closest eligible target within 18\", you can re-roll the Hit roll."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/forgefiend",
+      "is_legends": false,
+      "keywords": [
+        "Faction: World Eaters",
+        "Vehicle",
+        "Walker",
+        "Chaos",
+        "Khorne",
+        "Daemon",
+        "Forgefiend"
+      ],
+      "mfm_matched": true,
+      "name": "Forgefiend",
+      "points": [
+        {
+          "label": "Your 1st To 2nd Units Cost",
+          "models": 1,
+          "points": 140,
+          "range": "[1,2]"
+        },
+        {
+          "label": "Your 3rd + Unit Costs",
+          "models": 1,
+          "points": 155,
+          "range": "[3,)"
+        }
+      ],
+      "source_catalogue_id": "b3d8-740b-9c4a-c031",
+      "source_entry_id": "81e1-b212-69c1-308f",
+      "stats": {
+        "InSv": "5+",
+        "LD": "6+",
+        "M": "10\"",
+        "OC": "3",
+        "Sv": "3+",
+        "T": "10",
+        "W": "12"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Loping Speed",
+          "text": "In your opponent's Movement phase, if an enemy unit ends a move within 8\" of this unit, if this unit is not within Engagement Range of one or more enemy units, this unit can make a Normal move of up to D6\"."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/goremongers",
+      "is_legends": false,
+      "keywords": [
+        "Faction: World Eaters",
+        "Infantry",
+        "Grenades",
+        "Chaos",
+        "Khorne",
+        "Goremongers"
+      ],
+      "mfm_matched": true,
+      "name": "Goremongers",
+      "points": [
+        {
+          "label": "Your Unit Costs",
+          "models": 8,
+          "points": 75,
+          "range": "[1,)"
+        }
+      ],
+      "source_catalogue_id": "bd6d-a10d-0bd7-5f0d",
+      "source_entry_id": "b399-9b66-e550-8050",
+      "stats": {
+        "LD": "7+",
+        "M": "9\"",
+        "OC": "1",
+        "Sv": "6+",
+        "T": "4",
+        "W": "1"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Runes of the Blood God",
+          "text": "This model has the Feel No Pain 4+ ability against mortal wounds and Psychic Attacks."
+        },
+        {
+          "name": "Damaged: 1-9 wounds remaining",
+          "text": "While this model has 1-9 wounds remaining, subtract 5 from this model’s Objective Control characteristic and each time this model makes an attack, subtract 1 from the Hit roll."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/greater-brass-scorpion-legends",
+      "is_legends": true,
+      "keywords": [
+        "Vehicle",
+        "Titanic",
+        "Walker",
+        "Chaos",
+        "Khorne",
+        "Daemon",
+        "Greater Brass Scorpion"
+      ],
+      "mfm_matched": false,
+      "name": "Greater Brass Scorpion [Legends]",
+      "points": [],
+      "source_catalogue_id": "4ef1-a5e1-ce64-d13",
+      "source_entry_id": "f564-7bc-21a6-7796",
+      "stats": {
+        "InSv": "5+",
+        "LD": "6+",
+        "M": "12\"",
+        "OC": "10",
+        "Sv": "3+",
+        "T": "12",
+        "W": "26"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Frenzy",
+          "text": "(Once per turn, per unit) In the Fight phase, when an enemy unit targets this unit, after that unit has resolved its attacks, you can use this ability. If you do, this unit is **eligible to fight** (even if it has already fought this phase) and must be **selected to fight** next."
+        },
+        {
+          "name": "Devoted to Destruction",
+          "text": "If this model is equipped with 2 melee weapons in addition to its close combat weapon, add 2 to the Attacks characteristic of those two weapons."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/helbrute",
+      "is_legends": false,
+      "keywords": [
+        "Faction: World Eaters",
+        "Vehicle",
+        "Walker",
+        "Chaos",
+        "Khorne",
+        "Helbrute"
+      ],
+      "mfm_matched": true,
+      "name": "Helbrute",
+      "points": [
+        {
+          "label": "Your Unit Costs",
+          "models": 1,
+          "points": 120,
+          "range": "[1,)"
+        }
+      ],
+      "source_catalogue_id": "f867-cbc9-d166-18eb",
+      "source_entry_id": "273a-db24-3f7c-b977",
+      "stats": {
+        "LD": "6+",
+        "M": "9\"",
+        "OC": "3",
+        "Sv": "2+",
+        "T": "9",
+        "W": "8"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Airborne Predator",
+          "text": "Each time this model makes an attack that targets a unit that can ^^**Fly^^**, add 1 to the Hit roll."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/heldrake",
+      "is_legends": false,
+      "keywords": [
+        "Faction: World Eaters",
+        "Vehicle",
+        "Fly",
+        "Chaos",
+        "Khorne",
+        "Daemon",
+        "Heldrake"
+      ],
+      "mfm_matched": true,
+      "name": "Heldrake",
+      "points": [
+        {
+          "label": "Your Unit Costs",
+          "models": 1,
+          "points": 175,
+          "range": "[1,)"
+        }
+      ],
+      "source_catalogue_id": "64bc-5065-4f9e-4564",
+      "source_entry_id": "de2e-8fae-9d22-24a4",
+      "stats": {
+        "InSv": "5+",
+        "LD": "6+",
+        "M": "12\"",
+        "OC": "-",
+        "Sv": "3+",
+        "T": "9",
+        "W": "12"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Bomb Rack",
+          "text": "Each time this model ends a Normal move, you can select one enemy unit it moved across during that move and roll six D6: for each 3+, that unit suffers 1 mortal wound."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/hell-talon-legends",
+      "is_legends": true,
+      "keywords": [
+        "Vehicle",
+        "Aircraft",
+        "Fly",
+        "Chaos",
+        "Khorne",
+        "Faction: World Eaters",
+        "Hell Talon"
+      ],
+      "mfm_matched": false,
+      "name": "Hell Talon [Legends]",
+      "points": [],
+      "source_catalogue_id": "5504-a332-cd26-a84b",
+      "source_entry_id": "4e04-74aa-2c2f-66d0",
+      "stats": {
+        "InSv": "5+",
+        "LD": "6+",
+        "M": "20+\"",
+        "OC": "0",
+        "Sv": "3+",
+        "T": "9",
+        "W": "14"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Interceptor",
+          "text": "Each time this model makes a ranged attack that targets a unit that can FLY, add 1 to the Hit roll."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/hellblade-legends",
+      "is_legends": true,
+      "keywords": [
+        "Vehicle",
+        "Aircraft",
+        "Fly",
+        "Chaos",
+        "Khorne",
+        "Hellblade",
+        "Faction: World Eaters"
+      ],
+      "mfm_matched": false,
+      "name": "Hellblade [Legends]",
+      "points": [],
+      "source_catalogue_id": "4bc4-284d-9598-a9ec",
+      "source_entry_id": "7320-3dba-703c-b3f0",
+      "stats": {
+        "InSv": "5+",
+        "LD": "6+",
+        "M": "20+\"",
+        "OC": "0",
+        "Sv": "3+",
+        "T": "8",
+        "W": "10"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Infernal Attendants",
+          "text": "While this model is within 3\" of one or more friendly ^^**Daemon Infantry**^^ units, this model has the Lone Operative ability."
+        },
+        {
+          "name": "Font of Unreality",
+          "text": "Each time an attack is allocated to a friendly ^^**Daemon**^^ unit within 3\" of this model, subtract 1 from the Hit roll."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/immortal-champion-crucible",
+      "is_legends": false,
+      "keywords": [
+        "Character",
+        "Chaos",
+        "Daemon",
+        "Crucible",
+        "Faction: Legiones Daemonica",
+        "Monster",
+        "Immortal Champion",
+        "Shadow Legion"
+      ],
+      "mfm_matched": false,
+      "name": "Immortal Champion [Crucible]",
+      "points": [],
+      "source_catalogue_id": "ba07-5f80-6b06-292c",
+      "source_entry_id": "3594-bf68-4a46-fbf8",
+      "stats": {
+        "LD": "6+",
+        "M": "8\"",
+        "OC": "3",
+        "Sv": "2+",
+        "T": "10",
+        "W": "10"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Objective Ravaged",
+          "text": "At the end of your Command phase, if this unit is within range of an objective marker you control, that objective marker remains under your control until your opponent's Level of Control over that objective marker is greater than yours at the end of a phase."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/jakhals",
+      "is_legends": false,
+      "keywords": [
+        "Faction: World Eaters",
+        "Infantry",
+        "Chaos",
+        "Khorne",
+        "Jakhals",
+        "Grenades"
+      ],
+      "mfm_matched": true,
+      "name": "Jakhals",
+      "points": [
+        {
+          "label": "Your Unit Costs",
+          "models": 10,
+          "points": 65,
+          "range": "[1,)"
+        },
+        {
+          "label": "Your Unit Costs",
+          "models": 20,
+          "points": 130,
+          "range": "[1,)"
+        }
+      ],
+      "source_catalogue_id": "8568-71db-b833-93d5",
+      "source_entry_id": "6f81-4538-a414-251e",
+      "stats": {
+        "LD": "7+",
+        "M": "7\"",
+        "OC": "1",
+        "Sv": "6+",
+        "T": "4",
+        "W": "1"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Blood Surge",
+          "text": "In your opponent’s Shooting phase, when an enemy unit has shot, if a model in this unit was destroyed as a result of those attacks, this unit can make a surge move of up to D6+2\"."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/khorne-berzerkers",
+      "is_legends": false,
+      "keywords": [
+        "Faction: World Eaters",
+        "Infantry",
+        "Battleline",
+        "Grenades",
+        "Chaos",
+        "Khorne",
+        "Berzerkers"
+      ],
+      "mfm_matched": true,
+      "name": "Khorne Berzerkers",
+      "points": [
+        {
+          "label": "Your Unit Costs",
+          "models": 10,
+          "points": 170,
+          "range": "[1,)"
+        },
+        {
+          "label": "Your Unit Costs",
+          "models": 20,
+          "points": 330,
+          "range": "[1,)"
+        }
+      ],
+      "source_catalogue_id": "b250-a2f9-7098-353d",
+      "source_entry_id": "f909-00c7-8ba4-018a",
+      "stats": {}
+    },
+    {
+      "abilities": [
+        {
+          "name": "Idol of Blessed Blood",
+          "text": "At the start of the battle round, if this unit is on the battlefield, when you make a Blessings of Khorne roll, roll one additional D6."
+        },
+        {
+          "name": "Damaged: 1-8 wounds remaining",
+          "text": "While this model has 1-8 wounds remaining, subtract 4 from this model’s Objective Control characteristic and each time this model makes an attack, subtract 1 from the Hit roll."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/khorne-lord-of-skulls",
+      "is_legends": false,
+      "keywords": [
+        "Faction: World Eaters",
+        "Vehicle",
+        "Titanic",
+        "Towering",
+        "Chaos",
+        "Khorne",
+        "Daemon",
+        "Lord of Skulls",
+        "Frame"
+      ],
+      "mfm_matched": true,
+      "name": "Khorne Lord of Skulls",
+      "points": [
+        {
+          "label": "Your 1st Unit Costs",
+          "models": 1,
+          "points": 505,
+          "range": "[1,1]"
+        },
+        {
+          "label": "Your 2nd + Unit Costs",
+          "models": 1,
+          "points": 535,
+          "range": "[2,)"
+        }
+      ],
+      "source_catalogue_id": "92f2-c2b5-a0c8-6e19",
+      "source_entry_id": "836c-f65b-6bcb-9663",
+      "stats": {
+        "InSv": "5+",
+        "LD": "6+",
+        "M": "12\"",
+        "OC": "8",
+        "Sv": "3+",
+        "T": "13",
+        "W": "24"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Legendary Killer",
+          "text": "While this model is leading a unit, each time a model in that unit makes a melee attack, re-roll a Hit roll of 1 and re-roll a Wound roll of 1."
+        },
+        {
+          "name": "The Betrayer",
+          "text": "At the end of your Charge phase, if this model is leading a unit and that unit is not within Engagement Range of one or more enemy units, you must take a Leadership test for this model. If that test is failed, one Bodyguard model of your choice in that unit is destroyed."
+        },
+        {
+          "name": "Berserker Frenzy",
+          "text": "The first time this model is destroyed, at the end of the phase, roll one D6: on a 2+, set this model back up on the battlefield as close as possible to where it was destroyed and not within Engagement Range of any enemy units, with 3 wounds remaining."
+        },
+        {
+          "name": "Leader",
+          "text": "This model can be attached to the following unit: ^^**Khorne Berzerkers^^**"
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/kh-rn-the-betrayer",
+      "is_legends": false,
+      "keywords": [
+        "Faction: World Eaters",
+        "Infantry",
+        "Character",
+        "Epic Hero",
+        "Grenades",
+        "Chaos",
+        "Khorne",
+        "Khârn the Betrayer"
+      ],
+      "mfm_matched": true,
+      "name": "Khârn the Betrayer",
+      "points": [
+        {
+          "label": "Your Unit Costs",
+          "models": 1,
+          "points": 115,
+          "range": "[1,)"
+        }
+      ],
+      "source_catalogue_id": "1cfc-2dc0-2a7a-28fe",
+      "source_entry_id": "3449-7dac-6ac8-5d51",
+      "stats": {
+        "InSv": "4+",
+        "LD": "6+",
+        "M": "8\"",
+        "OC": "1",
+        "Sv": "3+",
+        "T": "4",
+        "W": "5"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Line-breaker",
+          "text": "When making ranged attacks, this model can target enemy units within Engagement Range of it with Blast weapons (provided no other friendly units are also within Engagement Range of that enemy unit). In addition, when making ranged attacks, this model does not suffer the penalty to its Hit rolls for being within Engagement Range of one or more enemy units."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/kratos-legends",
+      "is_legends": true,
+      "keywords": [
+        "Vehicle",
+        "Smoke",
+        "Kratos"
+      ],
+      "mfm_matched": false,
+      "name": "Kratos [Legends]",
+      "points": [],
+      "source_catalogue_id": "20a6-a58b-37a3-6db7",
+      "source_entry_id": "78aa-3f99-5fb7-7f83",
+      "stats": {
+        "LD": "6+",
+        "M": "10\"",
+        "OC": "6",
+        "Sv": "2+",
+        "T": "12",
+        "W": "18"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Damaged: 1-8 wounds remaining",
+          "text": "While this model has 1-8 wounds remaining, subtract 5 from this model’s Objective Control characteristic and each time this model makes an attack, subtract 1 from the Hit roll."
+        },
+        {
+          "name": "Bloodlust",
+          "text": "Each time this model makes a Charge move, until the end of the turn, its melee weapons have the [SUSTAINED HITS 1] ability. In addition, once per battle, this model is eligible to declare a charge in a turn in which it Advanced."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/kytan-ravager-legends",
+      "is_legends": true,
+      "keywords": [
+        "Vehicle",
+        "Titanic",
+        "Walker",
+        "Chaos",
+        "Khorne",
+        "Daemon",
+        "Kytan Ravager"
+      ],
+      "mfm_matched": false,
+      "name": "Kytan Ravager [Legends]",
+      "points": [],
+      "source_catalogue_id": "f630-edc9-339d-a309",
+      "source_entry_id": "6c76-b4e-4437-27e2",
+      "stats": {
+        "InSv": "5+",
+        "LD": "6+",
+        "M": "10\"",
+        "OC": "10",
+        "Sv": "3+",
+        "T": "12",
+        "W": "24"
+      }
+    },
+    {
+      "abilities": [],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/land-raider-achilles-legends",
+      "is_legends": true,
+      "keywords": [
+        "Vehicle",
+        "Transport",
+        "Smoke",
+        "Land Raider Achilles"
+      ],
+      "mfm_matched": false,
+      "name": "Land Raider Achilles [Legends]",
+      "points": [],
+      "source_catalogue_id": "1e2d-1a05-ec5-9cbd",
+      "source_entry_id": "3006-ffe-2b0c-6b1b",
+      "stats": {
+        "InSv": "4+",
+        "LD": "6+",
+        "M": "10\"",
+        "OC": "5",
+        "Sv": "2+",
+        "T": "12",
+        "W": "16"
+      }
+    },
+    {
+      "abilities": [],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/land-raider-proteus-legends",
+      "is_legends": true,
+      "keywords": [
+        "Vehicle",
+        "Transport",
+        "Smoke",
+        "Land Raider Proteus"
+      ],
+      "mfm_matched": false,
+      "name": "Land Raider Proteus [Legends]",
+      "points": [],
+      "source_catalogue_id": "4ee3-6d48-2502-12ba",
+      "source_entry_id": "34c8-1025-33f7-baaf",
+      "stats": {
+        "LD": "6+",
+        "M": "12\"",
+        "OC": "5",
+        "Sv": "2+",
+        "T": "12",
+        "W": "16"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Duty Eternal",
+          "text": "Each time an attack is allocated to this model, subtract 1 from the Damage characteristic of that attack."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/leviathan-dreadnought-legends",
+      "is_legends": true,
+      "keywords": [
+        "Vehicle",
+        "Walker",
+        "Smoke",
+        "Dreadnought",
+        "Leviathan Dreadnought"
+      ],
+      "mfm_matched": false,
+      "name": "Leviathan Dreadnought [Legends]",
+      "points": [],
+      "source_catalogue_id": "4436-ca5-9f90-df10",
+      "source_entry_id": "14d4-8062-f090-6719",
+      "stats": {
+        "InSv": "5+",
+        "LD": "6+",
+        "M": "8\"",
+        "OC": "4",
+        "Sv": "2+",
+        "T": "10",
+        "W": "12"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Leader",
+          "text": "This model can be attached to the following units: ^^**Eightbound^^**, ^^**Exalted Eightbound^^**, ^^**Khorne Berzerkers^^**"
+        },
+        {
+          "name": "Fire Riders",
+          "text": "While this model is leading a unit, models in that unit have the Deep Strike ability and each time a model in that unit makes a Normal, Advance, Fall Back or Charge move, it can move horizontally through models and terrain features. When making a Normal, Advance or Fall Back move, models in that unit can move within Engagement Range of enemy models, but cannot end that move within Engagement Range of them and any Desperate Escape test is automatically passed."
+        },
+        {
+          "name": "Bloody Stampede",
+          "text": "Each time this model's unit ends a Charge move, select one enemy unit within Engagement Range of this model, then roll one D6: on a 2-3, that enemy unit suffers 1 mortal wound; on a 4-5, that enemy unit suffers D3 mortal wounds; on a 6, that enemy unit suffers D3+3 mortal wounds."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/lord-invocatus",
+      "is_legends": false,
+      "keywords": [
+        "Faction: World Eaters",
+        "Mounted",
+        "Character",
+        "Epic Hero",
+        "Chaos",
+        "Khorne",
+        "Lord Invocatus"
+      ],
+      "mfm_matched": true,
+      "name": "Lord Invocatus",
+      "points": [
+        {
+          "label": "Your Unit Costs",
+          "models": 1,
+          "points": 100,
+          "range": "[1,)"
+        }
+      ],
+      "source_catalogue_id": "e6a1-7ae6-b759-9a96",
+      "source_entry_id": "3b15-b424-2059-71fa",
+      "stats": {
+        "InSv": "4+",
+        "LD": "6+",
+        "M": "10\"",
+        "OC": "2",
+        "Sv": "3+",
+        "T": "6",
+        "W": "8"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Aggressive Advance",
+          "text": "While this model is leading a unit, models in that unit have a Move characteristic of 10\" and each time a model in that unit makes a Normal, Advance, Fall Back or Charge move, it can move horizontally though terrain features."
+        },
+        {
+          "name": "Crush All Who Stand Before Us",
+          "text": "Each time this model's unit is selected to fight, you can use this ability. When determining which models in this unit are eligible to fight, any models in it that are within 3\" of one or more enemy models are eligible to fight. When resolving those attacks, such models can target one of those enemy units that is within 3\" of them and within Engagement Range of their unit."
+        },
+        {
+          "name": "Leader",
+          "text": "This model can be attached to the following units: ^^**Eightbound^^**, ^^**Exalted Eightbound^^**, ^^**Khorne Berzerkers^^**"
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/lord-on-juggernaut",
+      "is_legends": false,
+      "keywords": [
+        "Faction: World Eaters",
+        "Mounted",
+        "Character",
+        "Chaos",
+        "Khorne",
+        "Lord on Juggernaut"
+      ],
+      "mfm_matched": true,
+      "name": "Lord on Juggernaut",
+      "points": [
+        {
+          "label": "Your Unit Costs",
+          "models": 1,
+          "points": 95,
+          "range": "[1,)"
+        }
+      ],
+      "source_catalogue_id": "222c-8db7-5b68-a060",
+      "source_entry_id": "ec72-f024-4283-0558",
+      "stats": {
+        "InSv": "4+",
+        "LD": "6+",
+        "M": "10\"",
+        "OC": "2",
+        "Sv": "3+",
+        "T": "6",
+        "W": "7"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Leader",
+          "text": "This model can be attached to the following unit: ^^**Khorne Berzerkers^^**"
+        },
+        {
+          "name": "A Worthy Skull",
+          "text": "Each time this model makes a melee attack that targets a ^^**Character^^** unit, you can re-roll the Hit roll and you can re-roll the Wound roll. Each time this model's unit destroys a ^^**Character^^** model, you gain 1CP."
+        },
+        {
+          "name": "Forwards, For Blood!",
+          "text": "While this model is leading a unit, you can re-roll Advance rolls made for that unit and each time that unit makes a Blood Surge move, you can re-roll the D6 used to determine how far models in that unit move."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/master-of-executions",
+      "is_legends": false,
+      "keywords": [
+        "Faction: World Eaters",
+        "Infantry",
+        "Character",
+        "Chaos",
+        "Khorne",
+        "Master of Executions"
+      ],
+      "mfm_matched": true,
+      "name": "Master of Executions",
+      "points": [
+        {
+          "label": "Your Unit Costs",
+          "models": 1,
+          "points": 60,
+          "range": "[1,)"
+        }
+      ],
+      "source_catalogue_id": "ca7d-c77a-28e2-7b6b",
+      "source_entry_id": "1b56-682c-ac33-bc5f",
+      "stats": {
+        "LD": "6+",
+        "M": "8\"",
+        "OC": "1",
+        "Sv": "3+",
+        "T": "4",
+        "W": "4"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Damaged: 1-10 wounds remaining",
+          "text": "While this model has 1-10 wounds remaining, subtract 6 from this model’s Objective Control characteristic and each time this model makes an attack, subtract 1 from the Hit roll."
+        },
+        {
+          "name": "Inviolable Transport",
+          "text": "Once per battle round, when an attack is allocated to this model, you can change the Damage characteristic of that attack to 0."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/mastodon-legends",
+      "is_legends": true,
+      "keywords": [
+        "Vehicle",
+        "Titanic",
+        "Transport",
+        "Smoke",
+        "Mastodon"
+      ],
+      "mfm_matched": false,
+      "name": "Mastodon [Legends]",
+      "points": [],
+      "source_catalogue_id": "3143-8abd-418b-8863",
+      "source_entry_id": "e337-7f05-f1b3-d64e",
+      "stats": {
+        "LD": "6+",
+        "M": "9\"",
+        "OC": "12",
+        "Sv": "2+",
+        "T": "14",
+        "W": "30"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "The Scent of Blood",
+          "text": "In the Charge phase, when this unit **declares a charge**: \n- If an enemy unit **below starting strength** is within 9\" of this unit, this unit has +1 to **charge rolls**. \n- Or: If an enemy unit **below half strength** is within 9\" of this unit, this unit has +2 to **charge rolls**."
+        },
+        {
+          "name": "Savage Exaltation",
+          "text": "Each time this model makes a melee attack that targets an enemy unit that is below its Starting Strength, add 1 to the Hit roll and, if that attack targets an enemy unit that is Below Half-Strength, add 1 to the Wound roll as well."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/maulerfiend",
+      "is_legends": false,
+      "keywords": [
+        "Faction: World Eaters",
+        "Vehicle",
+        "Walker",
+        "Chaos",
+        "Khorne",
+        "Daemon",
+        "Maulerfiend"
+      ],
+      "mfm_matched": true,
+      "name": "Maulerfiend",
+      "points": [
+        {
+          "label": "Your 1st To 2nd Units Cost",
+          "models": 1,
+          "points": 140,
+          "range": "[1,2]"
+        },
+        {
+          "label": "Your 3rd + Unit Costs",
+          "models": 1,
+          "points": 150,
+          "range": "[3,)"
+        }
+      ],
+      "source_catalogue_id": "6afa-65ac-21df-090d",
+      "source_entry_id": "a619-8a52-be03-3bd5",
+      "stats": {
+        "InSv": "5+",
+        "LD": "6+",
+        "M": "12\"",
+        "OC": "3",
+        "Sv": "3+",
+        "T": "10",
+        "W": "12"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Powerful Volley",
+          "text": "Each time this model shoots in your Shooting phase, provided it Remained Stationary this turn, all [HEAVY] weapons equipped by models in this unit have the [LETHAL HITS] ability."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/rapier-carrier-legends",
+      "is_legends": true,
+      "keywords": [
+        "Artillery",
+        "Vehicle",
+        "Rapier Carrier"
+      ],
+      "mfm_matched": false,
+      "name": "Rapier Carrier [Legends]",
+      "points": [],
+      "source_catalogue_id": "ebdf-c9f8-b845-6b8c",
+      "source_entry_id": "2aee-e03c-836e-4c6e",
+      "stats": {
+        "LD": "6+",
+        "M": "3\"",
+        "OC": "2",
+        "Sv": "2+",
+        "T": "6",
+        "W": "6"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Even In Death I Serve",
+          "text": "The first time this model is destroyed, remove it from play without resolving its Deadly Demise ability. Then, at the end of the phase, roll one D6: on a 2+, set this model back up on the battlefield as close as possible to where it was destroyed and not within Engagement Range of any enemy units, with D6 wounds remaining."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/relic-contemptor-dreadnought-legends",
+      "is_legends": true,
+      "keywords": [
+        "Vehicle",
+        "Walker",
+        "Dreadnought",
+        "Relic Contemptor Dreadnought"
+      ],
+      "mfm_matched": false,
+      "name": "Relic Contemptor Dreadnought [Legends]",
+      "points": [],
+      "source_catalogue_id": "29d2-ab15-e518-2503",
+      "source_entry_id": "783a-1c02-b377-b169",
+      "stats": {
+        "InSv": "5+",
+        "LD": "6+",
+        "M": "6\"",
+        "OC": "3",
+        "Sv": "2+",
+        "T": "9",
+        "W": "10"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Armoured Spearhead",
+          "text": "Each time this model makes an attack that targets an enemy unit, re-roll a Hit roll of 1 and, if that unit is within range of an objective marker you do not control, you can re-roll the Hit roll instead."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/sicaran-battle-tank-legends",
+      "is_legends": true,
+      "keywords": [
+        "Vehicle",
+        "Smoke",
+        "Sicaran Battle Tank"
+      ],
+      "mfm_matched": false,
+      "name": "Sicaran Battle Tank [Legends]",
+      "points": [],
+      "source_catalogue_id": "6253-e786-e83e-23e9",
+      "source_entry_id": "b2f1-197b-fb3b-687f",
+      "stats": {
+        "LD": "6+",
+        "M": "10\"",
+        "OC": "4",
+        "Sv": "2+",
+        "T": "11",
+        "W": "14"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Rotating Death",
+          "text": "This model’s Punisher rotary cannon has the [SUSTAINED HITS 1] ability when targeting INFANTRY units."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/sicaran-punisher-legends",
+      "is_legends": true,
+      "keywords": [
+        "Vehicle",
+        "Smoke",
+        "Sicaran Punisher"
+      ],
+      "mfm_matched": false,
+      "name": "Sicaran Punisher [Legends]",
+      "points": [],
+      "source_catalogue_id": "29fb-f6b4-4070-8e20",
+      "source_entry_id": "68aa-28bf-bd73-3355",
+      "stats": {
+        "LD": "6+",
+        "M": "10\"",
+        "OC": "4",
+        "Sv": "2+",
+        "T": "11",
+        "W": "14"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Ferocious Assault",
+          "text": "Each time this model makes a ranged attack that targets the closest eligible MONSTER or VEHICLE unit, add 1 to the Hit roll."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/sicaran-venator-legends",
+      "is_legends": true,
+      "keywords": [
+        "Vehicle",
+        "Smoke",
+        "Sicaran Venator"
+      ],
+      "mfm_matched": false,
+      "name": "Sicaran Venator [Legends]",
+      "points": [],
+      "source_catalogue_id": "f6e3-745b-88cf-c04a",
+      "source_entry_id": "e63e-2aa6-f840-b54e",
+      "stats": {
+        "LD": "6+",
+        "M": "10\"",
+        "OC": "4",
+        "Sv": "2+",
+        "T": "11",
+        "W": "14"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Rage Embodied (Aura)",
+          "text": "While a friendly ^^Blood Legions^^ unit is within 6\" of this model, add 1 to the Attacks characteristic of melee weapons equipped by models in that unit."
+        },
+        {
+          "name": "Murderlust",
+          "text": "This unit is eligible to declare a charge in a turn in which it Advanced."
+        },
+        {
+          "name": "Damaged: 1-7 wounds remaining",
+          "text": "While this model has 1-7 wounds remaining, add 2 to the Attacks characteristic of this model’s Slaughter and Carnage."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/skarbrand",
+      "is_legends": false,
+      "keywords": [
+        "Monster",
+        "Character",
+        "Epic Hero",
+        "Chaos",
+        "Daemon",
+        "Khorne",
+        "Faction: Blood Legions",
+        "Skarbrand"
+      ],
+      "mfm_matched": true,
+      "name": "Skarbrand",
+      "points": [
+        {
+          "label": "Your Unit Costs",
+          "models": 1,
+          "points": 315,
+          "range": "[1,)"
+        }
+      ],
+      "source_catalogue_id": "048d-f3fd-c642-e828",
+      "source_entry_id": "71d9-9dc2-2b9a-6db3",
+      "stats": {
+        "InSv": "4+",
+        "LD": "6+",
+        "M": "10\"",
+        "OC": "5",
+        "Sv": "3+",
+        "T": "11",
+        "W": "20"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Rage Eternal",
+          "text": "While this model is leading a unit, in your Command phase, you can return one destroyed Bodyguard model to that unit."
+        },
+        {
+          "name": "Possessed Lord",
+          "text": "Once per battle, at the start of the Fight phase, this model can use this ability. If it does, until the end of the phase, add 3 to the Attacks characteristic of melee weapons equipped by this model and those weapons have the [Devastating Wounds] ability."
+        },
+        {
+          "name": "Leader",
+          "text": "This model can be attached to the following units: ^^**Eightbound^^**, ^^**Exalted Eightbound^^**"
+        },
+        {
+          "name": "Lord of the Eightbound",
+          "text": "If this model is attached to a ^^**World Eaters Possessed^^** unit during the Declare Battle Formations step, this model has the Deep Strike and Scouts 6\" abilities."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/slaughterbound",
+      "is_legends": false,
+      "keywords": [
+        "Character",
+        "Infantry",
+        "Chaos",
+        "Khorne",
+        "Daemon",
+        "Slaughterbound",
+        "Faction: World Eaters",
+        "Possessed"
+      ],
+      "mfm_matched": true,
+      "name": "Slaughterbound",
+      "points": [
+        {
+          "label": "Your Unit Costs",
+          "models": 1,
+          "points": 100,
+          "range": "[1,)"
+        }
+      ],
+      "source_catalogue_id": "374b-6125-4118-0b19",
+      "source_entry_id": "71c9-b10b-b55f-483e",
+      "stats": {
+        "InSv": "5+",
+        "LD": "6+",
+        "M": "10\"",
+        "OC": "1",
+        "Sv": "3+",
+        "T": "6",
+        "W": "6"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Damaged: 1-13 wounds remaining",
+          "text": "While this model has 1-13 wounds remaining, each time this model makes an attack, subtract 1 from the Hit roll."
+        },
+        {
+          "name": "Aerial Assault",
+          "text": "Each time a unit with the Deep Strike ability disembarks from this model after it has made a Normal move, that unit is still eligible to declare a charge this turn."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/sokar-pattern-stormbird-legends",
+      "is_legends": true,
+      "keywords": [
+        "Vehicle",
+        "Titanic",
+        "Fly",
+        "Transport",
+        "Sokar-pattern Stormbird",
+        "Aircraft"
+      ],
+      "mfm_matched": false,
+      "name": "Sokar-pattern Stormbird [Legends]",
+      "points": [],
+      "source_catalogue_id": "cc59-8f57-3730-c65",
+      "source_entry_id": "a80f-8343-85f3-716a",
+      "stats": {
+        "InSv": "5+ (Ranged)",
+        "LD": "6+",
+        "M": "20\"+",
+        "OC": "0",
+        "Sv": "2+",
+        "T": "13",
+        "W": "40"
+      }
+    },
+    {
+      "abilities": [],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/spartan-legends",
+      "is_legends": true,
+      "keywords": [
+        "Vehicle",
+        "Transport",
+        "Smoke",
+        "Spartan"
+      ],
+      "mfm_matched": false,
+      "name": "Spartan [Legends]",
+      "points": [],
+      "source_catalogue_id": "cd23-530a-922c-5821",
+      "source_entry_id": "7b3a-9a63-6200-ec7",
+      "stats": {
+        "LD": "6+",
+        "M": "10\"",
+        "OC": "6",
+        "Sv": "2+",
+        "T": "12",
+        "W": "18"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Armoured Resilience",
+          "text": "Each time an attack is allocated to this model, subtract 1 from the Damage characteristic of that attack."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/storm-eagle-gunship-legends",
+      "is_legends": true,
+      "keywords": [
+        "Vehicle",
+        "Fly",
+        "Aircraft",
+        "Transport",
+        "Storm Eagle Gunship"
+      ],
+      "mfm_matched": false,
+      "name": "Storm Eagle Gunship [Legends]",
+      "points": [],
+      "source_catalogue_id": "d13d-e898-e857-1d02",
+      "source_entry_id": "3b7d-b14e-603-e1ad",
+      "stats": {
+        "LD": "6+",
+        "M": "20+\"",
+        "OC": "0",
+        "Sv": "3+",
+        "T": "10",
+        "W": "18"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Termite Assault",
+          "text": "This model must start the battle in Reserves, but neither it nor any units embarked within it are counted towards any limits placed on the maximum number of Reserves units you can start the battle with. This model can be set up in the Reinforcements step of your first, second or third Movement phase, regardless of any mission rules. Any units embarked within this model can disembark after it has been set up on the battlefield, and if they do they must be set up more than 9\" away from all enemy models."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/terrax-pattern-termite-legends",
+      "is_legends": true,
+      "keywords": [
+        "Vehicle",
+        "Transport",
+        "Dedicated Transport",
+        "Terrax-pattern Termite"
+      ],
+      "mfm_matched": false,
+      "name": "Terrax-pattern Termite [Legends]",
+      "points": [],
+      "source_catalogue_id": "636a-d16c-b2f0-20ec",
+      "source_entry_id": "3d36-e9d7-54c5-deb7",
+      "stats": {
+        "LD": "6+",
+        "M": "8\"",
+        "OC": "2",
+        "Sv": "3+",
+        "T": "10",
+        "W": "14"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Sunderer of Fortresses",
+          "text": "Each time this model makes an attack that targets a VEHICLE, improve the Strength and Damage characteristic of that attack by 1 (if that attack targets a FORTIFICATION unit, improve the Strength and Damage characteristics of that attack by 2 instead)."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/typhon-legends",
+      "is_legends": true,
+      "keywords": [
+        "Vehicle",
+        "Smoke",
+        "Typhon"
+      ],
+      "mfm_matched": false,
+      "name": "Typhon [Legends]",
+      "points": [],
+      "source_catalogue_id": "4847-772c-f3e0-917b",
+      "source_entry_id": "f60c-1b93-9ee8-59d2",
+      "stats": {
+        "LD": "6+",
+        "M": "10\"",
+        "OC": "6",
+        "Sv": "2+",
+        "T": "12",
+        "W": "18"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Pinning Bombardment",
+          "text": "In your Shooting phase, after this model has shot, if one or more of those attacks made with its Scorpius multi-launcher scored a hit against an enemy INFANTRY unit, that unit must take a Battle-shock test."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/whirlwind-scorpius-legends",
+      "is_legends": true,
+      "keywords": [
+        "Vehicle",
+        "Smoke",
+        "Whirlwind Scorpius"
+      ],
+      "mfm_matched": false,
+      "name": "Whirlwind Scorpius [Legends]",
+      "points": [],
+      "source_catalogue_id": "b65-c988-9c88-4d4a",
+      "source_entry_id": "97dc-f0c8-1354-88fb",
+      "stats": {
+        "LD": "6+",
+        "M": "10\"",
+        "OC": "3",
+        "Sv": "3+",
+        "T": "10",
+        "W": "11"
+      }
+    },
+    {
+      "abilities": [
+        {
+          "name": "Interceptor",
+          "text": "Each time this model makes a ranged attack that targets a unit that can FLY, add 1 to the Hit roll."
+        }
+      ],
+      "faction": "Chaos - World Eaters",
+      "id": "chaos-world-eaters/xiphon-interceptor-legends",
+      "is_legends": true,
+      "keywords": [
+        "Vehicle",
+        "Fly",
+        "Aircraft",
+        "Xiphon Interceptor"
+      ],
+      "mfm_matched": false,
+      "name": "Xiphon Interceptor [Legends]",
+      "points": [],
+      "source_catalogue_id": "4c50-4f0e-eddf-e5aa",
+      "source_entry_id": "1aa5-d081-2442-4c37",
+      "stats": {
+        "LD": "6+",
+        "M": "20+",
+        "OC": "0",
+        "Sv": "3+",
+        "T": "9",
+        "W": "12"
+      }
+    }
+  ],
+  "unresolved_entrylinks": [
+    "Order of Battle",
+    "Show/Hide Options"
+  ]
+}

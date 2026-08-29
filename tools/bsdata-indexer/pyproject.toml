@@ -1,0 +1,23 @@
+[project]
+name = "bsdata-indexer"
+version = "0.1.0"
+description = "Builds UnitDefinition JSON for the warhammer-manager app from BSData's community BattleScribe data. See README.md for the licensing caveat before using output beyond private reference."
+requires-python = ">=3.11"
+dependencies = [
+    "requests>=2.31",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+enrich = ["anthropic>=0.68"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["bsdata_indexer*"]

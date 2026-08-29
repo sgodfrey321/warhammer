@@ -1,0 +1,62 @@
+{
+  "catalogue": {
+    "id": "dfcf-1214-b57-2205",
+    "name": "Aeldari - Aeldari Library",
+    "library": true,
+    "sharedSelectionEntries": [
+      {
+        "id": "target-wraithlord",
+        "name": "Wraithlord",
+        "categoryLinks": [
+          { "id": "c1", "name": "Monster", "targetId": "cat-monster", "primary": true },
+          { "id": "c2", "name": "Walker", "targetId": "cat-walker", "primary": false },
+          { "id": "c3", "name": "Faction: Asuryani", "targetId": "cat-fac", "primary": false }
+        ],
+        "costs": [{ "name": "pts", "typeId": "pts-type", "value": 130 }],
+        "profiles": [
+          {
+            "name": "Wraithlord",
+            "typeName": "Unit",
+            "characteristics": [
+              { "name": "M", "typeId": "t-m", "$text": "8\"" },
+              { "name": "T", "typeId": "t-t", "$text": "10" },
+              { "name": "Sv", "typeId": "t-sv", "$text": "2+" },
+              { "name": "W", "typeId": "t-w", "$text": "10" },
+              { "name": "LD", "typeId": "t-ld", "$text": "8+" },
+              { "name": "OC", "typeId": "t-oc", "$text": "3" },
+              { "name": "InSv", "typeId": "t-insv", "$text": "" }
+            ]
+          },
+          {
+            "name": "Fated Hero",
+            "typeName": "Abilities",
+            "characteristics": [
+              {
+                "name": "Description",
+                "typeId": "t-desc",
+                "$text": "At the start of the battle, select one of the following keywords: Infantry, Monster, Mounted, Vehicle. Each time this model makes an attack that targets a unit with the selected keyword, re-roll a Hit roll of 1 and re-roll a Wound roll of 1."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "target-waveserpent",
+        "name": "Wave Serpent",
+        "categoryLinks": [
+          { "id": "c4", "name": "Vehicle", "targetId": "cat-vehicle", "primary": true },
+          { "id": "c5", "name": "Transport", "targetId": "cat-transport", "primary": false }
+        ],
+        "costs": [{ "name": "pts", "typeId": "pts-type", "value": 115 }]
+      },
+      {
+        "id": "target-autarch-skyrunner",
+        "name": "Autarch Skyrunner",
+        "categoryLinks": [
+          { "id": "c6", "name": "Character", "targetId": "cat-character", "primary": true }
+        ],
+        "costs": [{ "name": "pts", "typeId": "pts-type", "value": 75 }]
+      }
+    ]
+  }
+}

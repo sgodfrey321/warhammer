@@ -1,0 +1,262 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --bg: #14161c;
+  --panel: #1e212b;
+  --border: #333747;
+  --text: #e8e9ee;
+  --muted: #8b8f9e;
+  --accent: #c0392b;
+  --accent2: #d4af37;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.topnav {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.topnav a {
+  color: var(--accent2);
+  text-decoration: none;
+}
+
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+h1 {
+  margin-top: 0;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 0.9em;
+}
+
+.error {
+  color: #ff6b6b;
+  background: #3a1e1e;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+}
+
+.inline-form {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+}
+
+input,
+select,
+button {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.95rem;
+}
+
+button {
+  cursor: pointer;
+}
+
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+  font-weight: 600;
+}
+
+button.link-button {
+  background: none;
+  border: none;
+  color: var(--muted);
+  text-decoration: underline;
+  padding: 0 0.3rem;
+  font-size: 0.85em;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+.roster-list li,
+.unit-list li,
+.synergy-list li,
+.effect-list li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.unit-name {
+  font-weight: 600;
+}
+
+.unit-points {
+  color: var(--accent2);
+  margin-left: 0.5rem;
+}
+
+.autocomplete {
+  position: relative;
+}
+
+.autocomplete input {
+  width: 100%;
+}
+
+.autocomplete-results {
+  position: absolute;
+  z-index: 10;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  width: 100%;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.autocomplete-results button {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+}
+
+.autocomplete-results button:hover {
+  background: var(--border);
+}
+
+.autocomplete-status {
+  color: var(--muted);
+  font-size: 0.85em;
+  padding: 0.25rem 0;
+}
+
+section {
+  margin-top: 2rem;
+}
+
+.import-panel {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+}
+
+.import-label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.9em;
+  color: var(--muted);
+}
+
+.import-summary {
+  background: var(--panel);
+  border: 1px solid var(--accent2);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+}
+
+.import-summary a {
+  color: var(--accent2);
+}
+
+.tag {
+  display: inline-block;
+  background: var(--border);
+  border-radius: 3px;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.8em;
+  margin-left: 0.4rem;
+}
+
+.phase-banner {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  margin: 1rem 0;
+}
+
+.phase-name {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--accent2);
+}
+
+.phase-banner button {
+  margin-top: 0.75rem;
+}
+
+.synergy-banner {
+  background: #2a2410;
+  border: 1px solid var(--accent2);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+}
+
+.synergy-banner ul {
+  margin: 0.3rem 0 0;
+}
+
+.players {
+  display: flex;
+  gap: 1rem;
+}
+
+.player-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem;
+  flex: 1;
+}
+
+.player-card label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0.4rem 0;
+  font-size: 0.9em;
+}
+
+.player-card input {
+  width: 4.5rem;
+}
+
+.effect-list li.expired {
+  opacity: 0.6;
+}
+
+.effect-list li.expired .effect-label {
+  text-decoration: line-through;
+}
+
+.expired-tag {
+  background: var(--accent);
+  color: white;
+}

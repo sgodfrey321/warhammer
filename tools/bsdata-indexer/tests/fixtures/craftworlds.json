@@ -1,0 +1,46 @@
+{
+  "catalogue": {
+    "id": "fixture-cat-craftworlds",
+    "name": "Aeldari - Craftworlds",
+    "library": false,
+    "catalogueLinks": [
+      {
+        "id": "184b-23d5-1ac8-cf3c",
+        "name": "Aeldari - Aeldari Library",
+        "targetId": "dfcf-1214-b57-2205",
+        "type": "catalogue",
+        "importRootEntries": true
+      }
+    ],
+    "entryLinks": [
+      {
+        "id": "entrylink-wraithlord",
+        "name": "Wraithlord",
+        "hidden": false,
+        "type": "selectionEntry",
+        "targetId": "target-wraithlord"
+      },
+      {
+        "id": "entrylink-waveserpent",
+        "name": "Wave Serpent",
+        "hidden": false,
+        "type": "selectionEntry",
+        "targetId": "target-waveserpent"
+      },
+      {
+        "id": "entrylink-autarch-skyrunner",
+        "name": "Autarch Skyrunner [Legends]",
+        "hidden": false,
+        "type": "selectionEntry",
+        "targetId": "target-autarch-skyrunner"
+      },
+      {
+        "id": "entrylink-unknown",
+        "name": "Totally New Unit",
+        "hidden": false,
+        "type": "selectionEntry",
+        "targetId": "target-does-not-exist"
+      }
+    ]
+  }
+}
