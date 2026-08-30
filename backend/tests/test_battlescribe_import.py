@@ -81,6 +81,23 @@ def test_parse_roster_extracts_actual_equipped_loadout():
     assert asurmen_loadout == {"The Bloody Twins": 1, "The Sword of Asur": 1}
 
 
+def test_parse_roster_extracts_model_groups():
+    parsed = parse_roster(_load_hank())
+    by_name = {e.name: e for e in parsed.entries}
+
+    # Guardian Defenders: a real two-model-type squad -- 10 Guardian Defender + 1 Heavy
+    # Weapon Platform. _loadout() already aggregates their equipped weapons together;
+    # model_groups keeps the model-group breakdown _loadout() discards.
+    guardian_defenders = by_name["Guardian Defenders"]
+    groups = {g["name"]: g["count"] for g in guardian_defenders.model_groups}
+    assert groups == {"Guardian Defender": 10, "Heavy Weapon Platform": 1}
+
+    # Single-model Character: no "model" wrapper at all (see test_parse_roster_extracts_
+    # actual_equipped_loadout's Asurmen case) -- falls back to one implicit group.
+    asurmen = by_name["Asurmen"]
+    assert asurmen.model_groups == [{"name": "Asurmen", "count": 1}]
+
+
 def test_parse_roster_ids_match_indexer_source_entry_ids():
     parsed = parse_roster(_load_hank())
     with AELDARI_OUTPUT.open(encoding="utf-8") as f:
@@ -107,6 +124,10 @@ def test_import_endpoint_creates_roster_and_units(client, session):
     assert len(units) == 18
     assert any(u["unit_definition"]["name"] == "Asurmen" for u in units)
 
+    guardian_defenders = next(u for u in units if u["unit_definition"]["name"] == "Guardian Defenders")
+    groups = {g["name"]: g["count"] for g in guardian_defenders["model_groups"]}
+    assert groups == {"Guardian Defender": 10, "Heavy Weapon Platform": 1}
+
     assert result["attachments_created"] == 5
     attachments = client.get(f"/rosters/{result['roster']['id']}/attachments").json()
     assert len(attachments) == 5
@@ -115,6 +136,14 @@ def test_import_endpoint_creates_roster_and_units(client, session):
     pairs = {(unit_name[a["leader_unit_id"]], unit_name[a["led_unit_id"]]) for a in attachments}
     assert ("Asurmen", "Dire Avengers") in pairs
     assert ("Jain Zar", "Howling Banshees") in pairs
+
+    # Craftworlds' Army Faction is Asuryani, so Battle Focus should be auto-bootstrapped from
+    # this roster's real "Strike Force (2000 Point limit)" battle_size -- 4 tokens.
+    pools = client.get(f"/rosters/{result['roster']['id']}/pools").json()
+    battle_focus = next((p for p in pools if p["name"] == "Battle Focus"), None)
+    assert battle_focus is not None
+    assert battle_focus["max_value"] == 4
+    assert battle_focus["scope"] == "battle_round"
 
 
 def test_import_endpoint_reports_unmatched_units(client, session):

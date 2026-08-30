@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from scripts.import_unit_definitions import import_faction_file
+from scripts.import_unit_definitions import _faction_files, import_faction_file
 from app.models import UnitDefinition
 from sqlmodel import select
 
@@ -32,9 +32,28 @@ def test_import_real_aeldari_output(session):
     dire_avengers = session.exec(select(UnitDefinition).where(UnitDefinition.name == "Dire Avengers")).first()
     assert dire_avengers is not None
     assert dire_avengers.stats.get("M") is not None
+    assert "Battle Focus" in dire_avengers.rules
+
+    # A Monster -- genuinely excluded from Battle Focus eligibility in the real rules, and
+    # that's reflected in the real catalogue data (no matching infoLinks), not assumed.
+    wraithlord = session.exec(select(UnitDefinition).where(UnitDefinition.name == "Wraithlord")).first()
+    assert wraithlord is not None
+    assert "Battle Focus" not in wraithlord.rules
 
     # Catalogue config entries (Detachment, Battle Focus rule) must not import as units.
     assert session.exec(select(UnitDefinition).where(UnitDefinition.name == "Detachment")).first() is None
+
+
+def test_faction_files_excludes_non_faction_output(tmp_path: Path):
+    (tmp_path / "aeldari-craftworlds.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "chaos-world-eaters.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "aeldari-craftworlds-synergies.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "army-rules.json").write_text("[]", encoding="utf-8")
+    (tmp_path / "detachments.json").write_text("[]", encoding="utf-8")
+
+    result = _faction_files(tmp_path)
+
+    assert [p.name for p in result] == ["aeldari-craftworlds.json", "chaos-world-eaters.json"]
 
 
 def test_import_is_idempotent(session):

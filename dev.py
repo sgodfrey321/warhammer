@@ -11,6 +11,7 @@ Ctrl+C stops both.
 from __future__ import annotations
 
 import argparse
+import socket
 import subprocess
 import sys
 import threading
@@ -18,6 +19,19 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
+
+
+def _lan_ip() -> str | None:
+    """Best-effort local LAN IP for printing a reachable URL -- doesn't actually send
+    anything (UDP connect on a socket never transmits a packet, just picks the outbound
+    interface the OS would use). Returns None if there's no route out (fine, we just skip
+    printing the LAN URL then)."""
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.connect(("8.8.8.8", 80))
+            return s.getsockname()[0]
+    except OSError:
+        return None
 BACKEND_DIR = ROOT / "backend"
 FRONTEND_DIR = ROOT / "frontend"
 VENV_PYTHON = ROOT / ".venv" / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
@@ -68,7 +82,7 @@ def main() -> None:
         )
 
     backend = subprocess.Popen(
-        [str(VENV_PYTHON), "-m", "uvicorn", "app.main:app", "--reload"],
+        [str(VENV_PYTHON), "-m", "uvicorn", "app.main:app", "--reload", "--host", "0.0.0.0"],
         cwd=BACKEND_DIR,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -91,6 +105,9 @@ def main() -> None:
 
     print("backend:  http://localhost:8000")
     print("frontend: http://localhost:5173  (or 5174 if 5173 was taken -- watch the [frontend] log line)")
+    lan_ip = _lan_ip()
+    if lan_ip:
+        print(f"\nAlso reachable from other machines on your LAN at: http://{lan_ip}:5173")
     print("Ctrl+C to stop both.\n")
 
     try:

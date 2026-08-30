@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 
-from .models import Ability, Weapon
+from .models import Ability, ModelProfile, Weapon
 
 _WEAPON_TYPE_NAMES = ("Ranged Weapons", "Melee Weapons")
 
@@ -41,7 +41,9 @@ class ResolvedEntry:
     keywords: list[str]
     stats: dict[str, str]  # M/T/Sv/W/LD/OC, from the entry's own "Unit"-typed profile
     abilities: list[Ability]  # from the entry's own "Abilities"-typed profiles
+    rules: list[str]  # names linked via the entry's own infoLinks[type=="rule"]
     weapons: list[Weapon]  # every "Ranged/Melee Weapons"-typed profile reachable from the entry
+    model_profiles: list[ModelProfile]  # per-model-type stats/weapons (see _model_profiles)
     catalogue_points: int | None  # fallback reference only; MFM is authoritative
     resolved: bool  # False if targetId wasn't found in the linked Library catalogue
 
@@ -61,6 +63,15 @@ def _shared_profiles(doc: dict) -> dict[str, dict]:
     `_info_link_stats`) rather than embedded directly on an entry."""
     profiles = doc["catalogue"].get("sharedProfiles") or []
     return {p["id"]: p for p in profiles}
+
+
+def _shared_entry_groups(doc: dict) -> dict[str, dict]:
+    """id -> sharedSelectionEntryGroup, for one catalogue's `sharedSelectionEntryGroups` pool --
+    a separate top-level array from `sharedSelectionEntries`. A weapon-choice group (e.g.
+    Guardian Defenders' Heavy Weapon Platform "Heavy Weapons" option) lives here, referenced via
+    `entryLinks[type == "selectionEntryGroup"]` -- see `_weapon_profiles`."""
+    groups = doc["catalogue"].get("sharedSelectionEntryGroups") or []
+    return {g["id"]: g for g in groups}
 
 
 def index_library_entries(library_doc: dict) -> dict[str, dict]:
@@ -87,6 +98,15 @@ def build_global_profile_index(fetch_json) -> dict[str, dict]:
     merged: dict[str, dict] = {}
     for stem in LIBRARY_FILENAMES:
         merged.update(_shared_profiles(fetch_json(stem)))
+    return merged
+
+
+def build_global_entry_group_index(fetch_json) -> dict[str, dict]:
+    """Merge every known library's sharedSelectionEntryGroups into one id -> group index, the
+    same way build_global_library_index does for entries. `fetch_json` -- see that function."""
+    merged: dict[str, dict] = {}
+    for stem in LIBRARY_FILENAMES:
+        merged.update(_shared_entry_groups(fetch_json(stem)))
     return merged
 
 
@@ -129,22 +149,30 @@ def _info_link_stats(entry: dict, profile_index: dict[str, dict]) -> dict[str, s
     return {}
 
 
+def _nested_model_candidates(entry: dict) -> list[dict]:
+    """Every nested selectionEntry that could be a distinct model-type within this unit. Real
+    data uses two different shapes for this (checked directly): either directly under the
+    entry's own `selectionEntries` (e.g. Guardian Defenders -> "Guardian Defender", "Heavy
+    Weapon Platform"), or inside a `selectionEntryGroups[].selectionEntries` (e.g. Dire Avengers
+    -> group "4-9 Dire Avengers" -> "Dire Avenger")."""
+    candidates = list(entry.get("selectionEntries") or [])
+    for group in entry.get("selectionEntryGroups") or []:
+        candidates.extend(group.get("selectionEntries") or [])
+    return candidates
+
+
 def _nested_unit_stats(entry: dict, profile_index: dict[str, dict]) -> dict[str, str]:
     """Best-effort fallback for squad units, whose own entry carries no "Unit" profile --
-    the base model's stat line lives one level down, in a nested selectionEntry. Real data
-    uses two different shapes for this (checked directly): either directly under the entry's
-    own `selectionEntries` (e.g. Guardian Defenders -> "Guardian Defender"), or inside a
-    `selectionEntryGroups[].selectionEntries` (e.g. Dire Avengers -> group "4-9 Dire
-    Avengers" -> "Dire Avenger"). Takes the first nested model found with a "Unit" profile
+    the base model's stat line lives one level down, in a nested selectionEntry (see
+    `_nested_model_candidates`). Takes the first nested model found with a "Unit" profile
     (checked either embedded directly, or via `infoLinks` -- e.g. Windriders' weapon-loadout
     variants each link to a shared "Windriders" profile rather than embedding one) as the
     squad's baseline line -- in every shape checked, the rank-and-file model is listed before
     upgrade options (Exarch, heavy weapon), so first-found is normally the unit's actual
-    baseline, but this is a heuristic, not a schema guarantee."""
-    candidates = list(entry.get("selectionEntries") or [])
-    for group in entry.get("selectionEntryGroups") or []:
-        candidates.extend(group.get("selectionEntries") or [])
-    for sub in candidates:
+    baseline, but this is a heuristic, not a schema guarantee. Kept for the flat
+    `UnitDefinition.stats` field; `_model_profiles` below keeps every nested model instead of
+    just this first one."""
+    for sub in _nested_model_candidates(entry):
         stats = _stats(sub) or _info_link_stats(sub, profile_index)
         if stats:
             return stats
@@ -167,8 +195,25 @@ def _abilities(entry: dict) -> list[Ability]:
     return abilities
 
 
+def _unit_rules(entry: dict) -> list[str]:
+    """Every rule this unit's own entry directly links to via infoLinks[type=="rule"] --
+    e.g. Dire Avengers links to "Battle Focus" this way. Deliberately top-level only, same
+    scope as _abilities() -- does NOT recurse into nested weapon profiles, which carry their
+    own unrelated rule infoLinks (a Shuriken Pistol links to "Assault"/"Pistol", a weapon
+    special rule, not a unit-wide one). Confirmed as real per-unit eligibility data, not just
+    a label: Wraithlord (a Monster) has no "Battle Focus" link here while every other Aeldari
+    unit checked does, matching the real rule text ("a unit is eligible... if it has this
+    ability") -- this is that eligibility check made concrete."""
+    return [link["name"] for link in entry.get("infoLinks") or [] if link.get("type") == "rule"]
+
+
 def _weapon_profiles(
-    entry: dict, combined_index: dict[str, dict], profile_index: dict[str, dict], *, visited: set[str] | None = None
+    entry: dict,
+    combined_index: dict[str, dict],
+    profile_index: dict[str, dict],
+    group_index: dict[str, dict],
+    *,
+    visited: set[str] | None = None,
 ) -> list[Weapon]:
     """Every weapon profile reachable from this entry's own subtree -- collects the unit's
     full possible loadout (catalogue-level "what can this unit carry"), not a specific chosen
@@ -233,24 +278,28 @@ def _weapon_profiles(
             )
 
     for sub in entry.get("selectionEntries") or []:
-        weapons.extend(_weapon_profiles(sub, combined_index, profile_index, visited=visited))
+        weapons.extend(_weapon_profiles(sub, combined_index, profile_index, group_index, visited=visited))
 
     # Groups are walked the same way entries are: a group can itself carry selectionEntries,
     # nested selectionEntryGroups, and entryLinks (see docstring -- this is what the
     # Bloodthirster's group-inside-a-group melee weapon choice needs).
     for group in entry.get("selectionEntryGroups") or []:
-        weapons.extend(_weapon_profiles(group, combined_index, profile_index, visited=visited))
+        weapons.extend(_weapon_profiles(group, combined_index, profile_index, group_index, visited=visited))
 
     for link in entry.get("entryLinks") or []:
-        # Only "selectionEntry" links resolve here -- combined_index is built from
-        # sharedSelectionEntries only, not sharedSelectionEntryGroups, so a
-        # "selectionEntryGroup"-type link (e.g. an "Enhancements" group) has nowhere to
-        # resolve against; harmless to skip since enhancements aren't weapon profiles anyway.
-        if link.get("type") != "selectionEntry":
-            continue
-        target = combined_index.get(link.get("targetId"))
+        target = None
+        if link.get("type") == "selectionEntry":
+            target = combined_index.get(link.get("targetId"))
+        elif link.get("type") == "selectionEntryGroup":
+            # A weapon CHOICE can be gated behind an option group, not a bare entry -- confirmed
+            # directly on Guardian Defenders' Heavy Weapon Platform, whose "Heavy Weapons"
+            # option (Shuriken Cannon, among others) is only reachable this way. Not every
+            # selectionEntryGroup link is a weapon choice (many are non-weapon "Enhancements"
+            # groups), but resolving and recursing is harmless either way -- a non-weapon
+            # group's subtree just contributes no Weapon profiles.
+            target = group_index.get(link.get("targetId"))
         if target is not None:
-            weapons.extend(_weapon_profiles(target, combined_index, profile_index, visited=visited))
+            weapons.extend(_weapon_profiles(target, combined_index, profile_index, group_index, visited=visited))
 
     seen_names: set[str] = set()
     deduped: list[Weapon] = []
@@ -261,8 +310,58 @@ def _weapon_profiles(
     return deduped
 
 
+def _model_profiles(
+    entry: dict,
+    combined_index: dict[str, dict],
+    profile_index: dict[str, dict],
+    group_index: dict[str, dict],
+) -> list[ModelProfile]:
+    """Every distinct model-type within this unit, each with its own stat line and weapons
+    scoped to just that model's own subtree -- e.g. Guardian Defenders' "Guardian Defender"
+    (Shuriken Catapult) and "Heavy Weapon Platform" (Shuriken Cannon) come back as two separate
+    profiles instead of one merged stat block + weapon list (see `_nested_unit_stats`/
+    `UnitDefinition.weapons` for that flattened, backward-compatible view, still computed the
+    same way it always has been).
+
+    A single-model unit (own "Unit" profile present) is one profile scoped to the whole entry --
+    identical to what `UnitDefinition.weapons` already collects. A squad unit (no own "Unit"
+    profile) gets one profile per nested candidate that has its own stat line, in the same
+    order `_nested_unit_stats` searches -- unlike that function, every match is kept, not just
+    the first."""
+    own_stats = _stats(entry) or _info_link_stats(entry, profile_index)
+    if own_stats:
+        weapons = _weapon_profiles(entry, combined_index, profile_index, group_index)
+        return [
+            ModelProfile(
+                name=entry.get("name", ""),
+                stats=own_stats,
+                ranged_weapons=[w for w in weapons if w.range_type == "Ranged Weapons"],
+                melee_weapons=[w for w in weapons if w.range_type == "Melee Weapons"],
+            )
+        ]
+
+    profiles: list[ModelProfile] = []
+    for sub in _nested_model_candidates(entry):
+        stats = _stats(sub) or _info_link_stats(sub, profile_index)
+        if not stats:
+            continue
+        weapons = _weapon_profiles(sub, combined_index, profile_index, group_index)
+        profiles.append(
+            ModelProfile(
+                name=sub.get("name", ""),
+                stats=stats,
+                ranged_weapons=[w for w in weapons if w.range_type == "Ranged Weapons"],
+                melee_weapons=[w for w in weapons if w.range_type == "Melee Weapons"],
+            )
+        )
+    return profiles
+
+
 def resolve_faction(
-    faction_doc: dict, library_index: dict[str, dict], profile_index: dict[str, dict]
+    faction_doc: dict,
+    library_index: dict[str, dict],
+    profile_index: dict[str, dict],
+    group_index: dict[str, dict],
 ) -> list[ResolvedEntry]:
     """Resolve every unit entryLink in a faction catalogue.
 
@@ -288,6 +387,7 @@ def resolve_faction(
     own_index = _shared_entries(faction_doc)
     combined_index = {**library_index, **own_index}
     combined_profiles = {**profile_index, **_shared_profiles(faction_doc)}
+    combined_groups = {**group_index, **_shared_entry_groups(faction_doc)}
 
     cat = faction_doc["catalogue"]
     resolved: list[ResolvedEntry] = []
@@ -313,7 +413,13 @@ def resolve_faction(
                     else {}
                 ),
                 abilities=_abilities(target) if target else [],
-                weapons=_weapon_profiles(target, combined_index, combined_profiles) if target else [],
+                rules=_unit_rules(target) if target else [],
+                weapons=(
+                    _weapon_profiles(target, combined_index, combined_profiles, combined_groups) if target else []
+                ),
+                model_profiles=(
+                    _model_profiles(target, combined_index, combined_profiles, combined_groups) if target else []
+                ),
                 catalogue_points=_primary_points(target) if target else None,
                 resolved=target is not None,
             )

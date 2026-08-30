@@ -67,6 +67,9 @@
         "categoryLinks": [
           { "id": "c7", "name": "Aspect Warrior", "targetId": "cat-aspect", "primary": true }
         ],
+        "infoLinks": [
+          { "id": "il-battle-focus", "name": "Battle Focus", "targetId": "rule-battle-focus", "type": "rule" }
+        ],
         "costs": [{ "name": "pts", "typeId": "pts-type", "value": 75 }],
         "profiles": [
           {
@@ -193,6 +196,60 @@
                   { "name": "OC", "typeId": "t-oc", "$text": "2" }
                 ]
               }
+            ],
+            "entryLinks": [
+              {
+                "id": "el-guardian-shuriken",
+                "name": "Shuriken Catapult",
+                "type": "selectionEntry",
+                "targetId": "target-shuriken-catapult"
+              }
+            ]
+          },
+          {
+            "id": "target-heavy-weapon-platform",
+            "name": "Heavy Weapon Platform",
+            "type": "model",
+            "profiles": [
+              {
+                "name": "Heavy Weapon Platform",
+                "typeName": "Unit",
+                "characteristics": [
+                  { "name": "M", "typeId": "t-m", "$text": "6\"" },
+                  { "name": "T", "typeId": "t-t", "$text": "3" },
+                  { "name": "Sv", "typeId": "t-sv", "$text": "4+" },
+                  { "name": "W", "typeId": "t-w", "$text": "2" },
+                  { "name": "LD", "typeId": "t-ld", "$text": "6+" },
+                  { "name": "OC", "typeId": "t-oc", "$text": "0" }
+                ]
+              }
+            ],
+            "entryLinks": [
+              {
+                "id": "el-heavy-weapons-group",
+                "name": "Heavy Weapons",
+                "type": "selectionEntryGroup",
+                "targetId": "group-heavy-weapons"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "target-shuriken-catapult",
+        "name": "Shuriken Catapult",
+        "type": "upgrade",
+        "profiles": [
+          {
+            "name": "Shuriken Catapult",
+            "typeName": "Ranged Weapons",
+            "characteristics": [
+              { "name": "Range", "typeId": "t-range", "$text": "18\"" },
+              { "name": "A", "typeId": "t-a", "$text": "2" },
+              { "name": "BS", "typeId": "t-bs", "$text": "3+" },
+              { "name": "S", "typeId": "t-s", "$text": "4" },
+              { "name": "AP", "typeId": "t-ap", "$text": "-1" },
+              { "name": "D", "typeId": "t-d", "$text": "1" }
             ]
           }
         ]
@@ -421,6 +478,33 @@
           { "name": "W", "typeId": "t-w", "$text": "2" },
           { "name": "LD", "typeId": "t-ld", "$text": "6+" },
           { "name": "OC", "typeId": "t-oc", "$text": "1" }
+        ]
+      }
+    ],
+    "sharedSelectionEntryGroups": [
+      {
+        "id": "group-heavy-weapons",
+        "name": "Heavy Weapons",
+        "selectionEntries": [
+          {
+            "id": "target-shuriken-cannon",
+            "name": "Shuriken Cannon",
+            "type": "upgrade",
+            "profiles": [
+              {
+                "name": "Shuriken Cannon",
+                "typeName": "Ranged Weapons",
+                "characteristics": [
+                  { "name": "Range", "typeId": "t-range", "$text": "24\"" },
+                  { "name": "A", "typeId": "t-a", "$text": "3" },
+                  { "name": "BS", "typeId": "t-bs", "$text": "3+" },
+                  { "name": "S", "typeId": "t-s", "$text": "6" },
+                  { "name": "AP", "typeId": "t-ap", "$text": "-1" },
+                  { "name": "D", "typeId": "t-d", "$text": "2" }
+                ]
+              }
+            ]
+          }
         ]
       }
     ]

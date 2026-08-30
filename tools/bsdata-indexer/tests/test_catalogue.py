@@ -18,10 +18,14 @@ def profile_index() -> dict[str, dict]:
     return catalogue._shared_profiles(load("aeldari_library.json"))
 
 
+def group_index() -> dict[str, dict]:
+    return catalogue._shared_entry_groups(load("aeldari_library.json"))
+
+
 def test_resolve_faction_matches_known_points_and_keywords():
     faction_doc = load("craftworlds.json")
 
-    resolved = catalogue.resolve_faction(faction_doc, library_index(), profile_index())
+    resolved = catalogue.resolve_faction(faction_doc, library_index(), profile_index(), group_index())
     by_name = {e.name: e for e in resolved}
 
     wraithlord = by_name["Wraithlord"]
@@ -33,6 +37,7 @@ def test_resolve_faction_matches_known_points_and_keywords():
     assert len(wraithlord.abilities) == 1
     assert wraithlord.abilities[0].name == "Fated Hero"
     assert "re-roll a Hit roll of 1" in wraithlord.abilities[0].text
+    assert wraithlord.rules == []  # a Monster -- no Battle Focus link, matches real data
 
     wave_serpent = by_name["Wave Serpent"]
     assert wave_serpent.catalogue_points == 115
@@ -41,7 +46,7 @@ def test_resolve_faction_matches_known_points_and_keywords():
 def test_resolve_faction_flags_unresolvable_target():
     faction_doc = load("craftworlds.json")
 
-    resolved = catalogue.resolve_faction(faction_doc, library_index(), profile_index())
+    resolved = catalogue.resolve_faction(faction_doc, library_index(), profile_index(), group_index())
     by_name = {e.name: e for e in resolved}
 
     missing = by_name["Totally New Unit"]
@@ -52,7 +57,7 @@ def test_resolve_faction_flags_unresolvable_target():
 
 def test_resolve_faction_resolves_squad_stats_from_nested_selection_entry_groups():
     faction_doc = load("craftworlds.json")
-    resolved = catalogue.resolve_faction(faction_doc, library_index(), profile_index())
+    resolved = catalogue.resolve_faction(faction_doc, library_index(), profile_index(), group_index())
     by_name = {e.name: e for e in resolved}
 
     dire_avengers = by_name["Dire Avengers"]
@@ -60,11 +65,12 @@ def test_resolve_faction_resolves_squad_stats_from_nested_selection_entry_groups
     # rank-and-file model (inside selectionEntryGroups), not the Exarch upgrade option.
     assert dire_avengers.stats == {"M": '7"', "T": "3", "Sv": "4+", "W": "2", "LD": "6+", "OC": "1"}
     assert dire_avengers.abilities[0].name == "Bladestorm"
+    assert dire_avengers.rules == ["Battle Focus"]
 
 
 def test_resolve_faction_resolves_squad_stats_from_nested_selection_entries():
     faction_doc = load("craftworlds.json")
-    resolved = catalogue.resolve_faction(faction_doc, library_index(), profile_index())
+    resolved = catalogue.resolve_faction(faction_doc, library_index(), profile_index(), group_index())
     by_name = {e.name: e for e in resolved}
 
     guardian_defenders = by_name["Guardian Defenders"]
@@ -73,9 +79,32 @@ def test_resolve_faction_resolves_squad_stats_from_nested_selection_entries():
     assert guardian_defenders.stats == {"M": '6"', "T": "3", "Sv": "4+", "W": "1", "LD": "6+", "OC": "2"}
 
 
+def test_resolve_faction_keeps_every_nested_model_type_as_its_own_profile():
+    # Guardian Defenders has two model types -- "Guardian Defender" (W:1, Shuriken Catapult)
+    # and "Heavy Weapon Platform" (W:2, Shuriken Cannon reached via a selectionEntryGroup-type
+    # entryLink, not a bare selectionEntry). The flat `stats`/`weapons` fields only ever see
+    # the first (see the test above) -- model_profiles must keep both, each scoped to its own
+    # weapons only (not the other model's).
+    faction_doc = load("craftworlds.json")
+    resolved = catalogue.resolve_faction(faction_doc, library_index(), profile_index(), group_index())
+    by_name = {e.name: e for e in resolved}
+
+    guardian_defenders = by_name["Guardian Defenders"]
+    profiles_by_name = {p.name: p for p in guardian_defenders.model_profiles}
+    assert set(profiles_by_name) == {"Guardian Defender", "Heavy Weapon Platform"}
+
+    defender = profiles_by_name["Guardian Defender"]
+    assert defender.stats["W"] == "1"
+    assert {w.name for w in defender.ranged_weapons} == {"Shuriken Catapult"}
+
+    platform = profiles_by_name["Heavy Weapon Platform"]
+    assert platform.stats["W"] == "2"
+    assert {w.name for w in platform.ranged_weapons} == {"Shuriken Cannon"}
+
+
 def test_resolve_faction_resolves_stats_via_shared_profile_info_link():
     faction_doc = load("craftworlds.json")
-    resolved = catalogue.resolve_faction(faction_doc, library_index(), profile_index())
+    resolved = catalogue.resolve_faction(faction_doc, library_index(), profile_index(), group_index())
     by_name = {e.name: e for e in resolved}
 
     # Windriders: nested weapon-loadout entries have no embedded "Unit" profile at all --
@@ -91,7 +120,7 @@ def test_resolve_faction_resolves_stats_via_shared_profile_info_link():
 
 def test_resolve_faction_collects_weapons_embedded_and_via_entry_link():
     faction_doc = load("craftworlds.json")
-    resolved = catalogue.resolve_faction(faction_doc, library_index(), profile_index())
+    resolved = catalogue.resolve_faction(faction_doc, library_index(), profile_index(), group_index())
     by_name = {e.name: e for e in resolved}
 
     dire_avengers = by_name["Dire Avengers"]
@@ -114,7 +143,7 @@ def test_resolve_faction_collects_weapons_embedded_and_via_entry_link():
 
 def test_resolve_faction_collects_weapons_via_shared_profile_info_link():
     faction_doc = load("craftworlds.json")
-    resolved = catalogue.resolve_faction(faction_doc, library_index(), profile_index())
+    resolved = catalogue.resolve_faction(faction_doc, library_index(), profile_index(), group_index())
     by_name = {e.name: e for e in resolved}
 
     windriders = by_name["Windriders"]
@@ -131,7 +160,7 @@ def test_resolve_faction_collects_weapons_nested_inside_a_group_inside_a_group()
     # not just one level of entry.selectionEntryGroups -> selectionEntries. An earlier version
     # of _weapon_profiles only walked one level and silently dropped weapons at this depth.
     faction_doc = load("craftworlds.json")
-    resolved = catalogue.resolve_faction(faction_doc, library_index(), profile_index())
+    resolved = catalogue.resolve_faction(faction_doc, library_index(), profile_index(), group_index())
     by_name = {e.name: e for e in resolved}
 
     avatar = by_name["Avatar of Khaine"]
@@ -141,7 +170,7 @@ def test_resolve_faction_collects_weapons_nested_inside_a_group_inside_a_group()
 
 def test_resolve_faction_excludes_non_unit_config_entries():
     faction_doc = load("craftworlds.json")
-    resolved = catalogue.resolve_faction(faction_doc, library_index(), profile_index())
+    resolved = catalogue.resolve_faction(faction_doc, library_index(), profile_index(), group_index())
     names = {e.name for e in resolved}
 
     # "Detachment" resolves to a real target (type: "upgrade", a config picker, no stat
@@ -152,7 +181,7 @@ def test_resolve_faction_excludes_non_unit_config_entries():
 def test_resolve_faction_preserves_legends_suffix_in_name():
     faction_doc = load("craftworlds.json")
 
-    resolved = catalogue.resolve_faction(faction_doc, library_index(), profile_index())
+    resolved = catalogue.resolve_faction(faction_doc, library_index(), profile_index(), group_index())
     names = {e.name for e in resolved}
     assert "Autarch Skyrunner [Legends]" in names
 

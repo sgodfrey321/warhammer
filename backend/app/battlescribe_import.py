@@ -26,6 +26,7 @@ class ParsedEntry:
     roster_selection_id: str  # this export's own ephemeral selection id, e.g. "b8wohrl" --
     # only meaningful within one parse_roster() call, used to resolve `attachments` below.
     loadout: list[dict] = field(default_factory=list)  # [{"name": str, "count": int}]
+    model_groups: list[dict] = field(default_factory=list)  # [{"name": str, "count": int}]
 
 
 @dataclass
@@ -77,6 +78,23 @@ def _loadout(sel: dict) -> list[dict]:
     return [{"name": name, "count": count} for name, count in counts.items()]
 
 
+def _model_groups(sel: dict) -> list[dict]:
+    """Which model types make up this unit, and how many of each -- e.g. a real Guardian
+    Defenders export has two `type: "model"` children: "Guardian Defender" (number=10) and
+    "Heavy Weapon Platform" (number=1). `_loadout` above already walks these same children;
+    this instead keeps the model-group's own name+count, which `_loadout` discards. A
+    single-model unit (no "model" wrapper, same shape `_loadout` handles) has no such
+    children -- falls back to one implicit group named after the unit itself, count 1."""
+    groups = [
+        {"name": child["name"], "count": child.get("number") or 0}
+        for child in (sel.get("selections") or [])
+        if child.get("type") == "model" and child.get("name")
+    ]
+    if groups:
+        return groups
+    return [{"name": sel.get("name", ""), "count": 1}]
+
+
 def _walk_selections(selections: list[dict], out: list[ParsedEntry], attachments: list[tuple[str, str]]) -> None:
     for sel in selections:
         if sel.get("type") in ("unit", "model"):
@@ -87,6 +105,7 @@ def _walk_selections(selections: list[dict], out: list[ParsedEntry], attachments
                     name=sel.get("name", ""),
                     roster_selection_id=sel.get("id", ""),
                     loadout=_loadout(sel),
+                    model_groups=_model_groups(sel),
                 )
             )
             # A Character attached to this unit shows up as an incoming "group" association

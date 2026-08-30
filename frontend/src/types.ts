@@ -9,6 +9,13 @@ export interface Weapon {
   characteristics: Record<string, string>;
 }
 
+export interface ModelProfile {
+  name: string;
+  stats: Record<string, string>;
+  ranged_weapons: Weapon[];
+  melee_weapons: Weapon[];
+}
+
 export interface UnitDefinition {
   id: string;
   faction: string;
@@ -20,7 +27,9 @@ export interface UnitDefinition {
   is_legends: boolean;
   stats: Record<string, string>;
   abilities: Ability[];
+  rules: string[];
   weapons: Weapon[];
+  model_profiles: ModelProfile[];
 }
 
 export const STAT_ORDER = ["M", "T", "Sv", "InSv", "W", "LD", "OC"] as const;
@@ -42,6 +51,17 @@ export interface LoadoutItem {
   count: number;
 }
 
+export interface ModelGroup {
+  name: string;
+  count: number;
+}
+
+export interface UnitBuff {
+  label: string;
+  stat: string;
+  modifier: string;
+}
+
 export interface Unit {
   id: number;
   roster_id: number;
@@ -49,6 +69,8 @@ export interface Unit {
   quantity: number;
   notes: string | null;
   loadout: LoadoutItem[];
+  model_groups: ModelGroup[];
+  buffs: UnitBuff[];
 }
 
 export interface UnitOut extends Unit {
@@ -97,7 +119,16 @@ export interface PlayerState {
   player_number: number;
   cp_gained: number;
   cp_spent: number;
+  // Derived/cached server-side from mission-score tiers + vp_adjustment -- not directly settable.
   vp: number;
+  vp_adjustment: number;
+}
+
+export interface MissionScore {
+  player_number: number;
+  section_index: number;
+  tier_index: number;
+  achieved_count: number;
 }
 
 export interface ActiveEffectOut {
@@ -107,6 +138,7 @@ export interface ActiveEffectOut {
   duration_type: DurationType;
   created_at_step: number;
   lifts_restriction: string | null;
+  unit_id: number | null;
   expired: boolean;
 }
 
@@ -155,6 +187,93 @@ export interface TurnStateOut {
   eligibility_warning: string | null;
 }
 
+export interface ArmyRule {
+  name: string;
+  text: string;
+}
+
+export interface FactionArmyRules {
+  faction: string;
+  rules: ArmyRule[];
+}
+
+export const DISPOSITIONS = ["take-and-hold", "purge-the-foe", "reconnaissance", "priority-assets", "disruption"] as const;
+export type Disposition = (typeof DISPOSITIONS)[number];
+
+export const DISPOSITION_LABELS: Record<Disposition, string> = {
+  "take-and-hold": "Take and Hold",
+  "purge-the-foe": "Purge the Foe",
+  reconnaissance: "Reconnaissance",
+  "priority-assets": "Priority Assets",
+  disruption: "Disruption",
+};
+
+export interface MissionTier {
+  text: string;
+  vp: number;
+  per_unit: boolean;
+  cumulative: boolean;
+  kind: string | null;
+}
+
+export interface MissionSection {
+  when: string;
+  trigger: string | null;
+  header_kind: string | null;
+  tiers: MissionTier[];
+}
+
+export interface Mission {
+  name: string;
+  deck: Disposition;
+  vs: Disposition;
+  sections: MissionSection[];
+}
+
+export interface ActionRow {
+  k: string;
+  v: string;
+}
+
+export interface Action {
+  title: string;
+  rows: ActionRow[];
+}
+
+export interface SecondaryRow {
+  text: string;
+  vp: string;
+  or_: boolean;
+}
+
+export interface SecondarySection {
+  when: string;
+  trigger: string | null;
+  rows: SecondaryRow[];
+}
+
+export interface SecondaryMission {
+  name: string;
+  slug: string;
+  when_drawn: string | null;
+  action: Action | null;
+  sections: SecondarySection[];
+}
+
+export interface Layout {
+  number: number;
+  name: string;
+  image: string;
+  measurements_image: string;
+}
+
+export interface LayoutMatchup {
+  deck: Disposition;
+  vs: Disposition;
+  name: string;
+  layouts: Layout[];
+}
+
 export interface BattleOut {
   id: number;
   started_at: string;
@@ -163,10 +282,15 @@ export interface BattleOut {
   battle_round: number;
   active_player: number;
   current_phase: Phase;
+  opponent_name: string | null;
+  your_disposition: Disposition | null;
+  opponent_disposition: Disposition | null;
+  layout_number: number | null;
   players: PlayerState[];
   effects: ActiveEffectOut[];
   active_synergies: UnitSynergy[];
   turn_states: TurnStateOut[];
   pool_states: PoolStateOut[];
   pool_entries: PoolEntryOut[];
+  mission_scores: MissionScore[];
 }

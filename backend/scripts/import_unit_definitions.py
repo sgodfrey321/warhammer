@@ -42,7 +42,9 @@ def import_faction_file(path: Path, session: Session) -> int:
             is_legends=unit.get("is_legends", False),
             stats=unit.get("stats", {}),
             abilities=unit.get("abilities", []),
+            rules=unit.get("rules", []),
             weapons=unit.get("weapons", []),
+            model_profiles=unit.get("model_profiles", []),
         )
         if existing is None:
             session.add(UnitDefinition(id=unit["source_entry_id"], **fields))
@@ -54,6 +56,19 @@ def import_faction_file(path: Path, session: Session) -> int:
     return count
 
 
+# Output files that exist alongside per-faction UnitDefinition JSON but aren't shaped like it
+# ({"units": [...]}) -- each must be excluded here or import_faction_file crashes on it.
+_NON_FACTION_FILES = {"army-rules.json", "detachments.json"}
+
+
+def _faction_files(output_dir: Path) -> list[Path]:
+    return sorted(
+        p
+        for p in output_dir.glob("*.json")
+        if not p.name.endswith("-synergies.json") and p.name not in _NON_FACTION_FILES
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Import bsdata-indexer output into UnitDefinition.")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
@@ -61,9 +76,7 @@ def main(argv: list[str] | None = None) -> int:
 
     create_db_and_tables()
 
-    faction_files = sorted(
-        p for p in args.output_dir.glob("*.json") if not p.name.endswith("-synergies.json")
-    )
+    faction_files = _faction_files(args.output_dir)
     if not faction_files:
         print(f"No faction output files found in {args.output_dir}")
         return 1

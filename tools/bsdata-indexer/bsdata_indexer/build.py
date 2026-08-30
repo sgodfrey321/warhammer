@@ -38,17 +38,28 @@ def build_profile_index(catalogue_cache: RepoCache) -> dict[str, dict]:
     )
 
 
+def build_group_index(catalogue_cache: RepoCache) -> dict[str, dict]:
+    """Fetch + merge every shared library's sharedSelectionEntryGroups once, reused across all
+    factions -- see catalogue.py's _weapon_profiles for why this is needed alongside
+    build_library_index (a weapon choice can be gated behind an option group, not a bare
+    entry)."""
+    return catalogue.build_global_entry_group_index(
+        lambda stem: catalogue.load_json(catalogue_cache.get(f"{stem}.json"))
+    )
+
+
 def build_faction(
     faction_stem: str,
     catalogue_cache: RepoCache,
     library_index: dict[str, dict],
     profile_index: dict[str, dict],
+    group_index: dict[str, dict],
     mfm_cache: RepoCache,
     *,
     available_mfm_slugs: set[str],
 ) -> BuildReport:
     faction_doc = catalogue.load_json(catalogue_cache.get(f"{faction_stem}.json"))
-    resolved_entries = catalogue.resolve_faction(faction_doc, library_index, profile_index)
+    resolved_entries = catalogue.resolve_faction(faction_doc, library_index, profile_index, group_index)
 
     report = BuildReport(faction=faction_stem)
     slug, guessed = faction_map.resolve(faction_stem, available_mfm_slugs)
@@ -80,7 +91,9 @@ def build_faction(
                 is_legends=is_legends,
                 stats=entry.stats,
                 abilities=entry.abilities,
+                rules=entry.rules,
                 weapons=entry.weapons,
+                model_profiles=entry.model_profiles,
                 points=list(mfm_unit.points) if mfm_unit else [],
                 mfm_matched=mfm_unit is not None,
                 source_catalogue_id=entry.entrylink_id,

@@ -2,17 +2,27 @@ import type {
   ActiveEffectOut,
   BattleOut,
   DeclaredStatePool,
+  Disposition,
+  FactionArmyRules,
+  LayoutMatchup,
+  Mission,
   PlayerState,
   Roster,
   RosterImportResult,
+  SecondaryMission,
   TurnStateOut,
+  Unit,
   UnitAttachment,
   UnitDefinition,
   UnitOut,
   UnitSynergy,
 } from "./types";
 
-const BASE_URL = "http://localhost:8000";
+// Derived from the page's own hostname (not hardcoded to "localhost") so this works
+// identically whether the frontend was loaded as localhost:5173 (on this machine) or
+// 192.168.x.x:5173 (from another machine on the LAN) -- the backend always lives on the
+// same host, just port 8000 instead of 5173.
+const BASE_URL = `http://${window.location.hostname}:8000`;
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const resp = await fetch(`${BASE_URL}${path}`, {
@@ -32,12 +42,17 @@ export const api = {
   getRoster: (id: number) => request<Roster>(`/rosters/${id}`),
   createRoster: (payload: { name: string; faction: string; points_limit?: number | null }) =>
     request<Roster>("/rosters", { method: "POST", body: JSON.stringify(payload) }),
+  updateRoster: (id: number, payload: Partial<Pick<Roster, "name" | "faction" | "points_limit">>) =>
+    request<Roster>(`/rosters/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+  deleteRoster: (id: number) => request<void>(`/rosters/${id}`, { method: "DELETE" }),
   importRoster: (data: unknown) =>
     request<RosterImportResult>("/rosters/import", { method: "POST", body: JSON.stringify(data) }),
 
   listUnits: (rosterId: number) => request<UnitOut[]>(`/rosters/${rosterId}/units`),
   addUnit: (rosterId: number, payload: { unit_definition_id: string; quantity: number }) =>
     request<UnitOut>(`/rosters/${rosterId}/units`, { method: "POST", body: JSON.stringify(payload) }),
+  updateUnit: (rosterId: number, unitId: number, payload: Partial<Pick<Unit, "notes" | "quantity" | "buffs">>) =>
+    request<UnitOut>(`/rosters/${rosterId}/units/${unitId}`, { method: "PATCH", body: JSON.stringify(payload) }),
   deleteUnit: (rosterId: number, unitId: number) =>
     request<void>(`/rosters/${rosterId}/units/${unitId}`, { method: "DELETE" }),
 
@@ -69,25 +84,53 @@ export const api = {
   searchUnitDefinitions: (search: string) =>
     request<UnitDefinition[]>(`/unit-definitions?search=${encodeURIComponent(search)}`),
 
-  createBattle: (rosterId?: number) =>
-    request<BattleOut>("/battles", { method: "POST", body: JSON.stringify({ roster_id: rosterId ?? null }) }),
+  listArmyRules: () => request<FactionArmyRules[]>("/army-rules"),
+  listPrimaryMissions: () => request<Mission[]>("/primary-missions"),
+  listSecondaryMissions: () => request<SecondaryMission[]>("/secondary-missions"),
+  listLayouts: () => request<LayoutMatchup[]>("/layouts"),
+
+  createBattle: (payload: {
+    roster_id?: number | null;
+    opponent_name?: string | null;
+    your_disposition?: Disposition | null;
+    opponent_disposition?: Disposition | null;
+    layout_number?: number | null;
+  }) => request<BattleOut>("/battles", { method: "POST", body: JSON.stringify(payload) }),
   listBattlesForRoster: (rosterId: number) => request<BattleOut[]>(`/battles?roster_id=${rosterId}`),
   getBattle: (id: number) => request<BattleOut>(`/battles/${id}`),
+  updateBattleSetup: (
+    battleId: number,
+    payload: Partial<{
+      opponent_name: string | null;
+      your_disposition: Disposition | null;
+      opponent_disposition: Disposition | null;
+      layout_number: number | null;
+    }>,
+  ) => request<BattleOut>(`/battles/${battleId}/setup`, { method: "PATCH", body: JSON.stringify(payload) }),
   advancePhase: (id: number) => request<BattleOut>(`/battles/${id}/advance-phase`, { method: "PATCH" }),
   retreatPhase: (id: number) => request<BattleOut>(`/battles/${id}/retreat-phase`, { method: "PATCH" }),
   updatePlayer: (
     battleId: number,
     playerNumber: number,
-    payload: Partial<Pick<PlayerState, "cp_gained" | "cp_spent" | "vp">>,
+    payload: Partial<Pick<PlayerState, "cp_gained" | "cp_spent" | "vp_adjustment">>,
   ) =>
     request<PlayerState>(`/battles/${battleId}/players/${playerNumber}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }),
+  adjustMissionScore: (
+    battleId: number,
+    playerNumber: number,
+    payload: { section_index: number; tier_index: number; delta: number },
+  ) =>
+    request<BattleOut>(`/battles/${battleId}/players/${playerNumber}/mission-score`, {
       method: "PATCH",
       body: JSON.stringify(payload),
     }),
 
   addEffect: (
     battleId: number,
-    payload: { label: string; owner_player: number; duration_type: string },
+    payload: { label: string; owner_player: number; duration_type: string; unit_id?: number },
   ) => request<BattleOut>(`/battles/${battleId}/effects`, { method: "POST", body: JSON.stringify(payload) }),
   dismissEffect: (battleId: number, effectId: number) =>
     request<BattleOut>(`/battles/${battleId}/effects/${effectId}`, { method: "DELETE" }),

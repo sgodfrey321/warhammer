@@ -127,6 +127,24 @@ Re-run whenever a dataslate or faction pack drops (roughly monthly). Unchanged u
 are skipped via a cached commit-sha check (`cache/`, gitignored) — only `output/` is meant to
 be committed, so you can review a real diff before deciding it looks right.
 
+## Army rules and detachments (`--army-rules`, `--detachments`)
+
+Two independent extraction modes, separate from the per-faction unit build above (each exits
+right after writing its output, ignoring `--faction`/`--all`):
+
+```bash
+python -m bsdata_indexer.cli --army-rules    # -> output/army-rules.json
+python -m bsdata_indexer.cli --detachments   # -> output/detachments.json
+```
+
+`--army-rules` (`bsdata_indexer/army_rules.py`) pulls every catalogue/library-level army rule
+(Battle Focus, Blessings of Khorne, Oath of Moment, ...) grouped by faction — surfaced read-only
+on the frontend's `/army-rules` page, and matched against a roster's Army Faction keyword by
+`backend/app/army_rule_handlers/` to auto-create a `DeclaredStatePool` on import where the rule
+is actually pool-shaped (so far: Battle Focus only — see `docs/TODO.md`). `--detachments`
+(`bsdata_indexer/detachments.py`) pulls each faction's detachment options and their own
+Detachment Rule.
+
 ## Tests
 
 ```bash
@@ -180,8 +198,28 @@ Runs entirely against small hand-trimmed fixtures in `tests/fixtures/` — no ne
     modes are indexed as distinct `Weapon`s (correct — they really are different stat lines);
     matching one back to a roster's plain-named loadout item (`"Axe of Khorne"`) needed the
     arrow prefix and `" - mode"` suffix stripped before comparing, done app-side in
-    `frontend/src/pages/BattleTracker.tsx`'s `weaponBaseName()` rather than in the indexer, so
-    the indexer's own output stays a faithful, unopinionated copy of what the catalogue says.
+    `frontend/src/weapons.ts`'s `weaponBaseName()` rather than in the indexer, so the indexer's
+    own output stays a faithful, unopinionated copy of what the catalogue says.
+  - **A weapon choice can be gated behind an option group, not a bare entry** — real bug found
+    on Guardian Defenders' Heavy Weapon Platform: its actual heavy-weapon options (Shuriken
+    Cannon, Missile Launcher, Bright Lance, Scatter Laser, Starcannon) were entirely missing
+    because they're reached via an `entryLinks[type == "selectionEntryGroup"]` link (a "Heavy
+    Weapons" option group), and `_weapon_profiles()` only ever resolved `type == "selectionEntry"`
+    links, explicitly skipping group-type links as "harmless, those are just enhancement
+    groups." That assumption was wrong for this case. Fixed by indexing
+    `sharedSelectionEntryGroups` the same way `sharedSelectionEntries` already is
+    (`_shared_entry_groups`/`build_global_entry_group_index`) and resolving+recursing into a
+    group-type link exactly like an entry-type one.
+- **`UnitDefinition.model_profiles`** — the flat `stats`/`weapons` fields above are a
+  single-baseline heuristic (first nested model found, all weapons merged together); a squad
+  with more than one real model-type (Guardian Defenders: "Guardian Defender" + "Heavy Weapon
+  Platform", each with a different `W`) loses that distinction. `model_profiles` keeps every
+  nested model type `_nested_unit_stats` already finds — not just the first — each with its
+  weapons scoped to *that model's own subtree* (via the same `_weapon_profiles`, called
+  per-sub-entry instead of on the parent), so "Guardian Defender's Shuriken Catapult" and "Heavy
+  Weapon Platform's Shuriken Cannon" don't get merged into one undifferentiated list. Powers the
+  app's Unit Details modal (`frontend/src/components/UnitDetailsModal.tsx`); the flat fields
+  are untouched for everything else that already reads them.
 - Two catalogue-config entries per faction (roughly) resolve to real targets but aren't actual
   units — a `"Detachment"` picker, a `"Battle Focus - Agile Manoeuvres"`-style faction rule —
   and were leaking into `units[]` looking like empty, unmatched real units. Fixed by checking

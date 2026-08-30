@@ -37,15 +37,22 @@ def make_profile_index(monkeypatch, catalogue_cache):
     return build.build_profile_index(catalogue_cache)
 
 
+def make_group_index(monkeypatch, catalogue_cache):
+    monkeypatch.setattr(build.catalogue, "LIBRARY_FILENAMES", ["Aeldari - Aeldari Library"])
+    return build.build_group_index(catalogue_cache)
+
+
 def test_build_faction_joins_catalogue_and_mfm(monkeypatch):
     catalogue_cache, mfm_cache = make_caches()
     library_index = make_library_index(monkeypatch, catalogue_cache)
     profile_index = make_profile_index(monkeypatch, catalogue_cache)
+    group_index = make_group_index(monkeypatch, catalogue_cache)
     report = build.build_faction(
         "Aeldari - Craftworlds",
         catalogue_cache,
         library_index,
         profile_index,
+        group_index,
         mfm_cache,
         available_mfm_slugs={"aeldari"},
     )
@@ -82,6 +89,19 @@ def test_build_faction_joins_catalogue_and_mfm(monkeypatch):
     avatar_weapons = {w.name for w in units["Avatar of Khaine"].weapons}
     assert "➤ The Wailing Doom - Strike" in avatar_weapons
 
+    # Guardian Defenders has two model types (Guardian Defender, Heavy Weapon Platform) --
+    # model_profiles keeps both, each scoped to its own weapons, instead of the flat `stats`/
+    # `weapons` fields' single-baseline-model heuristic. The Shuriken Cannon is only reachable
+    # via a selectionEntryGroup-type entryLink (the "Heavy Weapons" option group) -- confirms
+    # that gap is actually fixed through the full build pipeline, not just in isolation.
+    guardian_defenders = units["Guardian Defenders"]
+    profiles_by_name = {p.name: p for p in guardian_defenders.model_profiles}
+    assert set(profiles_by_name) == {"Guardian Defender", "Heavy Weapon Platform"}
+    assert profiles_by_name["Guardian Defender"].stats["W"] == "1"
+    assert profiles_by_name["Heavy Weapon Platform"].stats["W"] == "2"
+    assert {w.name for w in profiles_by_name["Guardian Defender"].ranged_weapons} == {"Shuriken Catapult"}
+    assert {w.name for w in profiles_by_name["Heavy Weapon Platform"].ranged_weapons} == {"Shuriken Cannon"}
+
     wraithlord = units["Wraithlord"]
     assert wraithlord.mfm_matched is True
     assert wraithlord.points[0].points == 125  # MFM value wins over the catalogue's 130
@@ -89,6 +109,10 @@ def test_build_faction_joins_catalogue_and_mfm(monkeypatch):
     assert wraithlord.id == "aeldari-craftworlds/wraithlord"
     assert wraithlord.stats["T"] == "10"
     assert wraithlord.abilities[0].name == "Fated Hero"
+    assert wraithlord.rules == []
+
+    dire_avengers = units["Dire Avengers"]
+    assert dire_avengers.rules == ["Battle Focus"]
 
     skyrunner = units["Autarch Skyrunner [Legends]"]
     assert skyrunner.is_legends is True  # matched via MFM's own name, not the "[Legends]" suffix
@@ -99,11 +123,13 @@ def test_build_faction_unmapped_slug_flags_every_unit_unmatched(monkeypatch):
     catalogue_cache, mfm_cache = make_caches()
     library_index = make_library_index(monkeypatch, catalogue_cache)
     profile_index = make_profile_index(monkeypatch, catalogue_cache)
+    group_index = make_group_index(monkeypatch, catalogue_cache)
     report = build.build_faction(
         "Aeldari - Craftworlds",
         catalogue_cache,
         library_index,
         profile_index,
+        group_index,
         mfm_cache,
         available_mfm_slugs=set(),  # simulate no MFM data available at all
     )
@@ -116,11 +142,13 @@ def test_emit_is_deterministic_and_git_diffable(monkeypatch, tmp_path):
     catalogue_cache, mfm_cache = make_caches()
     library_index = make_library_index(monkeypatch, catalogue_cache)
     profile_index = make_profile_index(monkeypatch, catalogue_cache)
+    group_index = make_group_index(monkeypatch, catalogue_cache)
     report = build.build_faction(
         "Aeldari - Craftworlds",
         catalogue_cache,
         library_index,
         profile_index,
+        group_index,
         mfm_cache,
         available_mfm_slugs={"aeldari"},
     )

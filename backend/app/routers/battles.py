@@ -14,24 +14,43 @@ from ..models import (
     DeclaredStatePool,
     DeclaredStatePoolEntry,
     DeclaredStatePoolState,
+    MissionScoreEntry,
     PlayerState,
     SynergyAcknowledgment,
     Unit,
     UnitSynergy,
     UnitTurnState,
 )
+from . import primary_missions
 
 router = APIRouter(prefix="/battles", tags=["battles"])
 
 
 class BattleCreate(BaseModel):
     roster_id: Optional[int] = None
+    opponent_name: Optional[str] = None
+    your_disposition: Optional[str] = None
+    opponent_disposition: Optional[str] = None
+    layout_number: Optional[int] = None
+
+
+class BattleSetupUpdate(BaseModel):
+    opponent_name: Optional[str] = None
+    your_disposition: Optional[str] = None
+    opponent_disposition: Optional[str] = None
+    layout_number: Optional[int] = None
 
 
 class PlayerStateUpdate(BaseModel):
     cp_gained: Optional[int] = None
     cp_spent: Optional[int] = None
-    vp: Optional[int] = None
+    vp_adjustment: Optional[int] = None
+
+
+class MissionScoreAdjust(BaseModel):
+    section_index: int
+    tier_index: int
+    delta: int = 1
 
 
 class EffectCreate(BaseModel):
@@ -39,6 +58,7 @@ class EffectCreate(BaseModel):
     owner_player: int
     duration_type: str
     lifts_restriction: Optional[str] = None
+    unit_id: Optional[int] = None
 
 
 class TurnStateUpdate(BaseModel):
@@ -66,6 +86,7 @@ class ActiveEffectOut(BaseModel):
     duration_type: str
     created_at_step: int
     lifts_restriction: Optional[str]
+    unit_id: Optional[int]
     expired: bool
 
 
@@ -102,6 +123,13 @@ class PoolEntryOut(BaseModel):
     created_at_step: int
 
 
+class MissionScoreOut(BaseModel):
+    player_number: int
+    section_index: int
+    tier_index: int
+    achieved_count: int
+
+
 class BattleOut(BaseModel):
     id: int
     started_at: str
@@ -110,12 +138,17 @@ class BattleOut(BaseModel):
     battle_round: int
     active_player: int
     current_phase: str
+    opponent_name: Optional[str]
+    your_disposition: Optional[str]
+    opponent_disposition: Optional[str]
+    layout_number: Optional[int]
     players: list[PlayerState]
     effects: list[ActiveEffectOut]
     active_synergies: list[UnitSynergy]
     turn_states: list[TurnStateOut]
     pool_states: list[PoolStateOut]
     pool_entries: list[PoolEntryOut]
+    mission_scores: list[MissionScoreOut]
 
 
 def _get_battle_or_404(battle_id: int, session: Session) -> BattleSession:
@@ -123,6 +156,46 @@ def _get_battle_or_404(battle_id: int, session: Session) -> BattleSession:
     if battle is None:
         raise HTTPException(status_code=404, detail="Battle not found")
     return battle
+
+
+def _mission_for_player(battle: BattleSession, player_number: int, missions: list[dict]) -> Optional[dict]:
+    """Player 1 is "you" (the tracked roster's owner -- your_disposition is their disposition),
+    player 2 is the opponent -- mirrors the asymmetric deck/vs lookup already used by
+    Missions.tsx/BattleSetup.tsx. Returns None if either disposition hasn't been set."""
+    if not battle.your_disposition or not battle.opponent_disposition:
+        return None
+    deck, vs = (
+        (battle.your_disposition, battle.opponent_disposition)
+        if player_number == 1
+        else (battle.opponent_disposition, battle.your_disposition)
+    )
+    return next((m for m in missions if m["deck"] == deck and m["vs"] == vs), None)
+
+
+def _recompute_vp(session: Session, battle: BattleSession, player: PlayerState) -> None:
+    """player.vp is derived, not directly settable -- the sum of every ticked-off primary
+    mission tier (achieved_count * that tier's vp) plus the manual vp_adjustment bucket. Called
+    after any mission-score or vp_adjustment change so the cached total stays correct."""
+    missions = primary_missions.list_primary_missions()
+    mission = _mission_for_player(battle, player.player_number, missions)
+    total = player.vp_adjustment
+    if mission is not None:
+        entries = session.exec(
+            select(MissionScoreEntry).where(
+                MissionScoreEntry.battle_session_id == battle.id,
+                MissionScoreEntry.player_number == player.player_number,
+            )
+        ).all()
+        sections = mission["sections"]
+        for entry in entries:
+            if entry.section_index >= len(sections):
+                continue
+            tiers = sections[entry.section_index]["tiers"]
+            if entry.tier_index >= len(tiers):
+                continue
+            total += entry.achieved_count * tiers[entry.tier_index]["vp"]
+    player.vp = total
+    session.add(player)
 
 
 def _to_turn_state_out(state: UnitTurnState) -> TurnStateOut:
@@ -159,6 +232,7 @@ def _to_out(battle: BattleSession, session: Session) -> BattleOut:
             duration_type=e.duration_type,
             created_at_step=e.created_at_step,
             lifts_restriction=e.lifts_restriction,
+            unit_id=e.unit_id,
             expired=phases.is_expired(
                 duration_type=e.duration_type,
                 owner_player=e.owner_player,
@@ -243,6 +317,18 @@ def _to_out(battle: BattleSession, session: Session) -> BattleOut:
                 )
             )
 
+    mission_scores_out = [
+        MissionScoreOut(
+            player_number=e.player_number,
+            section_index=e.section_index,
+            tier_index=e.tier_index,
+            achieved_count=e.achieved_count,
+        )
+        for e in session.exec(
+            select(MissionScoreEntry).where(MissionScoreEntry.battle_session_id == battle.id)
+        ).all()
+    ]
+
     return BattleOut(
         id=battle.id,
         started_at=battle.started_at.isoformat(),
@@ -251,12 +337,17 @@ def _to_out(battle: BattleSession, session: Session) -> BattleOut:
         battle_round=round_,
         active_player=phases.active_player(step),
         current_phase=phase,
+        opponent_name=battle.opponent_name,
+        your_disposition=battle.your_disposition,
+        opponent_disposition=battle.opponent_disposition,
+        layout_number=battle.layout_number,
         players=players,
         effects=effects_out,
         active_synergies=active_synergies,
         turn_states=[_to_turn_state_out(s) for s in turn_states],
         pool_states=pool_states_out,
         pool_entries=pool_entries_out,
+        mission_scores=mission_scores_out,
     )
 
 
@@ -275,7 +366,13 @@ def list_battles(roster_id: Optional[int] = None, session: Session = Depends(get
 
 @router.post("", response_model=BattleOut)
 def create_battle(payload: BattleCreate, session: Session = Depends(get_session)):
-    battle = BattleSession(roster_id=payload.roster_id)
+    battle = BattleSession(
+        roster_id=payload.roster_id,
+        opponent_name=payload.opponent_name,
+        your_disposition=payload.your_disposition,
+        opponent_disposition=payload.opponent_disposition,
+        layout_number=payload.layout_number,
+    )
     session.add(battle)
     session.commit()
     session.refresh(battle)
@@ -290,6 +387,20 @@ def create_battle(payload: BattleCreate, session: Session = Depends(get_session)
 @router.get("/{battle_id}", response_model=BattleOut)
 def get_battle(battle_id: int, session: Session = Depends(get_session)):
     battle = _get_battle_or_404(battle_id, session)
+    return _to_out(battle, session)
+
+
+@router.patch("/{battle_id}/setup", response_model=BattleOut)
+def update_battle_setup(battle_id: int, payload: BattleSetupUpdate, session: Session = Depends(get_session)):
+    """Setup is never a one-shot, create-only thing -- a battle can be started without a
+    mission and have it filled in later, or a misclick during setup can be corrected, so this
+    stays editable for the life of the battle the same way CP/VP already are."""
+    battle = _get_battle_or_404(battle_id, session)
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(battle, field, value)
+    session.add(battle)
+    session.commit()
+    session.refresh(battle)
     return _to_out(battle, session)
 
 
@@ -381,7 +492,7 @@ def retreat_phase(battle_id: int, session: Session = Depends(get_session)):
 def update_player_state(
     battle_id: int, player_number: int, payload: PlayerStateUpdate, session: Session = Depends(get_session)
 ):
-    _get_battle_or_404(battle_id, session)
+    battle = _get_battle_or_404(battle_id, session)
     player = session.exec(
         select(PlayerState).where(
             PlayerState.battle_session_id == battle_id,
@@ -392,10 +503,49 @@ def update_player_state(
         raise HTTPException(status_code=404, detail="Player not found on this battle")
     for field, value in payload.model_dump(exclude_unset=True).items():
         setattr(player, field, value)
-    session.add(player)
+    _recompute_vp(session, battle, player)
     session.commit()
     session.refresh(player)
     return player
+
+
+@router.patch("/{battle_id}/players/{player_number}/mission-score", response_model=BattleOut)
+def adjust_mission_score(
+    battle_id: int, player_number: int, payload: MissionScoreAdjust, session: Session = Depends(get_session)
+):
+    battle = _get_battle_or_404(battle_id, session)
+    if not battle.your_disposition or not battle.opponent_disposition:
+        raise HTTPException(status_code=422, detail="No mission set up for this battle")
+    player = session.exec(
+        select(PlayerState).where(
+            PlayerState.battle_session_id == battle_id,
+            PlayerState.player_number == player_number,
+        )
+    ).first()
+    if player is None:
+        raise HTTPException(status_code=404, detail="Player not found on this battle")
+
+    entry = session.exec(
+        select(MissionScoreEntry).where(
+            MissionScoreEntry.battle_session_id == battle_id,
+            MissionScoreEntry.player_number == player_number,
+            MissionScoreEntry.section_index == payload.section_index,
+            MissionScoreEntry.tier_index == payload.tier_index,
+        )
+    ).first()
+    if entry is None:
+        entry = MissionScoreEntry(
+            battle_session_id=battle_id,
+            player_number=player_number,
+            section_index=payload.section_index,
+            tier_index=payload.tier_index,
+            achieved_count=0,
+        )
+    entry.achieved_count = max(0, entry.achieved_count + payload.delta)
+    session.add(entry)
+    _recompute_vp(session, battle, player)
+    session.commit()
+    return _to_out(battle, session)
 
 
 @router.post("/{battle_id}/effects", response_model=BattleOut)
@@ -403,6 +553,10 @@ def add_effect(battle_id: int, payload: EffectCreate, session: Session = Depends
     battle = _get_battle_or_404(battle_id, session)
     if payload.duration_type not in phases.DURATION_TYPES:
         raise HTTPException(status_code=422, detail=f"Unknown duration_type: {payload.duration_type}")
+    if payload.unit_id is not None:
+        unit = session.get(Unit, payload.unit_id)
+        if unit is None or unit.roster_id != battle.roster_id:
+            raise HTTPException(status_code=404, detail="Unit not found on this battle's roster")
     effect = ActiveEffect(
         battle_session_id=battle_id,
         created_at_step=battle.global_step,

@@ -1,0 +1,492 @@
+[
+  {
+    "name": "A Grievous Blow",
+    "slug": "a-grievous-blow-defender",
+    "when_drawn": "<b>WHEN DRAWN:</b> If there are no enemy units with a <b>starting strength</b> of 13 or more on the battlefield, <u>you can</u> discard this card and draw one new <b>Secondary Mission</b> card.",
+    "action": null,
+    "sections": [
+      {
+        "when": "ANY BATTLE ROUND",
+        "trigger": "End of a turn",
+        "rows": [
+          {
+            "text": "For each enemy unit with a <b>starting strength</b> of 13 or more that is <b>destroyed</b> this turn.",
+            "vp": "4",
+            "or_": false
+          }
+        ]
+      },
+      {
+        "when": "ANY BATTLE ROUND",
+        "trigger": "End of a turn",
+        "rows": [
+          {
+            "text": "One or more enemy units with a <b>starting strength</b> of 13 or more were <b>destroyed</b> this turn.",
+            "vp": "5",
+            "or_": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "A Tempting Target",
+    "slug": "a-tempting-target-defender",
+    "when_drawn": "<b>WHEN DRAWN:</b> Your opponent selects one <b>objective</b> (excluding <b>home objectives</b>) within No Man's Land to be your <b>tempting target</b>.",
+    "action": null,
+    "sections": [
+      {
+        "when": "ANY BATTLE ROUND",
+        "trigger": "End of your turn",
+        "rows": [
+          {
+            "text": "You control your <b>tempting target</b>.",
+            "vp": "5",
+            "or_": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Assassination",
+    "slug": "assassination-defender",
+    "when_drawn": null,
+    "action": null,
+    "sections": [
+      {
+        "when": "ANY BATTLE ROUND",
+        "trigger": "While this card is active",
+        "rows": [
+          {
+            "text": "For each enemy <b>CHARACTER</b> model <b>destroyed</b> this turn.",
+            "vp": "3",
+            "or_": false
+          },
+          {
+            "text": "For each of those models with a <b>W</b> of 4 or more.",
+            "vp": "+1",
+            "or_": false
+          }
+        ]
+      },
+      {
+        "when": "ANY BATTLE ROUND",
+        "trigger": "End of either player's turn",
+        "rows": [
+          {
+            "text": "One or more enemy <b>CHARACTER</b> models were <b>destroyed</b> this turn.",
+            "vp": "5",
+            "or_": false
+          },
+          {
+            "text": "All enemy <b>CHARACTER</b> models have been <b>destroyed</b> during the battle.",
+            "vp": "5",
+            "or_": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Beacon",
+    "slug": "beacon-defender",
+    "when_drawn": "<b>WHEN DRAWN:</b> Select one friendly unit on the battlefield or embarked within a <b>TRANSPORT</b> on the battlefield to be your <span class=\"cB__mark\">beacon</span> unit.",
+    "action": null,
+    "sections": [
+      {
+        "when": "ANY BATTLE ROUND",
+        "trigger": "End of your opponent's turn or the end of the fifth battle round (whichever comes first)",
+        "rows": [
+          {
+            "text": "Your <span class=\"cB__mark\">beacon</span> unit is on the battlefield and not within your deployment zone.",
+            "vp": "3",
+            "or_": false
+          },
+          {
+            "text": "Your <span class=\"cB__mark\">beacon</span> unit is on the battlefield and not within your territory.",
+            "vp": "5",
+            "or_": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Behind Enemy Lines",
+    "slug": "behind-enemy-lines-defender",
+    "when_drawn": "<b>WHEN DRAWN:</b> If it is the first battle round, <u>you can</u> draw one new <b>Secondary Mission</b> card and shuffle this card back into your <b>Secondary</b> <b>Mission</b> deck.",
+    "action": null,
+    "sections": [
+      {
+        "when": "ANY BATTLE ROUND",
+        "trigger": "End of your turn",
+        "rows": [
+          {
+            "text": "For each friendly unit (excluding <b>AIRCRAFT</b> and <b>battle-shocked</b> units) wholly within your opponent's deployment zone.",
+            "vp": "3",
+            "or_": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Bring It Down",
+    "slug": "bring-it-down-defender",
+    "when_drawn": "<b>WHEN DRAWN:</b> If there are no enemy models with a <b>Wounds</b> characteristic of 10 or more on the battlefield, <u>you can</u> discard this card and draw one new <b>Secondary Mission</b> card.",
+    "action": null,
+    "sections": [
+      {
+        "when": "ANY BATTLE ROUND",
+        "trigger": "End of a turn",
+        "rows": [
+          {
+            "text": "For each enemy model with a <b>Wounds</b> characteristic of 10 or more that is <b>destroyed</b> this turn.",
+            "vp": "4",
+            "or_": false
+          }
+        ]
+      },
+      {
+        "when": "ANY BATTLE ROUND",
+        "trigger": "End of a turn",
+        "rows": [
+          {
+            "text": "One or more enemy models with a <b>Wounds</b> characteristic of 10 or more were <b>destroyed</b> this turn.",
+            "vp": "5",
+            "or_": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Burden of Trust",
+    "slug": "burden-of-trust-defender",
+    "when_drawn": "<b>WHEN DRAWN/START OF YOUR TURN:</b> For each <b>objective</b>, you can select one friendly unit on the battlefield to <b>guard</b> that <b>objective</b>. Until the start of your next turn, while that unit is within range of that <b>objective</b> and while you control that <b>objective</b>, that <b>objective</b> is <span class=\"cB__mark\">guarded</span> by your army.",
+    "action": null,
+    "sections": [
+      {
+        "when": "ANY BATTLE ROUND",
+        "trigger": "End of your opponent's turn or the end of the fifth battle round (whichever comes first)",
+        "rows": [
+          {
+            "text": "For each <b>objective</b> <span class=\"cB__mark\">guarded</span> by your army.",
+            "vp": "2",
+            "or_": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Centre Ground",
+    "slug": "centre-ground-defender",
+    "when_drawn": null,
+    "action": null,
+    "sections": [
+      {
+        "when": "ANY BATTLE ROUND",
+        "trigger": "End of your turn",
+        "rows": [
+          {
+            "text": "One or more friendly units (excluding <b>AIRCRAFT</b> and <b>battle-shocked</b> units) are within 3\" of the centre of the battlefield, and <u>no</u> enemy units are within <u>3\"</u> of the centre of the battlefield.",
+            "vp": "3",
+            "or_": false
+          },
+          {
+            "text": "One or more friendly units (excluding <b>AIRCRAFT</b> and <b>battle-shocked</b> units) are within 3\" of the centre of the battlefield, and <u>no</u> enemy units are within <u>6\"</u> of the centre of the battlefield.",
+            "vp": "5",
+            "or_": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Cleanse",
+    "slug": "cleanse-defender",
+    "when_drawn": "<b>WHEN DRAWN:</b> If the Plunder <b>Secondary Mission</b> is active for you, <u>you can</u> draw one new <b>Secondary Mission</b> card and shuffle this card back into your <b>Secondary Mission</b> deck.",
+    "action": {
+      "title": "CLEANSE",
+      "rows": [
+        {
+          "k": "STARTS",
+          "v": "Your Shooting phase."
+        },
+        {
+          "k": "UNITS",
+          "v": "One friendly unit within range of one <b>objective</b> (excluding your <b>home objective</b>)."
+        },
+        {
+          "k": "USE LIMIT",
+          "v": "Unlimited. Each unit that starts this <b>action</b> this phase must be within range of a different <b>objective</b>."
+        },
+        {
+          "k": "COMPLETES",
+          "v": "End of your turn, if that unit is controlling that <b>objective</b>."
+        },
+        {
+          "k": "EFFECT",
+          "v": "That <b>objective</b> is <span class=\"cB__mark\">cleansed</span> by your army."
+        }
+      ]
+    },
+    "sections": [
+      {
+        "when": "ANY BATTLE ROUND",
+        "trigger": "End of your turn",
+        "rows": [
+          {
+            "text": "One <b>objective</b> was <span class=\"cB__mark\">cleansed</span> by your army this turn.",
+            "vp": "2",
+            "or_": false
+          },
+          {
+            "text": "Two or more <b>objectives</b> were <span class=\"cB__mark\">cleansed</span> by your army this turn.",
+            "vp": "5",
+            "or_": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Defend Stronghold",
+    "slug": "defend-stronghold-defender",
+    "when_drawn": "<b>WHEN DRAWN:</b> If it is the first battle round, draw one new <b>Secondary Mission</b> card and shuffle this card back into your <b>Secondary Mission</b> deck.",
+    "action": null,
+    "sections": [
+      {
+        "when": "SECOND BATTLE ROUND ONWARDS",
+        "trigger": "End of your opponent's turn or the end of the fifth battle round (whichever comes first)",
+        "rows": [
+          {
+            "text": "You control your <b>home objective</b>.",
+            "vp": "3",
+            "or_": false
+          },
+          {
+            "text": "No enemy units are within your deployment zone.",
+            "vp": "+2",
+            "or_": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Display of Might",
+    "slug": "display-of-might-defender",
+    "when_drawn": null,
+    "action": null,
+    "sections": [
+      {
+        "when": "ANY BATTLE ROUND",
+        "trigger": "End of your turn",
+        "rows": [
+          {
+            "text": "There are more friendly units than enemy units (excluding <b>AIRCRAFT</b> and <b>battle-shocked</b> units) wholly within No Man's Land.",
+            "vp": "2",
+            "or_": false
+          }
+        ]
+      },
+      {
+        "when": "ANY BATTLE ROUND",
+        "trigger": "End of your opponent's turn",
+        "rows": [
+          {
+            "text": "There are more friendly units than enemy units (excluding <b>AIRCRAFT</b> and <b>battle-shocked</b> units) wholly within No Man's Land.",
+            "vp": "5",
+            "or_": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Engage on All Fronts",
+    "slug": "engage-on-all-fronts-defender",
+    "when_drawn": "If one or more friendly units (excluding <b>AIRCRAFT</b> and <b>battle-shocked</b> units) are wholly within a table quarter, and those units are not within 6\" of the centre of the battlefield, you have a <span class=\"cB__mark\">presence</span> in that table quarter.",
+    "action": null,
+    "sections": [
+      {
+        "when": "ANY BATTLE ROUND",
+        "trigger": "End of your turn",
+        "rows": [
+          {
+            "text": "You have a <span class=\"cB__mark\">presence</span> in <span class=\"cB__wmWord\" data-n=\"3\">three</span> table quarters.",
+            "vp": "2",
+            "or_": false
+          },
+          {
+            "text": "You have a <span class=\"cB__mark\">presence</span> in <span class=\"cB__wmWord\" data-n=\"4\">four</span> table quarters.",
+            "vp": "4",
+            "or_": true
+          }
+        ]
+      },
+      {
+        "when": "ANY BATTLE ROUND",
+        "trigger": "End of your turn",
+        "rows": [
+          {
+            "text": "You have a <span class=\"cB__mark\">presence</span> in <span class=\"cB__wmWord\" data-n=\"3\">three</span> table quarters.",
+            "vp": "3",
+            "or_": false
+          },
+          {
+            "text": "You have a <span class=\"cB__mark\">presence</span> in <span class=\"cB__wmWord\" data-n=\"4\">four</span> table quarters.",
+            "vp": "5",
+            "or_": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Forward Position",
+    "slug": "forward-position-defender",
+    "when_drawn": "<b>WHEN DRAWN:</b> If it is the first battle round, <u>you can</u> draw one new <b>Secondary Mission</b> card and shuffle this card back into your <b>Secondary</b> <b>Mission</b> deck.",
+    "action": null,
+    "sections": [
+      {
+        "when": "ANY BATTLE ROUND",
+        "trigger": "End of your turn",
+        "rows": [
+          {
+            "text": "You control your opponent's <b>home objective</b> and/or each <b>expansion objective</b>.",
+            "vp": "5",
+            "or_": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "No Prisoners",
+    "slug": "no-prisoners-defender",
+    "when_drawn": null,
+    "action": null,
+    "sections": [
+      {
+        "when": "ANY BATTLE ROUND",
+        "trigger": "End of a turn",
+        "rows": [
+          {
+            "text": "For each enemy unit <b>destroyed</b> this turn.",
+            "vp": "2",
+            "or_": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Outflank",
+    "slug": "outflank-defender",
+    "when_drawn": null,
+    "action": null,
+    "sections": [
+      {
+        "when": "ANY BATTLE ROUND",
+        "trigger": "End of your turn",
+        "rows": [
+          {
+            "text": "One or more friendly units (excluding <b>AIRCRAFT</b> and <b>battle-shocked</b> units) are within 6\" of one or more battlefield edges and not within your territory.",
+            "vp": "3",
+            "or_": false
+          },
+          {
+            "text": "Two or more friendly units (excluding <b>AIRCRAFT</b> and <b>battle-shocked</b> units) are within 6\" of opposite battlefield edges and one or more of those units is not within your territory.",
+            "vp": "5",
+            "or_": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Overwhelming Force",
+    "slug": "overwhelming-force-defender",
+    "when_drawn": null,
+    "action": null,
+    "sections": [
+      {
+        "when": "ANY BATTLE ROUND",
+        "trigger": "End of a turn",
+        "rows": [
+          {
+            "text": "For each enemy unit that started the turn within range of one or more <b>objectives</b> and is <b>destroyed</b>.",
+            "vp": "3",
+            "or_": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Plunder",
+    "slug": "plunder-defender",
+    "when_drawn": "<b>WHEN DRAWN:</b> If the Cleanse <b>Secondary Mission</b> is active for you, <u>you can</u> draw one new <b>Secondary Mission</b> card and shuffle this card back into your <b>Secondary Mission</b> deck.",
+    "action": {
+      "title": "PLUNDER",
+      "rows": [
+        {
+          "k": "STARTS",
+          "v": "Your Shooting phase."
+        },
+        {
+          "k": "UNITS",
+          "v": "One unit within a <b>terrain area</b> that is not within your territory."
+        },
+        {
+          "k": "USE LIMIT",
+          "v": "Once per turn."
+        },
+        {
+          "k": "COMPLETES",
+          "v": "Immediately."
+        },
+        {
+          "k": "EFFECT",
+          "v": "That <b>terrain area</b> is <span class=\"cB__mark\">plundered</span>."
+        }
+      ]
+    },
+    "sections": [
+      {
+        "when": "ANY BATTLE ROUND",
+        "trigger": "End of your turn",
+        "rows": [
+          {
+            "text": "A <b>terrain area</b> was <span class=\"cB__mark\">plundered</span> this turn.",
+            "vp": "5",
+            "or_": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Secure No Man's Land",
+    "slug": "secure-no-man-s-land-defender",
+    "when_drawn": null,
+    "action": null,
+    "sections": [
+      {
+        "when": "ANY BATTLE ROUND",
+        "trigger": "End of your turn",
+        "rows": [
+          {
+            "text": "You control two or more <b>objectives</b> within No Man's Land (excluding your <b>home objective</b>).",
+            "vp": "5",
+            "or_": false
+          }
+        ]
+      }
+    ]
+  }
+]

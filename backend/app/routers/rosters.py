@@ -9,8 +9,23 @@ from pydantic import BaseModel
 from sqlmodel import Session, select
 
 from .. import battlescribe_import, phases
+from ..army_rule_handlers import bootstrap_army_rules
 from ..db import get_session
-from ..models import DeclaredStatePool, Roster, Unit, UnitAttachment, UnitDefinition, UnitSynergy
+from ..models import (
+    ActiveEffect,
+    BattleSession,
+    DeclaredStatePool,
+    DeclaredStatePoolEntry,
+    DeclaredStatePoolState,
+    PlayerState,
+    Roster,
+    SynergyAcknowledgment,
+    Unit,
+    UnitAttachment,
+    UnitDefinition,
+    UnitSynergy,
+    UnitTurnState,
+)
 
 router = APIRouter(prefix="/rosters", tags=["rosters"])
 
@@ -22,6 +37,8 @@ class UnitOut(BaseModel):
     quantity: int
     notes: Optional[str]
     loadout: list[dict]
+    model_groups: list[dict]
+    buffs: list[dict]
     unit_definition: UnitDefinition
 
 
@@ -50,6 +67,7 @@ class UnitCreate(BaseModel):
 class UnitUpdate(BaseModel):
     quantity: Optional[int] = None
     notes: Optional[str] = None
+    buffs: Optional[list[dict]] = None
 
 
 class SynergyCreate(BaseModel):
@@ -137,7 +155,13 @@ def import_roster(payload: dict[str, Any], session: Session = Depends(get_sessio
     imported: list[str] = []
     unit_id_by_selection: dict[str, int] = {}
     for entry, definition in resolved:
-        unit = Unit(roster_id=roster.id, unit_definition_id=definition.id, quantity=1, loadout=entry.loadout)
+        unit = Unit(
+            roster_id=roster.id,
+            unit_definition_id=definition.id,
+            quantity=1,
+            loadout=entry.loadout,
+            model_groups=entry.model_groups,
+        )
         session.add(unit)
         session.flush()  # assigns unit.id without a full commit/attribute-expire
         unit_id_by_selection[entry.roster_selection_id] = unit.id
@@ -153,6 +177,10 @@ def import_roster(payload: dict[str, Any], session: Session = Depends(get_sessio
 
     session.commit()
     session.refresh(roster)  # the commits above expired roster's attributes -- reload before serializing
+
+    bootstrap_army_rules(roster, [definition for _, definition in resolved], session)
+    session.commit()
+    session.refresh(roster)  # re-expired by the commit above -- reload before serializing
 
     return RosterImportResult(
         roster=roster, imported=imported, unmatched=unmatched, attachments_created=attachments_created
@@ -178,7 +206,33 @@ def update_roster(roster_id: int, payload: RosterUpdate, session: Session = Depe
 
 @router.delete("/{roster_id}", status_code=204)
 def delete_roster(roster_id: int, session: Session = Depends(get_session)):
+    """Cascades by hand -- db.py never turns on SQLite foreign-key enforcement, so without
+    this every unit/attachment/synergy/pool, and every battle (and everything a battle owns:
+    player state, effects, turn states, pool runtime state, synergy acknowledgments) would be
+    silently orphaned forever instead of erroring or being cleaned up."""
     roster = _get_roster_or_404(roster_id, session)
+
+    battle_ids = [
+        b.id for b in session.exec(select(BattleSession).where(BattleSession.roster_id == roster_id)).all()
+    ]
+    if battle_ids:
+        for model in (
+            PlayerState,
+            ActiveEffect,
+            UnitTurnState,
+            DeclaredStatePoolState,
+            DeclaredStatePoolEntry,
+            SynergyAcknowledgment,
+        ):
+            for row in session.exec(select(model).where(model.battle_session_id.in_(battle_ids))).all():
+                session.delete(row)
+        for battle in session.exec(select(BattleSession).where(BattleSession.roster_id == roster_id)).all():
+            session.delete(battle)
+
+    for model in (UnitAttachment, UnitSynergy, DeclaredStatePool, Unit):
+        for row in session.exec(select(model).where(model.roster_id == roster_id)).all():
+            session.delete(row)
+
     session.delete(roster)
     session.commit()
 
@@ -192,6 +246,8 @@ def _to_unit_out(unit: Unit, session: Session) -> UnitOut:
         quantity=unit.quantity,
         notes=unit.notes,
         loadout=unit.loadout,
+        model_groups=unit.model_groups,
+        buffs=unit.buffs,
         unit_definition=definition,
     )
 

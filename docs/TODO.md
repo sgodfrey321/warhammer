@@ -6,15 +6,21 @@ Add to this list as more turn up; don't let it silently grow stale.
 
 ## Roster import
 
-- **Declared State Pools aren't auto-populated.** Nothing creates a roster's pools
-  (Battle Focus, Blessings of Khorne, etc.) automatically -- not the indexer (it
-  doesn't extract this data at all), not `POST /rosters/import` (BattleScribe import
-  only creates `Unit` rows). Importing a real Aeldari list gets you units + points but
-  no Battle Focus pool; it has to be added by hand via the roster editor's "Declared
-  State Pools" form. Eventually this probably wants to be faction-level data (every
-  Aeldari roster gets the same Battle Focus rules) rather than something each roster
-  declares from scratch -- but that needs the indexer/enrichment side to actually
-  produce it first; don't build the app-side auto-creation ahead of a real data source.
+- **Declared State Pools are only auto-populated for one faction so far.** The indexer now
+  extracts catalogue/library-level army rules (`bsdata_indexer.army_rules`, surfaced
+  read-only on the frontend's "Army Rules" tab), and `POST /rosters/import` auto-creates a
+  `DeclaredStatePool` from them via `backend/app/army_rule_handlers/` -- but only where the
+  rule is actually pool-shaped. So far that's just Battle Focus (Army Faction Asuryani/
+  Aeldari): a non-stacking, `battle_round`-scoped pool sized off the roster's `battle_size`.
+  Scoped World Eaters (Blessings of Khorne), Thousand Sons (Cabal of Sorcerers), and Space
+  Marines (Oath of Moment) too -- none of them are countable-resource pools (dice-roll-and-
+  choose, or a per-Command-phase declared target), so they don't get a handler here; they'd
+  be better served by a Command/round-phase checklist reminder pointing at the existing
+  Active Effects log (`until_next_command_phase`/`end_of_battle_round` duration types already
+  exist) than by forcing them into the pool model. Every other faction, and any manually
+  built (non-imported) roster regardless of faction, still needs pools added by hand via the
+  roster editor's "Declared State Pools" form -- add a new file under `army_rule_handlers/`
+  plus one registry entry to extend coverage.
 
 - **No manual loadout editing for hand-built rosters.** `Unit.loadout` (weapon
   name/count) is only ever populated by `POST /rosters/import` -- a roster built from
@@ -26,6 +32,18 @@ Add to this list as more turn up; don't let it silently grow stale.
   Same shape of gap as attachments/synergies/pools already had before their manual-add
   forms were built -- needs the same treatment (a small form in `RosterEditor.tsx`
   letting you pick from `unit_definition.weapons` and a count).
+
+## Unit Details modal
+
+- **No per-model-type breakdown for manually-added units.** `UnitDetailsModal` matches
+  `unit_definition.model_profiles` against that specific `Unit.model_groups` (roster
+  instance) by name to build its Models table — both only ever get populated by
+  `POST /rosters/import` (`model_profiles` from the bsdata-indexer, `model_groups` from
+  `battlescribe_import.py`'s `_model_groups()`). A unit added by hand via
+  `POST /rosters/{id}/units` has `model_groups: []`, so the modal shows nothing there
+  even if the catalogue has real per-model-type data for it. Same shape of gap as the
+  loadout-editing one below — would need a small form to let you declare which model
+  types (and how many of each) a hand-built unit actually has.
 
 ## Battle Tracker
 

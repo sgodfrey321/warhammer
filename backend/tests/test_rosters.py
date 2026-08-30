@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from sqlmodel import select
 
 def test_create_and_get_roster(client):
     resp = client.post("/rosters", json={"name": "Hank's Aeldari", "faction": "Aeldari - Craftworlds"})
@@ -48,10 +49,19 @@ def test_add_and_remove_unit(client, session):
     assert resp.status_code == 200
     unit = resp.json()
     assert unit["loadout"] == []  # only BattleScribe import populates a loadout
+    assert unit["buffs"] == []
 
     resp = client.patch(f"/rosters/{roster['id']}/units/{unit['id']}", json={"notes": "warlord"})
     assert resp.status_code == 200
     assert resp.json()["notes"] == "warlord"
+
+    buffs = [{"label": "Battle Focus: Fade Back", "stat": "M", "modifier": '+2"'}]
+    resp = client.patch(f"/rosters/{roster['id']}/units/{unit['id']}", json={"buffs": buffs})
+    assert resp.status_code == 200
+    assert resp.json()["buffs"] == buffs
+
+    units = client.get(f"/rosters/{roster['id']}/units").json()
+    assert units[0]["buffs"] == buffs
 
     resp = client.delete(f"/rosters/{roster['id']}/units/{unit['id']}")
     assert resp.status_code == 204
@@ -97,6 +107,57 @@ def test_manual_attachment_create_list_delete(client, session):
     resp = client.delete(f"/rosters/{roster['id']}/attachments/{attachment['id']}")
     assert resp.status_code == 204
     assert client.get(f"/rosters/{roster['id']}/attachments").json() == []
+
+
+def test_delete_roster_cascades_everything(client, session):
+    from app.models import (
+        ActiveEffect,
+        BattleSession,
+        DeclaredStatePool,
+        DeclaredStatePoolState,
+        PlayerState,
+        Unit,
+        UnitAttachment,
+        UnitSynergy,
+        UnitTurnState,
+    )
+
+    roster, leader, squad = _seed_two_units(client, session)
+    roster_id = roster["id"]
+    client.post(
+        f"/rosters/{roster_id}/attachments",
+        json={"leader_unit_id": leader["id"], "led_unit_id": squad["id"]},
+    )
+    client.post(
+        f"/rosters/{roster_id}/synergies",
+        json={"source_unit_id": leader["id"], "target_unit_id": squad["id"], "trigger_phase": "command"},
+    )
+    pool = client.post(
+        f"/rosters/{roster_id}/pools", json={"name": "Battle Focus", "max_value": 4, "scope": "battle_round"}
+    ).json()
+
+    battle = client.post("/battles", json={"roster_id": roster_id}).json()
+    client.patch(f"/battles/{battle['id']}/players/1", json={"cp_gained": 1})
+    client.patch(f"/battles/{battle['id']}/units/{leader['id']}/turn-state", json={"move_type": "normal"})
+    client.post(f"/battles/{battle['id']}/effects", json={"label": "Doom", "owner_player": 1, "duration_type": "manual"})
+    client.post(f"/battles/{battle['id']}/pools/{pool['id']}/spend", json={"amount": 1})  # populates pool state
+
+    resp = client.delete(f"/rosters/{roster_id}")
+    assert resp.status_code == 204
+    assert client.get(f"/rosters/{roster_id}").status_code == 404
+
+    assert session.exec(select(Unit).where(Unit.roster_id == roster_id)).all() == []
+    assert session.exec(select(UnitAttachment).where(UnitAttachment.roster_id == roster_id)).all() == []
+    assert session.exec(select(UnitSynergy).where(UnitSynergy.roster_id == roster_id)).all() == []
+    assert session.exec(select(DeclaredStatePool).where(DeclaredStatePool.roster_id == roster_id)).all() == []
+    assert session.exec(select(BattleSession).where(BattleSession.roster_id == roster_id)).all() == []
+    assert session.exec(select(PlayerState).where(PlayerState.battle_session_id == battle["id"])).all() == []
+    assert session.exec(select(ActiveEffect).where(ActiveEffect.battle_session_id == battle["id"])).all() == []
+    assert session.exec(select(UnitTurnState).where(UnitTurnState.battle_session_id == battle["id"])).all() == []
+    assert (
+        session.exec(select(DeclaredStatePoolState).where(DeclaredStatePoolState.battle_session_id == battle["id"])).all()
+        == []
+    )
 
 
 def test_deleting_a_unit_cleans_up_its_attachments(client, session):

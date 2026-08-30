@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import json
+
 from app.models import UnitDefinition
+from app.routers import primary_missions
 
 
 def _advance(client, battle_id, n=1):
@@ -8,6 +11,39 @@ def _advance(client, battle_id, n=1):
     for _ in range(n):
         battle = client.patch(f"/battles/{battle_id}/advance-phase").json()
     return battle
+
+
+def _mock_primary_missions(monkeypatch, tmp_path):
+    """A minimal single-mission fixture (one section, one tier, vp=5) for deterministic
+    mission-score assertions -- avoids coupling these tests to the real fetched data drifting
+    later. Both dispositions are "take-and-hold" so it covers the mirror case."""
+    payload = [
+        {
+            "name": "Test Mission",
+            "deck": "take-and-hold",
+            "vs": "take-and-hold",
+            "sections": [
+                {
+                    "when": "ANY BATTLE ROUND",
+                    "trigger": None,
+                    "header_kind": None,
+                    "tiers": [
+                        {"text": "Do the thing.", "vp": 5, "per_unit": False, "cumulative": False, "kind": None}
+                    ],
+                }
+            ],
+        }
+    ]
+    out_path = tmp_path / "primary-missions.json"
+    out_path.write_text(json.dumps(payload), encoding="utf-8")
+    monkeypatch.setattr(primary_missions, "OUTPUT_PATH", out_path)
+
+
+def _battle_with_mission(client):
+    return client.post(
+        "/battles",
+        json={"your_disposition": "take-and-hold", "opponent_disposition": "take-and-hold"},
+    ).json()
 
 
 def test_list_battles_filters_by_roster_and_orders_most_recent_first(client):
@@ -24,6 +60,107 @@ def test_list_battles_filters_by_roster_and_orders_most_recent_first(client):
     assert ids == [battle_a2["id"], battle_a1["id"]]  # most recent first
 
     assert len(client.get("/battles").json()) == 3  # unfiltered lists every battle
+
+
+def test_create_battle_without_setup_fields_leaves_them_null(client):
+    battle = client.post("/battles", json={}).json()
+    assert battle["opponent_name"] is None
+    assert battle["your_disposition"] is None
+    assert battle["opponent_disposition"] is None
+    assert battle["layout_number"] is None
+
+
+def test_create_battle_with_setup_fields_persists_them(client):
+    battle = client.post(
+        "/battles",
+        json={
+            "opponent_name": "Steve's Orks",
+            "your_disposition": "take-and-hold",
+            "opponent_disposition": "purge-the-foe",
+            "layout_number": 2,
+        },
+    ).json()
+    assert battle["opponent_name"] == "Steve's Orks"
+    assert battle["your_disposition"] == "take-and-hold"
+    assert battle["opponent_disposition"] == "purge-the-foe"
+    assert battle["layout_number"] == 2
+
+
+def test_update_battle_setup_updates_only_the_given_fields(client):
+    battle = client.post(
+        "/battles",
+        json={"your_disposition": "take-and-hold", "opponent_disposition": "take-and-hold"},
+    ).json()
+
+    resp = client.patch(f"/battles/{battle['id']}/setup", json={"opponent_name": "Steve's Orks"})
+    assert resp.status_code == 200
+    updated = resp.json()
+    assert updated["opponent_name"] == "Steve's Orks"
+    assert updated["your_disposition"] == "take-and-hold"
+    assert updated["opponent_disposition"] == "take-and-hold"
+
+
+def test_adjust_mission_score_updates_count_and_recomputes_vp(client, monkeypatch, tmp_path):
+    _mock_primary_missions(monkeypatch, tmp_path)
+    battle = _battle_with_mission(client)
+
+    resp = client.patch(
+        f"/battles/{battle['id']}/players/1/mission-score",
+        json={"section_index": 0, "tier_index": 0, "delta": 1},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["mission_scores"] == [
+        {"player_number": 1, "section_index": 0, "tier_index": 0, "achieved_count": 1}
+    ]
+    assert body["players"][0]["vp"] == 5  # 1 achievement * vp=5
+
+    resp = client.patch(
+        f"/battles/{battle['id']}/players/1/mission-score",
+        json={"section_index": 0, "tier_index": 0, "delta": 1},
+    )
+    body = resp.json()
+    assert body["mission_scores"][0]["achieved_count"] == 2
+    assert body["players"][0]["vp"] == 10
+
+
+def test_adjust_mission_score_clamps_achieved_count_at_zero(client, monkeypatch, tmp_path):
+    _mock_primary_missions(monkeypatch, tmp_path)
+    battle = _battle_with_mission(client)
+
+    resp = client.patch(
+        f"/battles/{battle['id']}/players/1/mission-score",
+        json={"section_index": 0, "tier_index": 0, "delta": -1},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["mission_scores"][0]["achieved_count"] == 0
+    assert body["players"][0]["vp"] == 0
+
+
+def test_adjust_mission_score_requires_a_mission_setup(client, monkeypatch, tmp_path):
+    _mock_primary_missions(monkeypatch, tmp_path)
+    battle = client.post("/battles", json={}).json()
+
+    resp = client.patch(
+        f"/battles/{battle['id']}/players/1/mission-score",
+        json={"section_index": 0, "tier_index": 0, "delta": 1},
+    )
+    assert resp.status_code == 422
+
+
+def test_vp_adjustment_combines_with_mission_score_in_recomputed_vp(client, monkeypatch, tmp_path):
+    _mock_primary_missions(monkeypatch, tmp_path)
+    battle = _battle_with_mission(client)
+
+    client.patch(
+        f"/battles/{battle['id']}/players/1/mission-score",
+        json={"section_index": 0, "tier_index": 0, "delta": 1},
+    )
+    resp = client.patch(f"/battles/{battle['id']}/players/1", json={"vp_adjustment": 3})
+    assert resp.status_code == 200
+    assert resp.json()["vp"] == 8  # 5 from the tier + 3 manual adjustment
+    assert resp.json()["vp_adjustment"] == 3
 
 
 def test_phase_round_and_turn_sequence(client):
@@ -151,6 +288,65 @@ def test_manual_dismiss(client):
 
     b = client.delete(f"/battles/{battle_id}/effects/{effect_id}").json()
     assert b["effects"] == []
+
+
+def test_effect_can_be_scoped_to_a_specific_unit(client, session):
+    session.add(
+        UnitDefinition(
+            id="windriders",
+            faction="Aeldari - Craftworlds",
+            name="Windriders",
+            points_cost=80,
+            keywords=["Vehicle"],
+            source_catalogue_id="cat",
+            source_entry_id="windriders",
+        )
+    )
+    session.commit()
+
+    roster = client.post("/rosters", json={"name": "Test", "faction": "Aeldari - Craftworlds"}).json()
+    unit = client.post(f"/rosters/{roster['id']}/units", json={"unit_definition_id": "windriders"}).json()
+    battle = client.post("/battles", json={"roster_id": roster["id"]}).json()
+    battle_id = battle["id"]
+
+    resp = client.post(
+        f"/battles/{battle_id}/effects",
+        json={
+            "label": "Battle Focus: Fade Back",
+            "owner_player": 1,
+            "duration_type": "end_of_phase",
+            "unit_id": unit["id"],
+        },
+    )
+    assert resp.status_code == 200
+    effect = resp.json()["effects"][0]
+    assert effect["unit_id"] == unit["id"]
+
+
+def test_effect_with_unit_from_another_roster_is_rejected(client, session):
+    session.add(
+        UnitDefinition(
+            id="windriders2",
+            faction="Aeldari - Craftworlds",
+            name="Windriders",
+            points_cost=80,
+            keywords=["Vehicle"],
+            source_catalogue_id="cat",
+            source_entry_id="windriders2",
+        )
+    )
+    session.commit()
+
+    roster_a = client.post("/rosters", json={"name": "A", "faction": "Aeldari - Craftworlds"}).json()
+    roster_b = client.post("/rosters", json={"name": "B", "faction": "Aeldari - Craftworlds"}).json()
+    unit_on_b = client.post(f"/rosters/{roster_b['id']}/units", json={"unit_definition_id": "windriders2"}).json()
+    battle = client.post("/battles", json={"roster_id": roster_a["id"]}).json()
+
+    resp = client.post(
+        f"/battles/{battle['id']}/effects",
+        json={"label": "x", "owner_player": 1, "duration_type": "manual", "unit_id": unit_on_b["id"]},
+    )
+    assert resp.status_code == 404
 
 
 def test_synergy_surfaces_only_during_its_trigger_phase(client, session):

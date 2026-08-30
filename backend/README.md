@@ -3,8 +3,9 @@
 FastAPI + SQLite implementation of `docs/webapp-skeleton-spec.md` and
 `docs/battle-engine-spec.md`. Pairs with `../frontend` (React + Vite) — see that
 directory's README to run both together. CORS is enabled for `localhost:5173`/`5174`
-(Vite's default dev ports) only; add more origins in `app/main.py` if you serve the
-frontend elsewhere.
+(Vite's default dev ports) and for any `192.168.x.x:5173`/`5174` origin (other machines
+on your home LAN, since both dev servers now bind to `0.0.0.0` — see "Run it" below);
+add more origins/regexes in `app/main.py` if you serve the frontend elsewhere.
 
 ## Setup
 
@@ -17,9 +18,11 @@ cd G:/PycharmProjects/warhammer-manager
 
 ## Import unit reference data
 
-Populates `UnitDefinition` — stats, abilities, and weapon profiles — from the
-bsdata-indexer's output (`tools/bsdata-indexer/output/*.json`). Safe to re-run after a
-dataslate update — upserts by `source_entry_id`.
+Populates `UnitDefinition` — stats, abilities, weapon profiles, and per-model-type
+profiles (`model_profiles`, e.g. a squad's rank-and-file vs. its heavy-weapon model,
+each with their own stat line and weapon options — powers the Unit Details modal) —
+from the bsdata-indexer's output (`tools/bsdata-indexer/output/*.json`). Safe to re-run
+after a dataslate update — upserts by `source_entry_id`.
 
 ```bash
 cd backend
@@ -36,11 +39,20 @@ builder UI.
 
 ```bash
 cd backend
-../.venv/Scripts/python.exe -m uvicorn app.main:app --reload
+../.venv/Scripts/python.exe -m uvicorn app.main:app --reload --host 0.0.0.0
 ```
 
-Interactive API docs at `http://127.0.0.1:8000/docs`. Or use `../dev.py` from the repo
-root to start this and the frontend together.
+`--host 0.0.0.0` binds every network interface (not just localhost), so other machines
+on your LAN can reach it at `http://<this-machine's-192.168.x.x>:8000` — drop it to go
+back to localhost-only. Interactive API docs at `http://127.0.0.1:8000/docs`. Or use
+`../dev.py` from the repo root to start this and the frontend together (already passes
+`--host 0.0.0.0` and prints the LAN URL).
+
+If another machine still can't connect, Windows Firewall may be blocking the inbound
+port — allow it yourself (elevated PowerShell):
+```powershell
+New-NetFirewallRule -DisplayName "Warhammer Manager (dev)" -Direction Inbound -Protocol TCP -LocalPort 8000,5173 -Action Allow
+```
 
 ## Persistence
 
@@ -66,12 +78,16 @@ WARHAMMER_DB_PATH=/tmp/scratch.db ../.venv/Scripts/python.exe -m uvicorn app.mai
   export (`app/battlescribe_import.py`) and creates the roster's `Unit` rows, matching
   each selection against `UnitDefinition` by catalogue id. Also extracts, from the same
   file: **leader/bodyguard attachments** (`UnitAttachment`, from the export's
-  `incomingAssociations`) and each unit's **actual equipped loadout**
+  `incomingAssociations`), each unit's **actual equipped loadout**
   (`Unit.loadout` — weapon name + count, aggregated from the export's nested
-  model-group/wargear selections, not just "what the unit could carry").
-- `Unit` CRUD (roster entries) — manually-added units get an empty `loadout: []` (only
-  import populates it; the Battle Tracker falls back to showing `UnitDefinition.weapons`
-  as reference options in that case).
+  model-group/wargear selections, not just "what the unit could carry"), and each unit's
+  **model-type composition** (`Unit.model_groups` — model-type name + count, e.g. 10x
+  Guardian Defender + 1x Heavy Weapon Platform; same nested selections `loadout` reads,
+  just keeping the model-group's own name instead of discarding it).
+- `Unit` CRUD (roster entries) — manually-added units get an empty `loadout: []`/
+  `model_groups: []` (only import populates either; the Battle Tracker falls back to
+  showing `UnitDefinition.weapons` as reference options, and the Unit Details modal has
+  nothing to show a Models table for, in that case).
 - `UnitAttachment` CRUD — a Character leading a bodyguard unit; the pair acts as one
   combined unit in the Battle Tracker (shared turn-state controls).
 - `UnitSynergy` CRUD — roster-level "activate A before B" reminders, surfaced in the
@@ -83,8 +99,19 @@ WARHAMMER_DB_PATH=/tmp/scratch.db ../.venv/Scripts/python.exe -m uvicorn app.mai
 **Battle Tracker** (`app/routers/battles.py`, `app/phases.py`)
 - `POST/GET /battles`, `GET /battles?roster_id=X` (list, most recent first),
   `PATCH /battles/{id}/advance-phase` — the phase/turn/round engine, see below.
-- `PATCH /battles/{id}/players/{n}` — CP/VP tracking (Core CP auto-granted both players
-  every Command phase, on top of manual adjustments).
+- **Battle setup**: `POST /battles` and `PATCH /battles/{id}/setup` both accept
+  `opponent_name`, `your_disposition`, `opponent_disposition`, `layout_number` — all
+  optional, editable for the life of the battle (not a one-shot, create-only thing).
+  Player 1 is "you" (`your_disposition`), player 2 is the opponent. Mission names/layout
+  images are deliberately **not** stored — they're re-derived from the two dispositions
+  against `tools/gdmissions/output/primary-missions.json`/`layouts.json` every time, same
+  as the frontend's `/missions` page, to avoid stale denormalized text.
+- **Mission scoring**: `PATCH /battles/{id}/players/{n}/mission-score` ticks a Primary
+  Mission tier's `achieved_count` up/down (`MissionScoreEntry`, keyed by
+  `section_index`/`tier_index` into that player's resolved mission). `PlayerState.vp` is
+  derived/cached, not directly settable — recomputed from every scored tier's
+  `achieved_count * tier.vp` plus a manual `vp_adjustment` bucket (still directly
+  PATCHable via `PATCH /battles/{id}/players/{n}`) every time either changes.
 - `POST/DELETE /battles/{id}/effects[/{id}]` — `ActiveEffect`s with computed `expired`
   (never auto-deleted; the person confirms dismissal).
 - `POST /battles/{id}/synergies/{id}/acknowledge` — dismisses a synergy reminder for the
@@ -96,6 +123,12 @@ WARHAMMER_DB_PATH=/tmp/scratch.db ../.venv/Scripts/python.exe -m uvicorn app.mai
   tracking, with a computed non-blocking `eligibility_warning` (e.g. Advanced this turn
   → can't shoot) — surfaced, never enforced.
 
+**Reference data** (`app/routers/{army_rules,primary_missions,secondary_missions,layouts}.py`)
+- Each is a thin `GET` reading a static JSON file straight off disk (no DB table, no
+  import step) — `army_rules.py` from `tools/bsdata-indexer/output/army-rules.json`, the
+  other three from `tools/gdmissions/output/*.json`. Regenerate the source tool's output
+  and the next request just picks it up.
+
 ## Tests
 
 ```bash
@@ -103,12 +136,13 @@ cd backend
 ../.venv/Scripts/python.exe -m pytest
 ```
 
-32 tests, in-memory SQLite, no network. Beyond CRUD: the full phase/round/turn-handoff
+62 tests, in-memory SQLite, no network. Beyond CRUD: the full phase/round/turn-handoff
 sequence and `until_next_command_phase` effect expiry (the Farseer "Doom" scenario,
 surviving a full opponent turn), `DeclaredStatePool` refill/clear timing, synergy
 reappearance, `UnitAttachment` parsing/cleanup against the real committed
-`docs/Hank 2k.json` export, and weapon-loadout aggregation (including the single-model
-vs. multi-model-squad shape difference in the export).
+`docs/Hank 2k.json` export, weapon-loadout aggregation (including the single-model
+vs. multi-model-squad shape difference in the export), model-group counts from that same
+export, and mission-score/VP-recompute correctness against a small fixture mission.
 
 All of the above have also been driven live against a running `uvicorn` server with
 real imported data — not just the test suite.

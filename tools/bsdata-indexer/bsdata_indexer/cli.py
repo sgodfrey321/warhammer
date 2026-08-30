@@ -4,8 +4,17 @@ import argparse
 import logging
 from pathlib import Path
 
-from . import faction_map
-from .build import BSDATA_ORG, CATALOGUE_REPO, MFM_REPO, build_faction, build_library_index, build_profile_index, emit
+from . import army_rules, detachments, faction_map
+from .build import (
+    BSDATA_ORG,
+    CATALOGUE_REPO,
+    MFM_REPO,
+    build_faction,
+    build_group_index,
+    build_library_index,
+    build_profile_index,
+    emit,
+)
 from .enrichment import pipeline as enrichment_pipeline
 from .enrichment import tier2
 from .fetch import RepoCache
@@ -36,6 +45,20 @@ def main(argv: list[str] | None = None) -> int:
         help='Catalogue file stem, e.g. "Aeldari - Craftworlds". Repeatable.',
     )
     parser.add_argument("--all", action="store_true", help="Build every faction with a known/derivable MFM mapping.")
+    parser.add_argument(
+        "--army-rules",
+        action="store_true",
+        help="Extract catalogue/library-level army rules (Battle Focus, Blessings of Khorne, "
+        "etc.) from every cached catalogue file into output/army-rules.json, then exit -- "
+        "independent of --faction/--all, which only build per-unit UnitDefinition data.",
+    )
+    parser.add_argument(
+        "--detachments",
+        action="store_true",
+        help="Extract each faction's detachment options and their own Detachment Rule "
+        "(Aspect Host -> Path of the Warrior, etc.) into output/detachments.json, then exit -- "
+        "independent of --faction/--all/--army-rules.",
+    )
     parser.add_argument("--force-refetch", action="store_true", help="Ignore cache, re-download everything.")
     parser.add_argument("--cache-dir", type=Path, default=DEFAULT_CACHE_DIR)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
@@ -58,17 +81,33 @@ def main(argv: list[str] | None = None) -> int:
 
     logging.basicConfig(level=logging.INFO if args.verbose else logging.WARNING, format="%(message)s")
 
-    if not args.faction and not args.all:
-        parser.error("pass --faction NAME (repeatable) or --all")
+    if not args.faction and not args.all and not args.army_rules and not args.detachments:
+        parser.error("pass --faction NAME (repeatable), --all, --army-rules, or --detachments")
 
     catalogue_cache = RepoCache(args.cache_dir, BSDATA_ORG, CATALOGUE_REPO)
-    mfm_cache = RepoCache(args.cache_dir, BSDATA_ORG, MFM_REPO)
     catalogue_cache.refresh(force=args.force_refetch)
+
+    if args.army_rules:
+        factions = army_rules.build_all(catalogue_cache)
+        out_path = army_rules.emit(factions, args.output_dir)
+        total = sum(len(f["rules"]) for f in factions)
+        logger.info("%s (%d factions, %d rules)", out_path, len(factions), total)
+        return 0
+
+    if args.detachments:
+        factions = detachments.build_all(catalogue_cache)
+        out_path = detachments.emit(factions, args.output_dir)
+        total = sum(len(f["detachments"]) for f in factions)
+        logger.info("%s (%d factions, %d detachments)", out_path, len(factions), total)
+        return 0
+
+    mfm_cache = RepoCache(args.cache_dir, BSDATA_ORG, MFM_REPO)
     mfm_cache.refresh(force=args.force_refetch)
 
     available_slugs = _mfm_slugs(mfm_cache)
     library_index = build_library_index(catalogue_cache)
     profile_index = build_profile_index(catalogue_cache)
+    group_index = build_group_index(catalogue_cache)
 
     enrich_client = None
     if args.enrich:
@@ -90,6 +129,7 @@ def main(argv: list[str] | None = None) -> int:
                 catalogue_cache,
                 library_index,
                 profile_index,
+                group_index,
                 mfm_cache,
                 available_mfm_slugs=available_slugs,
             )

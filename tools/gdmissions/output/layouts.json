@@ -1,0 +1,627 @@
+[
+  {
+    "deck": "take-and-hold",
+    "vs": "take-and-hold",
+    "name": "Take and Hold Mirror",
+    "layouts": [
+      {
+        "number": 1,
+        "name": "Layout 1",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/take-and-hold-mirror-1.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/take-and-hold-mirror-1.png"
+      },
+      {
+        "number": 2,
+        "name": "Layout 2",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/take-and-hold-mirror-2-portrait.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/take-and-hold-mirror-2-portrait.png"
+      },
+      {
+        "number": 3,
+        "name": "Layout 3",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/take-and-hold-mirror-3.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/take-and-hold-mirror-3.png"
+      }
+    ]
+  },
+  {
+    "deck": "take-and-hold",
+    "vs": "purge-the-foe",
+    "name": "Take and Hold vs Purge the Foe",
+    "layouts": [
+      {
+        "number": 1,
+        "name": "Layout 1",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/take-and-hold-vs-purge-the-foe-1-portrait.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/take-and-hold-vs-purge-the-foe-1-portrait.png"
+      },
+      {
+        "number": 2,
+        "name": "Layout 2",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/take-and-hold-vs-purge-the-foe-2.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/take-and-hold-vs-purge-the-foe-2.png"
+      },
+      {
+        "number": 3,
+        "name": "Layout 3",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/take-and-hold-vs-purge-the-foe-3.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/take-and-hold-vs-purge-the-foe-3.png"
+      }
+    ]
+  },
+  {
+    "deck": "take-and-hold",
+    "vs": "reconnaissance",
+    "name": "Take and Hold vs Reconnaissance",
+    "layouts": [
+      {
+        "number": 1,
+        "name": "Layout 1",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/take-and-hold-vs-reconnaissance-1.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/take-and-hold-vs-reconnaissance-1.png"
+      },
+      {
+        "number": 2,
+        "name": "Layout 2",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/take-and-hold-vs-reconnaissance-2-portrait.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/take-and-hold-vs-reconnaissance-2-portrait.png"
+      },
+      {
+        "number": 3,
+        "name": "Layout 3",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/take-and-hold-vs-reconnaissance-3.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/take-and-hold-vs-reconnaissance-3.png"
+      }
+    ]
+  },
+  {
+    "deck": "take-and-hold",
+    "vs": "priority-assets",
+    "name": "Take and Hold vs Priority Assets",
+    "layouts": [
+      {
+        "number": 1,
+        "name": "Layout 1",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/take-and-hold-vs-priority-assets-1.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/take-and-hold-vs-priority-assets-1.png"
+      },
+      {
+        "number": 2,
+        "name": "Layout 2",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/take-and-hold-vs-priority-assets-2.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/take-and-hold-vs-priority-assets-2.png"
+      },
+      {
+        "number": 3,
+        "name": "Layout 3",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/take-and-hold-vs-priority-assets-3-portrait.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/take-and-hold-vs-priority-assets-3-portrait.png"
+      }
+    ]
+  },
+  {
+    "deck": "take-and-hold",
+    "vs": "disruption",
+    "name": "Take and Hold vs Disruption",
+    "layouts": [
+      {
+        "number": 1,
+        "name": "Layout 1",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/take-and-hold-vs-disruption-1-portrait.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/take-and-hold-vs-disruption-1-portrait.png"
+      },
+      {
+        "number": 2,
+        "name": "Layout 2",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/take-and-hold-vs-disruption-2.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/take-and-hold-vs-disruption-2.png"
+      },
+      {
+        "number": 3,
+        "name": "Layout 3",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/take-and-hold-vs-disruption-3.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/take-and-hold-vs-disruption-3.png"
+      }
+    ]
+  },
+  {
+    "deck": "purge-the-foe",
+    "vs": "take-and-hold",
+    "name": "Take and Hold vs Purge the Foe",
+    "layouts": [
+      {
+        "number": 1,
+        "name": "Layout 1",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/take-and-hold-vs-purge-the-foe-1-portrait.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/take-and-hold-vs-purge-the-foe-1-portrait.png"
+      },
+      {
+        "number": 2,
+        "name": "Layout 2",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/take-and-hold-vs-purge-the-foe-2.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/take-and-hold-vs-purge-the-foe-2.png"
+      },
+      {
+        "number": 3,
+        "name": "Layout 3",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/take-and-hold-vs-purge-the-foe-3.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/take-and-hold-vs-purge-the-foe-3.png"
+      }
+    ]
+  },
+  {
+    "deck": "purge-the-foe",
+    "vs": "purge-the-foe",
+    "name": "Purge the Foe Mirror",
+    "layouts": [
+      {
+        "number": 1,
+        "name": "Layout 1",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/purge-the-foe-mirror-1.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/purge-the-foe-mirror-1.png"
+      },
+      {
+        "number": 2,
+        "name": "Layout 2",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/purge-the-foe-mirror-2.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/purge-the-foe-mirror-2.png"
+      },
+      {
+        "number": 3,
+        "name": "Layout 3",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/purge-the-foe-mirror-3-portrait.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/purge-the-foe-mirror-3-portrait.png"
+      }
+    ]
+  },
+  {
+    "deck": "purge-the-foe",
+    "vs": "reconnaissance",
+    "name": "Purge the Foe vs Reconnaissance",
+    "layouts": [
+      {
+        "number": 1,
+        "name": "Layout 1",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/purge-the-foe-vs-reconnaissance-1.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/purge-the-foe-vs-reconnaissance-1.png"
+      },
+      {
+        "number": 2,
+        "name": "Layout 2",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/purge-the-foe-vs-reconnaissance-2-portrait.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/purge-the-foe-vs-reconnaissance-2-portrait.png"
+      },
+      {
+        "number": 3,
+        "name": "Layout 3",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/purge-the-foe-vs-reconnaissance-3.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/purge-the-foe-vs-reconnaissance-3.png"
+      }
+    ]
+  },
+  {
+    "deck": "purge-the-foe",
+    "vs": "priority-assets",
+    "name": "Purge the Foe vs Priority Assets",
+    "layouts": [
+      {
+        "number": 1,
+        "name": "Layout 1",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/purge-the-foe-vs-priority-assets-1-portrait.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/purge-the-foe-vs-priority-assets-1-portrait.png"
+      },
+      {
+        "number": 2,
+        "name": "Layout 2",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/purge-the-foe-vs-priority-assets-2.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/purge-the-foe-vs-priority-assets-2.png"
+      },
+      {
+        "number": 3,
+        "name": "Layout 3",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/purge-the-foe-vs-priority-assets-3.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/purge-the-foe-vs-priority-assets-3.png"
+      }
+    ]
+  },
+  {
+    "deck": "purge-the-foe",
+    "vs": "disruption",
+    "name": "Disruption vs Purge the Foe",
+    "layouts": [
+      {
+        "number": 1,
+        "name": "Layout 1",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/disruption-vs-purge-the-foe-1.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/disruption-vs-purge-the-foe-1.png"
+      },
+      {
+        "number": 2,
+        "name": "Layout 2",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/disruption-vs-purge-the-foe-2.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/disruption-vs-purge-the-foe-2.png"
+      },
+      {
+        "number": 3,
+        "name": "Layout 3",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/disruption-vs-purge-the-foe-3-portrait.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/disruption-vs-purge-the-foe-3-portrait.png"
+      }
+    ]
+  },
+  {
+    "deck": "reconnaissance",
+    "vs": "take-and-hold",
+    "name": "Take and Hold vs Reconnaissance",
+    "layouts": [
+      {
+        "number": 1,
+        "name": "Layout 1",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/take-and-hold-vs-reconnaissance-1.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/take-and-hold-vs-reconnaissance-1.png"
+      },
+      {
+        "number": 2,
+        "name": "Layout 2",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/take-and-hold-vs-reconnaissance-2-portrait.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/take-and-hold-vs-reconnaissance-2-portrait.png"
+      },
+      {
+        "number": 3,
+        "name": "Layout 3",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/take-and-hold-vs-reconnaissance-3.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/take-and-hold-vs-reconnaissance-3.png"
+      }
+    ]
+  },
+  {
+    "deck": "reconnaissance",
+    "vs": "purge-the-foe",
+    "name": "Purge the Foe vs Reconnaissance",
+    "layouts": [
+      {
+        "number": 1,
+        "name": "Layout 1",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/purge-the-foe-vs-reconnaissance-1.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/purge-the-foe-vs-reconnaissance-1.png"
+      },
+      {
+        "number": 2,
+        "name": "Layout 2",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/purge-the-foe-vs-reconnaissance-2-portrait.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/purge-the-foe-vs-reconnaissance-2-portrait.png"
+      },
+      {
+        "number": 3,
+        "name": "Layout 3",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/purge-the-foe-vs-reconnaissance-3.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/purge-the-foe-vs-reconnaissance-3.png"
+      }
+    ]
+  },
+  {
+    "deck": "reconnaissance",
+    "vs": "reconnaissance",
+    "name": "Reconnaissance Mirror",
+    "layouts": [
+      {
+        "number": 1,
+        "name": "Layout 1",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/reconnaissance-mirror-1-portrait.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/reconnaissance-mirror-1-portrait.png"
+      },
+      {
+        "number": 2,
+        "name": "Layout 2",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/reconnaissance-mirror-2.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/reconnaissance-mirror-2.png"
+      },
+      {
+        "number": 3,
+        "name": "Layout 3",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/reconnaissance-mirror-3.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/reconnaissance-mirror-3.png"
+      }
+    ]
+  },
+  {
+    "deck": "reconnaissance",
+    "vs": "priority-assets",
+    "name": "Priority Assets vs Reconnaissance",
+    "layouts": [
+      {
+        "number": 1,
+        "name": "Layout 1",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/priority-assets-vs-reconnaissance-1.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/priority-assets-vs-reconnaissance-1.png"
+      },
+      {
+        "number": 2,
+        "name": "Layout 2",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/priority-assets-vs-reconnaissance-2.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/priority-assets-vs-reconnaissance-2.png"
+      },
+      {
+        "number": 3,
+        "name": "Layout 3",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/priority-assets-vs-reconnaissance-3-portrait.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/priority-assets-vs-reconnaissance-3-portrait.png"
+      }
+    ]
+  },
+  {
+    "deck": "reconnaissance",
+    "vs": "disruption",
+    "name": "Disruption vs Reconnaissance",
+    "layouts": [
+      {
+        "number": 1,
+        "name": "Layout 1",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/disruption-vs-reconnaissance-1.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/disruption-vs-reconnaissance-1.png"
+      },
+      {
+        "number": 2,
+        "name": "Layout 2",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/disruption-vs-reconnaissance-2-portrait.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/disruption-vs-reconnaissance-2-portrait.png"
+      },
+      {
+        "number": 3,
+        "name": "Layout 3",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/disruption-vs-reconnaissance-3.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/disruption-vs-reconnaissance-3.png"
+      }
+    ]
+  },
+  {
+    "deck": "priority-assets",
+    "vs": "take-and-hold",
+    "name": "Take and Hold vs Priority Assets",
+    "layouts": [
+      {
+        "number": 1,
+        "name": "Layout 1",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/take-and-hold-vs-priority-assets-1.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/take-and-hold-vs-priority-assets-1.png"
+      },
+      {
+        "number": 2,
+        "name": "Layout 2",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/take-and-hold-vs-priority-assets-2.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/take-and-hold-vs-priority-assets-2.png"
+      },
+      {
+        "number": 3,
+        "name": "Layout 3",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/take-and-hold-vs-priority-assets-3-portrait.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/take-and-hold-vs-priority-assets-3-portrait.png"
+      }
+    ]
+  },
+  {
+    "deck": "priority-assets",
+    "vs": "purge-the-foe",
+    "name": "Purge the Foe vs Priority Assets",
+    "layouts": [
+      {
+        "number": 1,
+        "name": "Layout 1",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/purge-the-foe-vs-priority-assets-1-portrait.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/purge-the-foe-vs-priority-assets-1-portrait.png"
+      },
+      {
+        "number": 2,
+        "name": "Layout 2",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/purge-the-foe-vs-priority-assets-2.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/purge-the-foe-vs-priority-assets-2.png"
+      },
+      {
+        "number": 3,
+        "name": "Layout 3",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/purge-the-foe-vs-priority-assets-3.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/purge-the-foe-vs-priority-assets-3.png"
+      }
+    ]
+  },
+  {
+    "deck": "priority-assets",
+    "vs": "reconnaissance",
+    "name": "Priority Assets vs Reconnaissance",
+    "layouts": [
+      {
+        "number": 1,
+        "name": "Layout 1",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/priority-assets-vs-reconnaissance-1.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/priority-assets-vs-reconnaissance-1.png"
+      },
+      {
+        "number": 2,
+        "name": "Layout 2",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/priority-assets-vs-reconnaissance-2.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/priority-assets-vs-reconnaissance-2.png"
+      },
+      {
+        "number": 3,
+        "name": "Layout 3",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/priority-assets-vs-reconnaissance-3-portrait.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/priority-assets-vs-reconnaissance-3-portrait.png"
+      }
+    ]
+  },
+  {
+    "deck": "priority-assets",
+    "vs": "priority-assets",
+    "name": "Priority Assets Mirror",
+    "layouts": [
+      {
+        "number": 1,
+        "name": "Layout 1",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/priority-assets-mirror-1-portrait.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/priority-assets-mirror-1-portrait.png"
+      },
+      {
+        "number": 2,
+        "name": "Layout 2",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/priority-assets-mirror-2.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/priority-assets-mirror-2.png"
+      },
+      {
+        "number": 3,
+        "name": "Layout 3",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/priority-assets-mirror-3.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/priority-assets-mirror-3.png"
+      }
+    ]
+  },
+  {
+    "deck": "priority-assets",
+    "vs": "disruption",
+    "name": "Disruption vs Priority Assets",
+    "layouts": [
+      {
+        "number": 1,
+        "name": "Layout 1",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/disruption-vs-priority-assets-1-portrait.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/disruption-vs-priority-assets-1-portrait.png"
+      },
+      {
+        "number": 2,
+        "name": "Layout 2",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/disruption-vs-priority-assets-2.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/disruption-vs-priority-assets-2.png"
+      },
+      {
+        "number": 3,
+        "name": "Layout 3",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/disruption-vs-priority-assets-3.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/disruption-vs-priority-assets-3.png"
+      }
+    ]
+  },
+  {
+    "deck": "disruption",
+    "vs": "take-and-hold",
+    "name": "Take and Hold vs Disruption",
+    "layouts": [
+      {
+        "number": 1,
+        "name": "Layout 1",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/take-and-hold-vs-disruption-1-portrait.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/take-and-hold-vs-disruption-1-portrait.png"
+      },
+      {
+        "number": 2,
+        "name": "Layout 2",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/take-and-hold-vs-disruption-2.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/take-and-hold-vs-disruption-2.png"
+      },
+      {
+        "number": 3,
+        "name": "Layout 3",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/take-and-hold-vs-disruption-3.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/take-and-hold-vs-disruption-3.png"
+      }
+    ]
+  },
+  {
+    "deck": "disruption",
+    "vs": "purge-the-foe",
+    "name": "Disruption vs Purge the Foe",
+    "layouts": [
+      {
+        "number": 1,
+        "name": "Layout 1",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/disruption-vs-purge-the-foe-1.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/disruption-vs-purge-the-foe-1.png"
+      },
+      {
+        "number": 2,
+        "name": "Layout 2",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/disruption-vs-purge-the-foe-2.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/disruption-vs-purge-the-foe-2.png"
+      },
+      {
+        "number": 3,
+        "name": "Layout 3",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/disruption-vs-purge-the-foe-3-portrait.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/disruption-vs-purge-the-foe-3-portrait.png"
+      }
+    ]
+  },
+  {
+    "deck": "disruption",
+    "vs": "reconnaissance",
+    "name": "Disruption vs Reconnaissance",
+    "layouts": [
+      {
+        "number": 1,
+        "name": "Layout 1",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/disruption-vs-reconnaissance-1.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/disruption-vs-reconnaissance-1.png"
+      },
+      {
+        "number": 2,
+        "name": "Layout 2",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/disruption-vs-reconnaissance-2-portrait.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/disruption-vs-reconnaissance-2-portrait.png"
+      },
+      {
+        "number": 3,
+        "name": "Layout 3",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/disruption-vs-reconnaissance-3.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/disruption-vs-reconnaissance-3.png"
+      }
+    ]
+  },
+  {
+    "deck": "disruption",
+    "vs": "priority-assets",
+    "name": "Disruption vs Priority Assets",
+    "layouts": [
+      {
+        "number": 1,
+        "name": "Layout 1",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/disruption-vs-priority-assets-1-portrait.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/disruption-vs-priority-assets-1-portrait.png"
+      },
+      {
+        "number": 2,
+        "name": "Layout 2",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/disruption-vs-priority-assets-2.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/disruption-vs-priority-assets-2.png"
+      },
+      {
+        "number": 3,
+        "name": "Layout 3",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/disruption-vs-priority-assets-3.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/disruption-vs-priority-assets-3.png"
+      }
+    ]
+  },
+  {
+    "deck": "disruption",
+    "vs": "disruption",
+    "name": "Disruption Mirror",
+    "layouts": [
+      {
+        "number": 1,
+        "name": "Layout 1",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/disruption-mirror-1.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/disruption-mirror-1.png"
+      },
+      {
+        "number": 2,
+        "name": "Layout 2",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/disruption-mirror-2.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/disruption-mirror-2.png"
+      },
+      {
+        "number": 3,
+        "name": "Layout 3",
+        "image": "https://gdmissions.app/assets/11th/layouts/no-measurements/disruption-mirror-3-portrait.png",
+        "measurements_image": "https://gdmissions.app/assets/11th/layouts/with-measurements/disruption-mirror-3-portrait.png"
+      }
+    ]
+  }
+]

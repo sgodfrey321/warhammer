@@ -1,57 +1,42 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { api } from "../api";
-import { DURATION_TYPES, PHASES, STAT_ORDER, WEAPON_STAT_ORDER } from "../types";
-import type { BattleOut, DeclaredStatePool, Phase, UnitAttachment, UnitOut, Weapon } from "../types";
+import { renderAbilityText } from "../markup";
+import { DISPOSITION_LABELS, DURATION_TYPES, PHASES, STAT_ORDER, WEAPON_STAT_ORDER } from "../types";
+import type { BattleOut, DeclaredStatePool, Mission, Phase, UnitAttachment, UnitBuff, UnitOut, Weapon } from "../types";
+import { weaponBaseName } from "../weapons";
 
-function statLine(stats: Record<string, string>): string {
-  return STAT_ORDER.filter((k) => stats[k]).map((k) => `${k} ${stats[k]}`).join("  ");
+// A unit's stats rendered token-by-token (not one joined string) so a declared buff (see
+// RosterEditor's "Unit Buffs") can be pinned as a badge right next to the one characteristic
+// it applies to -- a preview of what spending a token (Battle Focus, etc.) could buy, shown
+// before anything is actually spent.
+function renderStatLine(stats: Record<string, string>, buffs: UnitBuff[]): React.ReactNode | null {
+  const keys = STAT_ORDER.filter((k) => stats[k]);
+  if (keys.length === 0) return null;
+  return (
+    <span className="stat-line">
+      {keys.map((k, i) => {
+        const buff = buffs.find((b) => b.stat === k);
+        return (
+          <span key={k}>
+            {i > 0 && "  "}
+            {k} {stats[k]}
+            {buff && (
+              <span className="buff-badge" title={buff.label}>
+                {buff.modifier}
+              </span>
+            )}
+          </span>
+        );
+      })}
+    </span>
+  );
 }
 
 function weaponLine(w: Weapon): string {
   return WEAPON_STAT_ORDER.filter((k) => w.characteristics[k])
     .map((k) => `${k} ${w.characteristics[k]}`)
     .join("  ");
-}
-
-// Some weapons carry more than one firing/attack-mode profile, named like
-// "➤ Axe of Khorne - strike" / "➤ Axe of Khorne - sweep" (confirmed common in real data --
-// 57 instances across Aeldari + World Eaters, not a rare case). A roster's actual equipped
-// loadout only ever names the plain weapon ("Axe of Khorne"), so matching a loadout item to
-// its catalogue profile(s) needs the arrow prefix and " - mode" suffix stripped first --
-// every matching mode should show, not just the first one found.
-function weaponBaseName(name: string): string {
-  const stripped = name.replace(/^➤\s*/, "");
-  const dashIndex = stripped.indexOf(" - ");
-  return dashIndex === -1 ? stripped : stripped.slice(0, dashIndex);
-}
-
-// GW/BattleScribe ability text markup, confirmed against real indexer output: "**bold**" is
-// plain markdown bold; "^^keyword^^" is GW's own convention for a keyword being referenced
-// (not a real hyperlink -- there's no per-keyword rules page in this data -- but visually
-// distinct all the same). They nest, e.g. "**^^Dire Avengers^^**", so this recurses into a
-// bold match's own content rather than a single non-nested regex pass.
-const MARKUP_RE = /\*\*(.+?)\*\*|\^\^(.+?)\^\^/;
-
-function renderAbilityText(text: string, keyPrefix = "n"): React.ReactNode[] {
-  const match = MARKUP_RE.exec(text);
-  if (!match) return [text];
-  const [full, bold, keyword] = match;
-  const before = text.slice(0, match.index);
-  const after = text.slice(match.index + full.length);
-  const nodes: React.ReactNode[] = [];
-  if (before) nodes.push(before);
-  if (bold !== undefined) {
-    nodes.push(<strong key={`${keyPrefix}-b`}>{renderAbilityText(bold, `${keyPrefix}-bi`)}</strong>);
-  } else {
-    nodes.push(
-      <span key={`${keyPrefix}-k`} className="ability-keyword">
-        {keyword}
-      </span>,
-    );
-  }
-  nodes.push(...renderAbilityText(after, `${keyPrefix}-n`));
-  return nodes;
 }
 
 interface UnitGroup {
@@ -115,14 +100,20 @@ export function BattleTracker() {
   const [units, setUnits] = useState<UnitOut[]>([]);
   const [attachments, setAttachments] = useState<UnitAttachment[]>([]);
   const [pools, setPools] = useState<DeclaredStatePool[]>([]);
+  const [missions, setMissions] = useState<Mission[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const [label, setLabel] = useState("");
   const [ownerPlayer, setOwnerPlayer] = useState(1);
   const [durationType, setDurationType] = useState<string>(DURATION_TYPES[0]);
+  const [effectUnitId, setEffectUnitId] = useState<number | "">("");
   const [stackingInputs, setStackingInputs] = useState<Record<number, { owner: number; value: number }>>({});
   const [expandedAbilities, setExpandedAbilities] = useState<Set<number>>(new Set());
   const [expandedWeapons, setExpandedWeapons] = useState<Set<number>>(new Set());
+
+  function unitName(unitId: number): string {
+    return units.find((u) => u.id === unitId)?.unit_definition.name ?? `#${unitId}`;
+  }
 
   function toggleAbilities(unitId: number) {
     setExpandedAbilities((prev) => {
@@ -155,6 +146,10 @@ export function BattleTracker() {
 
   useEffect(refresh, [battleId]);
 
+  useEffect(() => {
+    api.listPrimaryMissions().then(setMissions).catch((e) => setError(String(e)));
+  }, []);
+
   async function handleAdvance() {
     try {
       setBattle(await api.advancePhase(battleId));
@@ -175,8 +170,16 @@ export function BattleTracker() {
     e.preventDefault();
     if (!label.trim()) return;
     try {
-      setBattle(await api.addEffect(battleId, { label, owner_player: ownerPlayer, duration_type: durationType }));
+      setBattle(
+        await api.addEffect(battleId, {
+          label,
+          owner_player: ownerPlayer,
+          duration_type: durationType,
+          unit_id: effectUnitId === "" ? undefined : effectUnitId,
+        }),
+      );
       setLabel("");
+      setEffectUnitId("");
     } catch (e) {
       setError(String(e));
     }
@@ -190,10 +193,28 @@ export function BattleTracker() {
     }
   }
 
-  async function handlePlayerChange(playerNumber: number, field: "cp_gained" | "cp_spent" | "vp", value: number) {
+  async function handlePlayerChange(
+    playerNumber: number,
+    field: "cp_gained" | "cp_spent" | "vp_adjustment",
+    value: number,
+  ) {
     try {
       await api.updatePlayer(battleId, playerNumber, { [field]: value });
       refresh();
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  async function handleAdjustMissionScore(playerNumber: number, sectionIndex: number, tierIndex: number, delta: number) {
+    try {
+      setBattle(
+        await api.adjustMissionScore(battleId, playerNumber, {
+          section_index: sectionIndex,
+          tier_index: tierIndex,
+          delta,
+        }),
+      );
     } catch (e) {
       setError(String(e));
     }
@@ -244,162 +265,333 @@ export function BattleTracker() {
   const prevPhase = prevStep >= 0 ? phaseAtStep(prevStep) : null;
   const prevPlayer = prevStep >= 0 ? activePlayerAtStep(prevStep) : null;
 
+  const hasMissionSetup = Boolean(battle.your_disposition && battle.opponent_disposition);
+
+  // Player 1 is "you" (the tracked roster's owner -- your_disposition is their disposition),
+  // player 2 is the opponent -- mirrors the asymmetric deck/vs lookup used on /missions and the
+  // setup screen.
+  function missionForPlayer(playerNumber: number): Mission | undefined {
+    if (!hasMissionSetup) return undefined;
+    const deck = playerNumber === 1 ? battle!.your_disposition : battle!.opponent_disposition;
+    const vs = playerNumber === 1 ? battle!.opponent_disposition : battle!.your_disposition;
+    return missions.find((m) => m.deck === deck && m.vs === vs);
+  }
+
+  function achievedCount(playerNumber: number, sectionIndex: number, tierIndex: number): number {
+    return (
+      battle!.mission_scores.find(
+        (s) => s.player_number === playerNumber && s.section_index === sectionIndex && s.tier_index === tierIndex,
+      )?.achieved_count ?? 0
+    );
+  }
+
   return (
-    <div className="page">
+    <div className="page battle-page">
       <h1>Battle #{battle.id}</h1>
       {error && <p className="error">{error}</p>}
 
-      <section className="battle-info">
-        <div className="battle-info-header">
-          <span className="battle-round">Battle Round {battle.battle_round}</span>
-          <span className="muted">Player {battle.active_player}'s turn</span>
-        </div>
-        <div className="players">
-          {battle.players.map((p) => (
-            <div key={p.id} className="player-card">
-              <h3>Player {p.player_number}</h3>
-              <label>
-                CP Gained
-                <input
-                  type="number"
-                  value={p.cp_gained}
-                  onChange={(e) => handlePlayerChange(p.player_number, "cp_gained", Number(e.target.value))}
-                />
-              </label>
-              <label>
-                CP Spent
-                <input
-                  type="number"
-                  value={p.cp_spent}
-                  onChange={(e) => handlePlayerChange(p.player_number, "cp_spent", Number(e.target.value))}
-                />
-              </label>
-              <label>
-                VP
-                <input
-                  type="number"
-                  value={p.vp}
-                  onChange={(e) => handlePlayerChange(p.player_number, "vp", Number(e.target.value))}
-                />
-              </label>
+      <div className="battle-columns">
+        <div className="battle-meta">
+          <section className="mission-summary">
+            {hasMissionSetup ? (
+              <span className="muted small">
+                {DISPOSITION_LABELS[battle.your_disposition!]} vs {DISPOSITION_LABELS[battle.opponent_disposition!]}
+              </span>
+            ) : (
+              <span className="muted">No mission set up for this battle</span>
+            )}
+            <Link to={`/battles/setup?battleId=${battle.id}`} className="link-button">
+              {hasMissionSetup ? "Edit setup" : "Set up now"}
+            </Link>
+          </section>
+
+          <div className={`phase-banner phase-${battle.current_phase}`}>
+            <div className="phase-name">{battle.current_phase.toUpperCase()} PHASE</div>
+            <div className="muted">
+              Battle Round {battle.battle_round} — step {battle.global_step}
             </div>
-          ))}
-        </div>
-      </section>
+            <div className="phase-nav">
+              <button type="button" onClick={handleRetreat} disabled={prevStep < 0}>
+                {prevPhase
+                  ? `← ${capitalize(prevPhase)}${prevPlayer !== battle.active_player ? ` (P${prevPlayer})` : ""}`
+                  : "← Previous Phase"}
+              </button>
+              <button type="button" className="primary" onClick={handleAdvance}>
+                {capitalize(nextPhase)}
+                {nextPlayer !== battle.active_player ? ` (P${nextPlayer})` : ""} →
+              </button>
+            </div>
+            <div className="muted small">
+              Going back only moves the phase pointer — CP already granted and resource pools
+              already refilled/cleared crossing that boundary aren't undone.
+            </div>
+          </div>
 
-      <div className={`phase-banner phase-${battle.current_phase}`}>
-        <div className="phase-name">{battle.current_phase.toUpperCase()} PHASE</div>
-        <div className="muted">step {battle.global_step}</div>
-        <div className="phase-nav">
-          <button type="button" onClick={handleRetreat} disabled={prevStep < 0}>
-            {prevPhase
-              ? `← ${capitalize(prevPhase)}${prevPlayer !== battle.active_player ? ` (P${prevPlayer})` : ""}`
-              : "← Previous Phase"}
-          </button>
-          <button type="button" className="primary" onClick={handleAdvance}>
-            {capitalize(nextPhase)}
-            {nextPlayer !== battle.active_player ? ` (P${nextPlayer})` : ""} →
-          </button>
-        </div>
-        <div className="muted small">
-          Going back only moves the phase pointer — CP already granted and resource pools
-          already refilled/cleared crossing that boundary aren't undone.
-        </div>
-      </div>
-
-      <ul className="phase-checklist">
-        {PHASE_CHECKLIST[battle.current_phase].map((item) => (
-          <li key={item}>{item}</li>
-        ))}
-      </ul>
-
-      {battle.active_synergies.length > 0 && (
-        <div className="synergy-banner">
-          <strong>Synergy reminder:</strong>
-          <ul>
-            {battle.active_synergies.map((s) => (
-              <li key={s.id}>
-                {s.note || `Trigger during ${s.trigger_phase} phase`}
-                <button type="button" className="link-button" onClick={() => handleAcknowledgeSynergy(s.id)}>
-                  acknowledge
-                </button>
-              </li>
+          <ul className="phase-checklist">
+            {PHASE_CHECKLIST[battle.current_phase].map((item) => (
+              <li key={item}>{item}</li>
             ))}
           </ul>
-        </div>
-      )}
 
-      {pools.length > 0 && (
-        <section>
-          <h2>Declared State Pools</h2>
-          <ul className="pool-list">
-            {pools.map((pool) => {
-              if (pool.stacking) {
-                const entries = battle.pool_entries.filter((e) => e.pool_id === pool.id);
-                const input = stackingInputs[pool.id] ?? { owner: 1, value: 1 };
-                return (
-                  <li key={pool.id}>
-                    <strong>{pool.name}</strong> <span className="tag">{pool.scope}, stacking</span>
-                    <div className="pool-entries">
-                      {entries.map((e) => (
-                        <span key={e.id} className="tag">
-                          P{e.owner_player}: {e.value}
-                        </span>
-                      ))}
-                      {entries.length === 0 && <span className="muted"> none active</span>}
-                    </div>
-                    <div className="inline-form">
-                      <select
-                        value={input.owner}
-                        onChange={(e) =>
-                          setStackingInputs({ ...stackingInputs, [pool.id]: { ...input, owner: Number(e.target.value) } })
-                        }
-                      >
-                        <option value={1}>Player 1</option>
-                        <option value={2}>Player 2</option>
-                      </select>
+          <div className="players-stack">
+            {[2, 1].map((playerNumber) => {
+              const p = battle.players.find((pl) => pl.player_number === playerNumber);
+              if (!p) return null;
+              const label = playerNumber === 1 ? "You" : battle.opponent_name || "Opponent";
+              const mission = missionForPlayer(playerNumber);
+              return (
+                <div
+                  key={playerNumber}
+                  className={`player-panel${playerNumber === battle.active_player ? " active" : ""}`}
+                >
+                  <h2>{label}</h2>
+                  <div className="cp-block">
+                    <span className="player-field">
+                      CP
                       <input
                         type="number"
-                        value={input.value}
-                        onChange={(e) =>
-                          setStackingInputs({ ...stackingInputs, [pool.id]: { ...input, value: Number(e.target.value) } })
-                        }
+                        title="CP Gained"
+                        value={p.cp_gained}
+                        onChange={(e) => handlePlayerChange(playerNumber, "cp_gained", Number(e.target.value))}
                       />
-                      <button type="button" onClick={() => handleAddPoolEntry(pool.id)}>
-                        Add
-                      </button>
+                      /
+                      <input
+                        type="number"
+                        title="CP Spent"
+                        value={p.cp_spent}
+                        onChange={(e) => handlePlayerChange(playerNumber, "cp_spent", Number(e.target.value))}
+                      />
+                    </span>
+                    <span className="cp-total">{p.cp_gained - p.cp_spent} CP</span>
+                  </div>
+
+                  {mission ? (
+                    <div className="primary-block">
+                      <div className="primary-header">
+                        Primary — {mission.name} ({p.vp - p.vp_adjustment} VP)
+                      </div>
+                      {mission.sections.map((section, si) =>
+                        section.tiers.map((tier, ti) => {
+                          const count = achievedCount(playerNumber, si, ti);
+                          return (
+                            <div key={`${si}-${ti}`} className="tier-row">
+                              <div className="tier-row-text">
+                                <div>{renderAbilityText(tier.text, `${playerNumber}-${si}-${ti}`)}</div>
+                                <div className="muted small">
+                                  {tier.vp} VP | {section.when}
+                                  {section.trigger && ` — ${section.trigger}`}
+                                </div>
+                              </div>
+                              <div className="tier-stepper">
+                                <button
+                                  type="button"
+                                  onClick={() => handleAdjustMissionScore(playerNumber, si, ti, -1)}
+                                >
+                                  −
+                                </button>
+                                <span>{count}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleAdjustMissionScore(playerNumber, si, ti, 1)}
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        }),
+                      )}
+                      <label className="vp-adjustment">
+                        VP adjustment
+                        <input
+                          type="number"
+                          value={p.vp_adjustment}
+                          onChange={(e) =>
+                            handlePlayerChange(playerNumber, "vp_adjustment", Number(e.target.value))
+                          }
+                        />
+                      </label>
+                      <div className="vp-total">Total VP: {p.vp}</div>
                     </div>
-                  </li>
-                );
-              }
-              const states = battle.pool_states.filter((s) => s.pool_id === pool.id);
-              return (
-                <li key={pool.id}>
-                  <strong>{pool.name}</strong> <span className="tag">{pool.scope}</span>
-                  {[1, 2].map((owner) => {
-                    const state = states.find((s) => s.owner_player === owner);
-                    const value = state?.current_value ?? pool.max_value;
-                    return (
-                      <span key={owner} className="muted">
-                        {" "}
-                        P{owner}: {value}/{pool.max_value}
-                      </span>
-                    );
-                  })}
-                  <button type="button" className="link-button" onClick={() => handleSpendPool(pool.id)}>
-                    spend 1 (active player)
-                  </button>
-                </li>
+                  ) : (
+                    <p className="muted">No mission set up.</p>
+                  )}
+                </div>
               );
             })}
-          </ul>
-        </section>
-      )}
+          </div>
 
-      {units.length > 0 && (
-        <section>
-          <h2>Unit Turn States</h2>
-          <ul className="turn-state-list">
+          {battle.active_synergies.length > 0 && (
+            <div className="synergy-banner">
+              <strong>Synergy reminder:</strong>
+              <ul>
+                {battle.active_synergies.map((s) => (
+                  <li key={s.id}>
+                    {s.note || `Trigger during ${s.trigger_phase} phase`}
+                    <button type="button" className="link-button" onClick={() => handleAcknowledgeSynergy(s.id)}>
+                      acknowledge
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {pools.length > 0 && (
+            <section>
+              <h2>Declared State Pools</h2>
+              <ul className="pool-list">
+                {pools.map((pool) => {
+                  if (pool.stacking) {
+                    const entries = battle.pool_entries.filter((e) => e.pool_id === pool.id);
+                    const input = stackingInputs[pool.id] ?? { owner: 1, value: 1 };
+                    return (
+                      <li key={pool.id}>
+                        <strong>{pool.name}</strong> <span className="tag">{pool.scope}, stacking</span>
+                        <div className="pool-entries">
+                          {entries.map((e) => (
+                            <span key={e.id} className="tag">
+                              P{e.owner_player}: {e.value}
+                            </span>
+                          ))}
+                          {entries.length === 0 && <span className="muted"> none active</span>}
+                        </div>
+                        <div className="inline-form">
+                          <select
+                            value={input.owner}
+                            onChange={(e) =>
+                              setStackingInputs({
+                                ...stackingInputs,
+                                [pool.id]: { ...input, owner: Number(e.target.value) },
+                              })
+                            }
+                          >
+                            <option value={1}>Player 1</option>
+                            <option value={2}>Player 2</option>
+                          </select>
+                          <input
+                            type="number"
+                            value={input.value}
+                            onChange={(e) =>
+                              setStackingInputs({
+                                ...stackingInputs,
+                                [pool.id]: { ...input, value: Number(e.target.value) },
+                              })
+                            }
+                          />
+                          <button type="button" onClick={() => handleAddPoolEntry(pool.id)}>
+                            Add
+                          </button>
+                        </div>
+                      </li>
+                    );
+                  }
+                  const states = battle.pool_states.filter((s) => s.pool_id === pool.id);
+                  return (
+                    <li key={pool.id}>
+                      <strong>{pool.name}</strong> <span className="tag">{pool.scope}</span>
+                      {[1, 2].map((owner) => {
+                        const state = states.find((s) => s.owner_player === owner);
+                        const value = state?.current_value ?? pool.max_value;
+                        const isActive = owner === battle.active_player;
+                        return (
+                          <div key={owner} className="pool-tally-row">
+                            <span className="muted">P{owner}</span>
+                            <span className="pool-tally">
+                              {Array.from({ length: pool.max_value }, (_, i) => {
+                                const filled = i < value;
+                                return (
+                                  <button
+                                    type="button"
+                                    key={i}
+                                    className={`pool-pip ${filled ? "filled" : "empty"}`}
+                                    disabled={!isActive || !filled}
+                                    onClick={() => handleSpendPool(pool.id)}
+                                    title={
+                                      !filled
+                                        ? "Already spent"
+                                        : isActive
+                                          ? "Click to spend one"
+                                          : "Only the active player can spend"
+                                    }
+                                  >
+                                    ●
+                                  </button>
+                                );
+                              })}
+                            </span>
+                            <span className="muted">
+                              {value}/{pool.max_value}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          )}
+
+          <section className="effects-section">
+            <h2>Active Effects</h2>
+            <form className="inline-form" onSubmit={handleAddEffect}>
+              <input
+                type="text"
+                placeholder="Effect label (e.g. Doom)"
+                value={label}
+                onChange={(e) => setLabel(e.target.value)}
+                required
+              />
+              <select value={ownerPlayer} onChange={(e) => setOwnerPlayer(Number(e.target.value))}>
+                <option value={1}>Player 1</option>
+                <option value={2}>Player 2</option>
+              </select>
+              <select value={durationType} onChange={(e) => setDurationType(e.target.value)}>
+                {DURATION_TYPES.map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={effectUnitId}
+                onChange={(e) => setEffectUnitId(e.target.value === "" ? "" : Number(e.target.value))}
+              >
+                <option value="">Unit (optional)...</option>
+                {units.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.unit_definition.name}
+                  </option>
+                ))}
+              </select>
+              <button type="submit">Log Effect</button>
+            </form>
+            <ul className="effect-list">
+              {battle.effects.map((eff) => (
+                <li key={eff.id} className={eff.expired ? "expired" : ""}>
+                  <span className="effect-label">{eff.label}</span>
+                  <span className="muted">
+                    {" "}
+                    (Player {eff.owner_player}, {eff.duration_type}
+                    {eff.unit_id !== null && `, ${unitName(eff.unit_id)}`})
+                  </span>
+                  {eff.expired && <span className="tag expired-tag">expired</span>}
+                  <button type="button" className="link-button" onClick={() => handleDismiss(eff.id)}>
+                    dismiss
+                  </button>
+                </li>
+              ))}
+              {battle.effects.length === 0 && <li className="muted">No active effects.</li>}
+            </ul>
+          </section>
+        </div>
+
+        <div className="battle-units">
+          {units.length > 0 && (
+            <section>
+              <h2>Unit Turn States</h2>
+              <ul className="turn-state-list">
             {groupUnits(units, attachments).map((group) => {
               const unitIds = group.units.map((u) => u.id);
               // After a sync all members' turn states match -- read the first as representative.
@@ -434,16 +626,12 @@ export function BattleTracker() {
                           }, new Map<string, Weapon[]>()),
                         );
                     const weaponsCount = hasLoadout ? loadout.length : catalogueGroups.length;
-                    const line = statLine(stats);
+                    const line = renderStatLine(stats, u.buffs);
                     return (
                       <div key={u.id}>
                         <div className="unit-header">
                           <strong>{u.unit_definition.name}</strong>
-                          {line ? (
-                            <span className="stat-line">{line}</span>
-                          ) : (
-                            <span className="muted"> stats not indexed yet</span>
-                          )}
+                          {line ?? <span className="muted"> stats not indexed yet</span>}
                           {abilities.length > 0 && (
                             <button type="button" className="link-button" onClick={() => toggleAbilities(u.id)}>
                               {expandedAbilities.has(u.id) ? "hide abilities" : `abilities (${abilities.length})`}
@@ -455,6 +643,15 @@ export function BattleTracker() {
                             </button>
                           )}
                         </div>
+                        {u.unit_definition.rules.length > 0 && (
+                          <div className="rule-tags">
+                            {u.unit_definition.rules.map((r) => (
+                              <span key={r} className="tag">
+                                {r}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                         {expandedAbilities.has(u.id) && (
                           <ul className="ability-list">
                             {abilities.map((a) => (
@@ -504,6 +701,22 @@ export function BattleTracker() {
                                 ))}
                               </li>
                             ))}
+                          </ul>
+                        )}
+                        {battle.effects.some((eff) => eff.unit_id === u.id) && (
+                          <ul className="effect-list unit-effects">
+                            {battle.effects
+                              .filter((eff) => eff.unit_id === u.id)
+                              .map((eff) => (
+                                <li key={eff.id} className={eff.expired ? "expired" : ""}>
+                                  <span className="effect-label">{eff.label}</span>
+                                  <span className="muted"> ({eff.duration_type})</span>
+                                  {eff.expired && <span className="tag expired-tag">expired</span>}
+                                  <button type="button" className="link-button" onClick={() => handleDismiss(eff.id)}>
+                                    dismiss
+                                  </button>
+                                </li>
+                              ))}
                           </ul>
                         )}
                       </div>
@@ -563,45 +776,9 @@ export function BattleTracker() {
             })}
           </ul>
         </section>
-      )}
-
-      <section>
-        <h2>Active Effects</h2>
-        <form className="inline-form" onSubmit={handleAddEffect}>
-          <input
-            type="text"
-            placeholder="Effect label (e.g. Doom)"
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            required
-          />
-          <select value={ownerPlayer} onChange={(e) => setOwnerPlayer(Number(e.target.value))}>
-            <option value={1}>Player 1</option>
-            <option value={2}>Player 2</option>
-          </select>
-          <select value={durationType} onChange={(e) => setDurationType(e.target.value)}>
-            {DURATION_TYPES.map((d) => (
-              <option key={d} value={d}>
-                {d}
-              </option>
-            ))}
-          </select>
-          <button type="submit">Log Effect</button>
-        </form>
-        <ul className="effect-list">
-          {battle.effects.map((eff) => (
-            <li key={eff.id} className={eff.expired ? "expired" : ""}>
-              <span className="effect-label">{eff.label}</span>
-              <span className="muted"> (Player {eff.owner_player}, {eff.duration_type})</span>
-              {eff.expired && <span className="tag expired-tag">expired</span>}
-              <button type="button" className="link-button" onClick={() => handleDismiss(eff.id)}>
-                dismiss
-              </button>
-            </li>
-          ))}
-          {battle.effects.length === 0 && <li className="muted">No active effects.</li>}
-        </ul>
-      </section>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

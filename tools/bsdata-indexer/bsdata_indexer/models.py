@@ -17,6 +17,19 @@ class Weapon:
 
 
 @dataclass(frozen=True)
+class ModelProfile:
+    """One distinct model-type within a unit (e.g. Guardian Defenders has two: "Guardian
+    Defender" and "Heavy Weapon Platform", each with its own stat line and weapon options).
+    A single-model unit (Character, vehicle) still gets exactly one of these, scoped to its
+    whole entry -- same weapons the flat `UnitDefinition.weapons` already has."""
+
+    name: str
+    stats: dict[str, str]
+    ranged_weapons: list[Weapon] = field(default_factory=list)
+    melee_weapons: list[Weapon] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
 class PointsTier:
     """One row of MFM pricing. `range` is the raw MFM range string (e.g. "[1,3]" means
     "your 1st to 3rd copies of this unit"; "[1,)" means "every copy costs the same")."""
@@ -36,7 +49,9 @@ class UnitDefinition:
     is_legends: bool = False
     stats: dict[str, str] = field(default_factory=dict)  # M/T/Sv/W/LD/OC from the "Unit" profile
     abilities: list[Ability] = field(default_factory=list)  # from "Abilities"-typed profiles
+    rules: list[str] = field(default_factory=list)  # names linked via infoLinks[type=="rule"]
     weapons: list[Weapon] = field(default_factory=list)  # from "Ranged/Melee Weapons"-typed profiles
+    model_profiles: list[ModelProfile] = field(default_factory=list)  # per-model-type stats/weapons
     points: list[PointsTier] = field(default_factory=list)  # empty -> mfm_matched is False
     mfm_matched: bool = False
     source_catalogue_id: str = ""
