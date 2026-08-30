@@ -10,11 +10,22 @@ export function RosterList() {
   const [error, setError] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<RosterImportResult | null>(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const navigate = useNavigate();
 
   function refresh() {
     api.listRosters().then(setRosters).catch((e) => setError(String(e)));
+  }
+
+  async function handleDeleteRoster(id: number) {
+    try {
+      await api.deleteRoster(id);
+      setConfirmingDeleteId(null);
+      refresh();
+    } catch (e) {
+      setError(String(e));
+    }
   }
 
   useEffect(refresh, []);
@@ -112,8 +123,29 @@ export function RosterList() {
       <ul className="roster-list">
         {rosters.map((r) => (
           <li key={r.id}>
-            <Link to={`/rosters/${r.id}`}>{r.name}</Link>
-            <span className="muted"> — {r.faction}</span>
+            {confirmingDeleteId === r.id ? (
+              <span className="delete-confirm-inline">
+                Delete <strong>{r.name}</strong> and everything in it? This can't be undone.{" "}
+                <button type="button" className="link-button" onClick={() => handleDeleteRoster(r.id)}>
+                  Confirm
+                </button>
+                <button type="button" className="link-button" onClick={() => setConfirmingDeleteId(null)}>
+                  Cancel
+                </button>
+              </span>
+            ) : (
+              <>
+                <Link to={`/rosters/${r.id}`}>{r.name}</Link>
+                <span className="muted"> — {r.faction}</span>
+                <button
+                  type="button"
+                  className="link-button"
+                  onClick={() => setConfirmingDeleteId(r.id)}
+                >
+                  delete
+                </button>
+              </>
+            )}
           </li>
         ))}
         {rosters.length === 0 && <li className="muted">No rosters yet.</li>}

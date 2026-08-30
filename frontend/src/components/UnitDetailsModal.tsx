@@ -1,3 +1,4 @@
+import { KeywordList } from "./Keyword";
 import { renderAbilityText } from "../markup";
 import { STAT_ORDER, WEAPON_STAT_ORDER } from "../types";
 import type { ModelProfile, UnitOut, Weapon } from "../types";
@@ -83,7 +84,13 @@ function WeaponTable({ title, rows, omit }: { title: string; rows: WeaponRow[]; 
                   {r.weapon.name} (x{r.count}) - {r.label}
                 </td>
                 {columns.map((c) => (
-                  <td key={c}>{r.weapon.characteristics[c] ?? "-"}</td>
+                  <td key={c}>
+                    {c === "Keywords" ? (
+                      <KeywordList value={r.weapon.characteristics[c] ?? ""} />
+                    ) : (
+                      r.weapon.characteristics[c] ?? "-"
+                    )}
+                  </td>
                 ))}
               </tr>
             ))}

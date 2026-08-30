@@ -164,6 +164,18 @@ ul {
   border-bottom: 1px solid var(--border);
 }
 
+.roster-list li .link-button {
+  margin-left: 0.5rem;
+}
+
+.delete-confirm-inline {
+  color: var(--muted);
+}
+
+.delete-confirm-inline strong {
+  color: var(--fg);
+}
+
 .unit-name {
   font-weight: 600;
 }
@@ -228,7 +240,11 @@ section {
   padding: 0 1rem;
 }
 
-.accordion summary {
+/* `>` (direct child) rather than a descendant selector -- a nested .role-group's own
+   <summary> lives inside this same .accordion (Units contains the role groups), and a
+   descendant selector here would double up with .role-group-header's own arrow/marker
+   rules below. */
+.accordion > summary {
   cursor: pointer;
   font-size: 1.3rem;
   font-weight: 700;
@@ -236,20 +252,20 @@ section {
   list-style: none;
 }
 
-.accordion summary::-webkit-details-marker {
+.accordion > summary::-webkit-details-marker {
   display: none;
 }
 
-.accordion summary::before {
+.accordion > summary::before {
   content: "▸ ";
   color: var(--muted);
 }
 
-.accordion[open] summary::before {
+.accordion[open] > summary::before {
   content: "▾ ";
 }
 
-.accordion[open] summary {
+.accordion[open] > summary {
   border-bottom: 1px solid var(--border);
   margin-bottom: 1rem;
 }
@@ -285,6 +301,22 @@ section {
   padding-bottom: 0.3rem;
   margin-bottom: 0.5rem;
   border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  list-style: none;
+}
+
+.role-group-header::-webkit-details-marker {
+  display: none;
+}
+
+.role-group-header span:first-child::before {
+  content: "▸ ";
+  color: var(--muted);
+  text-transform: none;
+}
+
+.role-group[open] > .role-group-header span:first-child::before {
+  content: "▾ ";
 }
 
 .role-group-points {
@@ -412,6 +444,11 @@ section {
   padding: 0.1rem 0.5rem;
   font-size: 0.8em;
   margin-left: 0.4rem;
+}
+
+.keyword-hint {
+  border-bottom: 1px dotted var(--muted);
+  cursor: help;
 }
 
 .phase-banner {
@@ -665,6 +702,10 @@ section {
   border-radius: 6px;
   padding: 1rem 1.25rem 0.5rem;
   max-width: 640px;
+}
+
+.chart-clickable .recharts-bar-rectangle {
+  cursor: pointer;
 }
 
 .layout-pick-button {

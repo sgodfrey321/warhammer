@@ -2,12 +2,15 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { api } from "../api";
+import { Keyword } from "../components/Keyword";
 import { UnitAutocomplete } from "../components/UnitAutocomplete";
 import { UnitDetailsModal } from "../components/UnitDetailsModal";
+import { WeaponContributionsModal } from "../components/WeaponContributionsModal";
 import { PHASES, POOL_SCOPES, STAT_ORDER } from "../types";
 import type { BattleOut, DeclaredStatePool, Roster, UnitAttachment, UnitBuff, UnitOut, UnitSynergy } from "../types";
 import { groupUnitsByRole } from "../units";
-import { unitsByMovement, unitsBySave, weaponAttacksByStrength } from "../weapons";
+import { unitsByMovement, unitsBySave, weaponAttacksByStrengthAndSkill } from "../weapons";
+import type { StrengthSkillBucket, StrengthSkillResult, WeaponContribution } from "../weapons";
 
 // Validated with the dataviz skill's palette checker against this app's dark panel surface
 // (#1e212b): single-series charts share one hue; the two-series save chart uses a pair that
@@ -17,10 +20,62 @@ import { unitsByMovement, unitsBySave, weaponAttacksByStrength } from "../weapon
 const CHART_COLOR = "#e0574a";
 const CHART_COLOR_SECONDARY = "#4a90c9";
 
+// Fixed hue order for the Strength/to-hit stacked charts (2+ best -> N/A worst), assigned by
+// to-hit value never by rank, so the same value is always the same color regardless of which
+// values a given roster happens to have. Validated together (`validate_palette.js
+// "#e0574a,#4a90c9,#d95926,#199e70,#9085e9" --mode dark --surface "#1e212b"` -- all checks pass).
+const SKILL_COLORS = ["#e0574a", "#4a90c9", "#d95926", "#199e70", "#9085e9"];
+
 // Shared bar-chart mark spec (dataviz skill: <=24px thick, 4px rounded data-end square at the
 // baseline, solid recessive gridlines -- never dashed).
 const BAR_SIZE = 24;
 const BAR_RADIUS: [number, number, number, number] = [4, 4, 0, 0];
+
+// Ranged Firepower / Melee Onslaught: total attacks by weapon Strength, stacked by to-hit value
+// (BS/WS) so both "what do we wound with" and "what do we hit on" read in one chart. Clicking any
+// segment of a Strength bar drills down to every unit/weapon at that Strength -- not just the
+// segment's own to-hit value -- since the split exists to visualize to-hit, not to filter by it.
+function StrengthSkillChart({
+  result,
+  skillLabel,
+  onSelectBucket,
+}: {
+  result: StrengthSkillResult;
+  skillLabel: "BS" | "WS";
+  onSelectBucket: (strength: number) => void;
+}) {
+  if (result.buckets.length === 0) return null;
+  return (
+    <div className="chart-container chart-clickable">
+      <ResponsiveContainer width="100%" height={260}>
+        <BarChart data={result.buckets}>
+          <CartesianGrid strokeDasharray="" stroke="#333747" vertical={false} />
+          <XAxis dataKey="strength" tickFormatter={(s) => `S${s}`} stroke="#8b8f9e" />
+          <YAxis allowDecimals={false} stroke="#8b8f9e" />
+          <Tooltip
+            contentStyle={{ background: "#1e212b", border: "1px solid #333747" }}
+            labelFormatter={(s) => `Strength ${s}`}
+            formatter={(value, name) => [value, `${skillLabel}${name}`]}
+          />
+          <Legend formatter={(value) => `${skillLabel}${value}`} />
+          {result.skillKeys.map((skill, i) => (
+            <Bar
+              key={skill}
+              dataKey={skill}
+              stackId="a"
+              fill={SKILL_COLORS[i % SKILL_COLORS.length]}
+              stroke="#1e212b"
+              strokeWidth={2}
+              radius={i === result.skillKeys.length - 1 ? BAR_RADIUS : undefined}
+              maxBarSize={BAR_SIZE}
+              onClick={(data) => onSelectBucket((data.payload as StrengthSkillBucket).strength)}
+            />
+          ))}
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
 
 // One row renderer shared by a plain unit and a leader nested into the unit it leads (see
 // RosterEditor's Units section) -- avoids duplicating this JSX for both cases.
@@ -62,7 +117,7 @@ function UnitRow({
         <div className="rule-tags">
           {unit.unit_definition.rules.map((r) => (
             <span key={r} className="tag">
-              {r}
+              <Keyword name={r} />
             </span>
           ))}
         </div>
@@ -96,6 +151,11 @@ export function RosterEditor() {
   const [battles, setBattles] = useState<BattleOut[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [detailsGroup, setDetailsGroup] = useState<{ primary: UnitOut; leaders: UnitOut[] } | null>(null);
+  const [weaponDrilldown, setWeaponDrilldown] = useState<{
+    title: string;
+    skillLabel: "BS" | "WS";
+    contributions: WeaponContribution[];
+  } | null>(null);
 
   const [renaming, setRenaming] = useState(false);
   const [nameDraft, setNameDraft] = useState("");
@@ -279,10 +339,15 @@ export function RosterEditor() {
 
   if (!roster) return <div className="page">Loading...</div>;
 
-  const { buckets: shotsByStrength, skippedUnits: skippedRanged } = weaponAttacksByStrength(units, "Ranged Weapons");
-  const { buckets: meleeByStrength, skippedUnits: skippedMelee } = weaponAttacksByStrength(units, "Melee Weapons");
+  const rangedResult = weaponAttacksByStrengthAndSkill(units, "Ranged Weapons");
+  const meleeResult = weaponAttacksByStrengthAndSkill(units, "Melee Weapons");
   const movementBuckets = unitsByMovement(units);
   const saveBuckets = unitsBySave(units);
+
+  function showWeaponDrilldown(result: StrengthSkillResult, skillLabel: "BS" | "WS", strength: number) {
+    const contributions = result.skillKeys.flatMap((skill) => result.contributions.get(`${strength}|${skill}`) ?? []);
+    setWeaponDrilldown({ title: `Strength ${strength}`, skillLabel, contributions });
+  }
   const roleGroups = groupUnitsByRole(units, attachments);
   const nestedLeaderIds = new Set(attachments.map((a) => a.leader_unit_id));
 
@@ -358,11 +423,11 @@ export function RosterEditor() {
         <summary>Units</summary>
         <UnitAutocomplete onSelect={handleAddUnit} />
         {roleGroups.map((group) => (
-          <div key={group.role} className="role-group">
-            <div className="role-group-header">
+          <details key={group.role} className="role-group" open>
+            <summary className="role-group-header">
               <span>{group.role}</span>
               <span className="role-group-points">{group.points}pts</span>
-            </div>
+            </summary>
             {group.units
               .filter((u) => !nestedLeaderIds.has(u.id))
               .map((u) => {
@@ -390,7 +455,7 @@ export function RosterEditor() {
                   </div>
                 );
               })}
-          </div>
+          </details>
         ))}
         {units.length === 0 && <p className="muted">No units yet — search above to add one.</p>}
       </details>
@@ -398,113 +463,111 @@ export function RosterEditor() {
       <details className="accordion">
         <summary>Army Analysis</summary>
 
-        <h3>Ranged Firepower</h3>
-        <p className="muted">
-          Total ranged shots this roster can put out, grouped by weapon Strength (dice-notation
-          Attacks like D6 are averaged; range-dependent bonuses like Rapid Fire aren't modeled).
-          {skippedRanged > 0 &&
-            ` ${skippedRanged} unit${skippedRanged === 1 ? "" : "s"} with no confirmed loadout not included.`}
-        </p>
-        {shotsByStrength.length > 0 ? (
-          <div className="chart-container">
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={shotsByStrength}>
-                <CartesianGrid strokeDasharray="" stroke="#333747" vertical={false} />
-                <XAxis dataKey="strength" tickFormatter={(s) => `S${s}`} stroke="#8b8f9e" />
-                <YAxis allowDecimals={false} stroke="#8b8f9e" />
-                <Tooltip
-                  contentStyle={{ background: "#1e212b", border: "1px solid #333747" }}
-                  labelFormatter={(s) => `Strength ${s}`}
-                  formatter={(value) => [value, "shots"]}
-                />
-                <Bar dataKey="shots" fill={CHART_COLOR} radius={BAR_RADIUS} maxBarSize={BAR_SIZE} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        ) : (
-          <p className="muted">No ranged weapon data to chart yet.</p>
-        )}
+        <details className="role-group" open>
+          <summary className="role-group-header">
+            <span>Ranged Firepower</span>
+          </summary>
+          <p className="muted">
+            Total ranged shots this roster can put out, grouped by weapon Strength and stacked by
+            Ballistic Skill (dice-notation Attacks like D6 are averaged; range-dependent bonuses
+            like Rapid Fire aren't modeled). Click a segment to see which units it's made of.
+            {rangedResult.skippedUnits > 0 &&
+              ` ${rangedResult.skippedUnits} unit${rangedResult.skippedUnits === 1 ? "" : "s"} with no confirmed loadout not included.`}
+          </p>
+          {rangedResult.buckets.length > 0 ? (
+            <StrengthSkillChart
+              result={rangedResult}
+              skillLabel="BS"
+              onSelectBucket={(strength) => showWeaponDrilldown(rangedResult, "BS", strength)}
+            />
+          ) : (
+            <p className="muted">No ranged weapon data to chart yet.</p>
+          )}
+        </details>
 
-        <h3>Melee Onslaught</h3>
-        <p className="muted">
-          Total melee attacks this roster can put out, grouped by weapon Strength (same dice-
-          averaging and loadout-only scope as Ranged Firepower above).
-          {skippedMelee > 0 &&
-            ` ${skippedMelee} unit${skippedMelee === 1 ? "" : "s"} with no confirmed loadout not included.`}
-        </p>
-        {meleeByStrength.length > 0 ? (
-          <div className="chart-container">
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={meleeByStrength}>
-                <CartesianGrid strokeDasharray="" stroke="#333747" vertical={false} />
-                <XAxis dataKey="strength" tickFormatter={(s) => `S${s}`} stroke="#8b8f9e" />
-                <YAxis allowDecimals={false} stroke="#8b8f9e" />
-                <Tooltip
-                  contentStyle={{ background: "#1e212b", border: "1px solid #333747" }}
-                  labelFormatter={(s) => `Strength ${s}`}
-                  formatter={(value) => [value, "attacks"]}
-                />
-                <Bar dataKey="shots" fill={CHART_COLOR} radius={BAR_RADIUS} maxBarSize={BAR_SIZE} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        ) : (
-          <p className="muted">No melee weapon data to chart yet.</p>
-        )}
+        <details className="role-group" open>
+          <summary className="role-group-header">
+            <span>Melee Onslaught</span>
+          </summary>
+          <p className="muted">
+            Total melee attacks this roster can put out, grouped by weapon Strength and stacked by
+            Weapon Skill (same dice-averaging and loadout-only scope as Ranged Firepower above).
+            Click a segment to see which units it's made of.
+            {meleeResult.skippedUnits > 0 &&
+              ` ${meleeResult.skippedUnits} unit${meleeResult.skippedUnits === 1 ? "" : "s"} with no confirmed loadout not included.`}
+          </p>
+          {meleeResult.buckets.length > 0 ? (
+            <StrengthSkillChart
+              result={meleeResult}
+              skillLabel="WS"
+              onSelectBucket={(strength) => showWeaponDrilldown(meleeResult, "WS", strength)}
+            />
+          ) : (
+            <p className="muted">No melee weapon data to chart yet.</p>
+          )}
+        </details>
 
-        <h3>Movement</h3>
-        <p className="muted">
-          Units in this roster grouped by Movement — one bar contribution per unit entry, not
-          weighted by squad size (there's no reliable per-model count to work from).
-        </p>
-        {movementBuckets.length > 0 ? (
-          <div className="chart-container">
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={movementBuckets}>
-                <CartesianGrid strokeDasharray="" stroke="#333747" vertical={false} />
-                <XAxis dataKey="movement" tickFormatter={(m) => `${m}"`} stroke="#8b8f9e" />
-                <YAxis allowDecimals={false} stroke="#8b8f9e" />
-                <Tooltip
-                  contentStyle={{ background: "#1e212b", border: "1px solid #333747" }}
-                  labelFormatter={(m) => `Movement ${m}"`}
-                  formatter={(value) => [value, "units"]}
-                />
-                <Bar dataKey="units" fill={CHART_COLOR} radius={BAR_RADIUS} maxBarSize={BAR_SIZE} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        ) : (
-          <p className="muted">No movement data to chart yet.</p>
-        )}
+        <details className="role-group" open>
+          <summary className="role-group-header">
+            <span>Movement</span>
+          </summary>
+          <p className="muted">
+            Units in this roster grouped by Movement — one bar contribution per unit entry, not
+            weighted by squad size (there's no reliable per-model count to work from).
+          </p>
+          {movementBuckets.length > 0 ? (
+            <div className="chart-container">
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={movementBuckets}>
+                  <CartesianGrid strokeDasharray="" stroke="#333747" vertical={false} />
+                  <XAxis dataKey="movement" tickFormatter={(m) => `${m}"`} stroke="#8b8f9e" />
+                  <YAxis allowDecimals={false} stroke="#8b8f9e" />
+                  <Tooltip
+                    contentStyle={{ background: "#1e212b", border: "1px solid #333747" }}
+                    labelFormatter={(m) => `Movement ${m}"`}
+                    formatter={(value) => [value, "units"]}
+                  />
+                  <Bar dataKey="units" fill={CHART_COLOR} radius={BAR_RADIUS} maxBarSize={BAR_SIZE} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <p className="muted">No movement data to chart yet.</p>
+          )}
+        </details>
 
-        <h3>Save / Invulnerable Save</h3>
-        <p className="muted">
-          Units grouped by armor Save and Invulnerable Save (best 2+ to worst 7+/none), so both
-          distributions read on the same scale.
-        </p>
-        {saveBuckets.length > 0 ? (
-          <div className="chart-container">
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={saveBuckets}>
-                <CartesianGrid strokeDasharray="" stroke="#333747" vertical={false} />
-                <XAxis dataKey="save" stroke="#8b8f9e" />
-                <YAxis allowDecimals={false} stroke="#8b8f9e" />
-                <Tooltip contentStyle={{ background: "#1e212b", border: "1px solid #333747" }} />
-                <Legend />
-                <Bar dataKey="sv" name="Armor Save" fill={CHART_COLOR} radius={BAR_RADIUS} maxBarSize={BAR_SIZE} />
-                <Bar
-                  dataKey="insv"
-                  name="Invulnerable Save"
-                  fill={CHART_COLOR_SECONDARY}
-                  radius={BAR_RADIUS}
-                  maxBarSize={BAR_SIZE}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        ) : (
-          <p className="muted">No save data to chart yet.</p>
-        )}
+        <details className="role-group" open>
+          <summary className="role-group-header">
+            <span>Save / Invulnerable Save</span>
+          </summary>
+          <p className="muted">
+            Units grouped by armor Save and Invulnerable Save (best 2+ to worst 7+/none), so both
+            distributions read on the same scale.
+          </p>
+          {saveBuckets.length > 0 ? (
+            <div className="chart-container">
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={saveBuckets}>
+                  <CartesianGrid strokeDasharray="" stroke="#333747" vertical={false} />
+                  <XAxis dataKey="save" stroke="#8b8f9e" />
+                  <YAxis allowDecimals={false} stroke="#8b8f9e" />
+                  <Tooltip contentStyle={{ background: "#1e212b", border: "1px solid #333747" }} />
+                  <Legend />
+                  <Bar dataKey="sv" name="Armor Save" fill={CHART_COLOR} radius={BAR_RADIUS} maxBarSize={BAR_SIZE} />
+                  <Bar
+                    dataKey="insv"
+                    name="Invulnerable Save"
+                    fill={CHART_COLOR_SECONDARY}
+                    radius={BAR_RADIUS}
+                    maxBarSize={BAR_SIZE}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <p className="muted">No save data to chart yet.</p>
+          )}
+        </details>
       </details>
 
       <details className="accordion">
@@ -694,6 +757,15 @@ export function RosterEditor() {
           primary={detailsGroup.primary}
           leaders={detailsGroup.leaders}
           onClose={() => setDetailsGroup(null)}
+        />
+      )}
+
+      {weaponDrilldown && (
+        <WeaponContributionsModal
+          title={weaponDrilldown.title}
+          skillLabel={weaponDrilldown.skillLabel}
+          contributions={weaponDrilldown.contributions}
+          onClose={() => setWeaponDrilldown(null)}
         />
       )}
     </div>
