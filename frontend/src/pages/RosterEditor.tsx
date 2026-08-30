@@ -6,9 +6,10 @@ import { Keyword } from "../components/Keyword";
 import { UnitAutocomplete } from "../components/UnitAutocomplete";
 import { UnitDetailsModal } from "../components/UnitDetailsModal";
 import { WeaponContributionsModal } from "../components/WeaponContributionsModal";
+import { renderAbilityText } from "../markup";
 import { PHASES, POOL_SCOPES, STAT_ORDER } from "../types";
 import type { BattleOut, DeclaredStatePool, Roster, UnitAttachment, UnitBuff, UnitOut, UnitSynergy } from "../types";
-import { groupUnitsByRole } from "../units";
+import { auraAbilityReferences, groupUnitsByRole, leaderAbilityReferences, psychicAbilityReferences } from "../units";
 import { unitsByMovement, unitsBySave, weaponAttacksByStrengthAndSkill } from "../weapons";
 import type { StrengthSkillBucket, StrengthSkillResult, WeaponContribution } from "../weapons";
 
@@ -350,6 +351,9 @@ export function RosterEditor() {
   }
   const roleGroups = groupUnitsByRole(units, attachments);
   const nestedLeaderIds = new Set(attachments.map((a) => a.leader_unit_id));
+  const leaderReferences = leaderAbilityReferences(units);
+  const auraReferences = auraAbilityReferences(units);
+  const psychicReferences = psychicAbilityReferences(units);
 
   return (
     <div className="page">
@@ -615,6 +619,32 @@ export function RosterEditor() {
         <p className="muted">
           A Character leading a bodyguard unit — they act (and move) as one combined unit in the Battle Tracker.
         </p>
+
+        {leaderReferences.length > 0 && (
+          <details className="role-group" open>
+            <summary className="role-group-header">
+              <span>Leader Ability Reference</span>
+            </summary>
+            <p className="muted">
+              Abilities that buff whatever unit these Leaders are attached to — a reference for
+              deciding attachments below, not something that's auto-applied anywhere.
+            </p>
+            <ul className="ability-list">
+              {leaderReferences.map(({ unit, abilities }) => {
+                const leading = attachments.find((a) => a.leader_unit_id === unit.id);
+                return abilities.map((a, i) => (
+                  <li key={`${unit.id}-${i}`}>
+                    <strong>{unit.unit_definition.name}</strong>
+                    <span className="muted"> ({leading ? `leading ${unitLabel(leading.led_unit_id)}` : "not attached"})</span>
+                    {" — "}
+                    <strong>{a.name}</strong>: {renderAbilityText(a.text, `${unit.id}-${i}`)}
+                  </li>
+                ));
+              })}
+            </ul>
+          </details>
+        )}
+
         <form className="inline-form" onSubmit={handleAddAttachment}>
           <select value={leaderUnitId} onChange={(e) => setLeaderUnitId(Number(e.target.value))} required>
             <option value="">Leader unit...</option>
@@ -651,6 +681,52 @@ export function RosterEditor() {
 
       <details className="accordion">
         <summary>Unit Synergies</summary>
+
+        {auraReferences.length > 0 && (
+          <details className="role-group" open>
+            <summary className="role-group-header">
+              <span>Aura Reference</span>
+            </summary>
+            <p className="muted">
+              Passive effects that apply to whatever's in range on the table — who that actually
+              is depends on live model positions, so this is a reminder these exist, not
+              something logged as a Synergy below.
+            </p>
+            <ul className="ability-list">
+              {auraReferences.map(({ unit, abilities }) =>
+                abilities.map((a, i) => (
+                  <li key={`${unit.id}-${i}`}>
+                    <strong>{unit.unit_definition.name}</strong> — <strong>{a.name}</strong>:{" "}
+                    {renderAbilityText(a.text, `aura-${unit.id}-${i}`)}
+                  </li>
+                )),
+              )}
+            </ul>
+          </details>
+        )}
+
+        {psychicReferences.length > 0 && (
+          <details className="role-group" open>
+            <summary className="role-group-header">
+              <span>Psychic Power Reference</span>
+            </summary>
+            <p className="muted">
+              Powers that pick a target live each turn — usually an enemy unit, so there's nothing
+              here to attach to one of your own units either. Reminder only.
+            </p>
+            <ul className="ability-list">
+              {psychicReferences.map(({ unit, abilities }) =>
+                abilities.map((a, i) => (
+                  <li key={`${unit.id}-${i}`}>
+                    <strong>{unit.unit_definition.name}</strong> — <strong>{a.name}</strong>:{" "}
+                    {renderAbilityText(a.text, `psychic-${unit.id}-${i}`)}
+                  </li>
+                )),
+              )}
+            </ul>
+          </details>
+        )}
+
         <form className="inline-form" onSubmit={handleAddSynergy}>
           <select value={sourceUnitId} onChange={(e) => setSourceUnitId(Number(e.target.value))} required>
             <option value="">Source unit...</option>

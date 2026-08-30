@@ -40,7 +40,7 @@ body {
 }
 
 .battle-page {
-  max-width: 1200px;
+  max-width: 1600px;
 }
 
 .battle-columns {
@@ -54,8 +54,6 @@ body {
   min-width: 0;
   position: sticky;
   top: 1rem;
-  max-height: calc(100vh - 2rem);
-  overflow-y: auto;
 }
 
 
@@ -529,25 +527,34 @@ section {
   width: auto;
 }
 
-.pool-list li,
-.turn-state-list li {
+.pool-list li {
   padding: 0.6rem 0;
   border-bottom: 1px solid var(--border);
 }
 
-.turn-state-list li.unit-group {
-  border: 1px solid var(--accent2);
-  border-radius: 6px;
-  padding: 0.6rem 0.8rem;
-  margin: 0.4rem 0;
+/* auto-fill + minmax collapses to a single column on its own once cards no longer fit two
+   across -- no separate narrow-viewport breakpoint needed. */
+.turn-state-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 0.6rem;
 }
 
-.unit-group-label {
-  font-size: 0.75em;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--accent2);
-  margin-bottom: 0.3rem;
+.turn-state-list li {
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.turn-state-list li.unit-group {
+  border-color: var(--accent2);
+}
+
+/* Each card's whole body lives inside one .role-group -- undo its usual top margin, which
+   assumes it's one of several sibling groups stacked in a page section, not a card's only
+   child. */
+.turn-state-list li > .role-group {
+  margin-top: 0;
 }
 
 .pool-entries {
@@ -822,11 +829,6 @@ section {
 .primary-block {
   border-top: 1px solid var(--border);
   padding-top: 0.5rem;
-}
-
-.primary-header {
-  font-weight: 700;
-  margin-bottom: 0.5rem;
 }
 
 .tier-row {

@@ -4,6 +4,7 @@ import { api } from "../api";
 import { renderAbilityText } from "../markup";
 import { DISPOSITION_LABELS, DURATION_TYPES, PHASES, STAT_ORDER, WEAPON_STAT_ORDER } from "../types";
 import type { BattleOut, DeclaredStatePool, Mission, Phase, UnitAttachment, UnitBuff, UnitOut, Weapon } from "../types";
+import { groupUnitsByRole } from "../units";
 import { weaponBaseName } from "../weapons";
 
 // A unit's stats rendered token-by-token (not one joined string) so a declared buff (see
@@ -45,19 +46,16 @@ interface UnitGroup {
 }
 
 // Attached units (a Character leading a bodyguard unit) act as one combined unit for
-// movement/shooting/charging/fighting -- grouped here so they share one set of turn-state
-// controls instead of tracking each member separately. A led unit is the group's anchor
-// (its own id doubles as the group key); a leader always belongs to the unit it leads.
-function groupUnits(units: UnitOut[], attachments: UnitAttachment[]): UnitGroup[] {
-  const leaderToLed = new Map(attachments.map((a) => [a.leader_unit_id, a.led_unit_id]));
-  const groups = new Map<number, UnitOut[]>();
-  for (const u of units) {
-    const key = leaderToLed.get(u.id) ?? u.id;
-    const existing = groups.get(key);
-    if (existing) existing.push(u);
-    else groups.set(key, [u]);
-  }
-  return Array.from(groups, ([key, groupUnits]) => ({ key, units: groupUnits }));
+// movement/shooting/charging/fighting -- combined here so they share one set of turn-state
+// controls instead of tracking each member separately. Leaders first, led unit last -- mirrors
+// RosterEditor's card ordering (and its role-group placement: a leader always renders under
+// whichever role group its led unit belongs to, never its own natural role).
+function combinedGroup(ledUnit: UnitOut, units: UnitOut[], attachments: UnitAttachment[]): UnitGroup {
+  const leaders = attachments
+    .filter((a) => a.led_unit_id === ledUnit.id)
+    .map((a) => units.find((u) => u.id === a.leader_unit_id))
+    .filter((u): u is UnitOut => !!u);
+  return { key: ledUnit.id, units: [...leaders, ledUnit] };
 }
 
 // Mirrors backend/app/phases.py's pure functions so the nav buttons can name their
@@ -258,6 +256,8 @@ export function BattleTracker() {
 
   if (!battle) return <div className="page">Loading...</div>;
 
+  const nestedLeaderIds = new Set(attachments.map((a) => a.leader_unit_id));
+
   const nextStep = battle.global_step + 1;
   const prevStep = battle.global_step - 1;
   const nextPhase = phaseAtStep(nextStep);
@@ -366,10 +366,12 @@ export function BattleTracker() {
                   </div>
 
                   {mission ? (
-                    <div className="primary-block">
-                      <div className="primary-header">
-                        Primary — {mission.name} ({p.vp - p.vp_adjustment} VP)
-                      </div>
+                    <details className="primary-block role-group" open>
+                      <summary className="role-group-header">
+                        <span>
+                          Primary — {mission.name} ({p.vp - p.vp_adjustment} VP)
+                        </span>
+                      </summary>
                       {mission.sections.map((section, si) =>
                         section.tiers.map((tier, ti) => {
                           const count = achievedCount(playerNumber, si, ti);
@@ -412,7 +414,7 @@ export function BattleTracker() {
                         />
                       </label>
                       <div className="vp-total">Total VP: {p.vp}</div>
-                    </div>
+                    </details>
                   ) : (
                     <p className="muted">No mission set up.</p>
                   )}
@@ -438,8 +440,8 @@ export function BattleTracker() {
           )}
 
           {pools.length > 0 && (
-            <section>
-              <h2>Declared State Pools</h2>
+            <details className="accordion" open>
+              <summary>Declared State Pools</summary>
               <ul className="pool-list">
                 {pools.map((pool) => {
                   if (pool.stacking) {
@@ -530,11 +532,11 @@ export function BattleTracker() {
                   );
                 })}
               </ul>
-            </section>
+            </details>
           )}
 
-          <section className="effects-section">
-            <h2>Active Effects</h2>
+          <details className="accordion effects-section" open>
+            <summary>Active Effects</summary>
             <form className="inline-form" onSubmit={handleAddEffect}>
               <input
                 type="text"
@@ -584,25 +586,37 @@ export function BattleTracker() {
               ))}
               {battle.effects.length === 0 && <li className="muted">No active effects.</li>}
             </ul>
-          </section>
+          </details>
         </div>
 
         <div className="battle-units">
           {units.length > 0 && (
             <section>
               <h2>Unit Turn States</h2>
-              <ul className="turn-state-list">
-            {groupUnits(units, attachments).map((group) => {
-              const unitIds = group.units.map((u) => u.id);
+              {groupUnitsByRole(units, attachments).map((roleGroup) => (
+                <details key={roleGroup.role} className="role-group" open>
+                  <summary className="role-group-header">
+                    <span>{roleGroup.role}</span>
+                  </summary>
+                  <ul className="turn-state-list">
+                    {roleGroup.units
+                      .filter((u) => !nestedLeaderIds.has(u.id))
+                      .map((ledUnit) => {
+                        const group = combinedGroup(ledUnit, units, attachments);
+                        const unitIds = group.units.map((u) => u.id);
               // After a sync all members' turn states match -- read the first as representative.
               const state = battle.turn_states.find((t) => t.unit_id === group.units[0].id);
               const warnings = group.units
                 .map((u) => battle.turn_states.find((t) => t.unit_id === u.id)?.eligibility_warning)
                 .filter((w): w is string => !!w);
               const grouped = group.units.length > 1;
+              const groupLabel = group.units.map((u) => u.unit_definition.name).join(" + ");
               return (
                 <li key={group.key} className={grouped ? "unit-group" : undefined}>
-                  {grouped && <div className="unit-group-label">Attached unit</div>}
+                <details className="role-group" open>
+                  <summary className="role-group-header">
+                    <span>{grouped ? `Attached: ${groupLabel}` : groupLabel}</span>
+                  </summary>
                   {group.units.map((u) => {
                     const stats = u.unit_definition.stats;
                     const abilities = u.unit_definition.abilities;
@@ -771,11 +785,14 @@ export function BattleTracker() {
                       {w}
                     </div>
                   ))}
+                </details>
                 </li>
-              );
-            })}
-          </ul>
-        </section>
+                        );
+                      })}
+                  </ul>
+                </details>
+              ))}
+            </section>
           )}
         </div>
       </div>
