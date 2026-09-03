@@ -461,6 +461,151 @@ def test_simulate_p_wipe_and_p_kill_and_histogram_shape():
     assert set(result.damage_percentiles.keys()) == {10, 50, 90}
 
 
+def test_damage_thresholds_and_total_wounds():
+    weapon = {
+        "range_type": "Ranged Weapons",
+        "characteristics": {"A": "10", "BS": "3+", "S": "5", "AP": "0", "D": "1", "Keywords": ""},
+    }
+    attacker = AttackerProfile.from_characteristics(weapon)
+    defender = DefenderProfile.from_stats({"T": "4", "Sv": "4+", "W": "4"}, model_count=4)  # 16 total wounds
+
+    result = simulate(attacker, defender, AttackOptions(), trials=5000, seed=4)
+
+    assert result.total_wounds == 16
+    # Thresholds are at 1/4, 1/2, 3/4, 4/4 of the pool.
+    assert sorted(result.damage_at_least.keys()) == [4, 8, 12, 16]
+    # P(>= X) must be monotonically non-increasing as X grows.
+    probs = [result.damage_at_least[x] for x in sorted(result.damage_at_least)]
+    assert all(probs[i] >= probs[i + 1] for i in range(len(probs) - 1))
+
+
+def test_rounds_to_destroy_is_cumulative_and_median_consistent():
+    weapon = {
+        "range_type": "Ranged Weapons",
+        "characteristics": {"A": "3", "BS": "3+", "S": "8", "AP": "-2", "D": "2", "Keywords": ""},
+    }
+    attacker = AttackerProfile.from_characteristics(weapon)
+    defender = DefenderProfile.from_stats({"T": "8", "Sv": "3+", "W": "12"}, model_count=1)
+
+    result = simulate(attacker, defender, AttackOptions(), trials=4000, seed=6)
+
+    by_round = [result.destroyed_by_round[n] for n in sorted(result.destroyed_by_round)]
+    assert all(by_round[i] <= by_round[i + 1] for i in range(len(by_round) - 1))  # cumulative
+    assert all(0.0 <= p <= 1.0 for p in by_round)
+    # median = first round whose cumulative probability reaches 0.5.
+    if result.median_rounds_to_destroy is not None:
+        assert result.destroyed_by_round[result.median_rounds_to_destroy] >= 0.5
+
+
+def test_guaranteed_one_shot_destroys_in_one_round():
+    # Always hits, always wounds, ignores the save, 6 damage vs a 1-wound model -> dead round 1.
+    weapon = {
+        "range_type": "Ranged Weapons",
+        "characteristics": {"A": "6", "BS": "2+", "S": "20", "AP": "-6", "D": "6", "Keywords": ""},
+    }
+    attacker = AttackerProfile.from_characteristics(weapon)
+    defender = DefenderProfile.from_stats({"T": "1", "Sv": "6+", "W": "1"}, model_count=1)
+
+    result = simulate(attacker, defender, AttackOptions(), trials=1000, seed=2)
+    assert result.median_rounds_to_destroy == 1
+    assert result.destroyed_by_round[1] > 0.99
+
+
+# ---------------------------------------------------------------------------
+# abilities.py -- ability text extraction
+# ---------------------------------------------------------------------------
+
+
+def test_extract_psychic_guidance_plus_one_hit_with_condition():
+    from app.sim.abilities import extract_effects
+
+    abilities = [
+        {
+            "name": "Psychic Guidance",
+            "text": (
+                'While this unit is within 12" of one or more friendly Aeldari Psyker '
+                "models, models in this unit have a Leadership characteristic of 6+ and "
+                "each time a model in this unit makes an attack, add 1 to the Hit roll."
+            ),
+        }
+    ]
+    effects = extract_effects(abilities)
+    assert len(effects) == 1
+    e = effects[0]
+    assert e.ability_name == "Psychic Guidance"
+    assert e.side == "attacker"
+    assert e.option_patch == {"hit_modifier": 1}
+    assert "within 12" in e.condition  # condition surfaced for the player to confirm
+
+
+def test_extract_defender_minus_one_to_hit_is_defender_side():
+    from app.sim.abilities import extract_effects
+
+    effects = extract_effects(
+        [{"name": "Smokescreen", "text": "Each time an attack targets this unit, subtract 1 from the Hit roll."}]
+    )
+    assert len(effects) == 1
+    assert effects[0].side == "defender"
+    assert effects[0].option_patch == {"hit_modifier": -1}
+
+
+def test_extract_feel_no_pain_is_defender_side():
+    from app.sim.abilities import extract_effects
+
+    effects = extract_effects([{"name": "Undying", "text": "Models in this unit have Feel No Pain 5+."}])
+    assert len(effects) == 1
+    assert effects[0].side == "defender"
+    assert effects[0].option_patch == {"fnp": 5}
+
+
+def test_extract_rerolls_ones_vs_all():
+    from app.sim.abilities import extract_effects
+
+    ones = extract_effects([{"name": "A", "text": "You can re-roll a Hit roll of 1 for this weapon."}])
+    assert ones[0].option_patch == {"reroll_hits": "ones"}
+    allr = extract_effects([{"name": "B", "text": "You can re-roll the Wound roll."}])
+    assert allr[0].option_patch == {"reroll_wounds": "all"}
+
+
+def test_extract_single_reroll_is_not_modelled_as_reroll_all():
+    from app.sim.abilities import extract_effects
+
+    # Fire Prism's Crystal Matrix: re-rolling ONE die is not "re-roll all" -- we can't model a
+    # single per-activation re-roll, so it must produce NO reroll effect (shown as un-modelled).
+    effects = extract_effects(
+        [
+            {
+                "name": "Crystal Matrix",
+                "text": "Each time this model is selected to shoot, you can re-roll one Hit roll and you can re-roll one Wound roll when resolving those attacks.",
+            }
+        ]
+    )
+    assert effects == []
+
+
+def test_extract_ignores_plain_ability_text():
+    from app.sim.abilities import extract_effects
+
+    # "War Construct" has no attack-sequence modifier -> no effect detected.
+    effects = extract_effects([{"name": "War Construct", "text": "This unit is eligible to shoot in a turn in which it Fell Back."}])
+    assert effects == []
+
+
+def test_analyze_endpoint(client):
+    body = {
+        "abilities": [
+            {"name": "Psychic Guidance", "text": "each time a model in this unit makes an attack, add 1 to the Hit roll."},
+            {"name": "War Construct", "text": "This unit is eligible to shoot in a turn in which it Fell Back."},
+        ]
+    }
+    resp = client.post("/simulate/analyze", json=body)
+    assert resp.status_code == 200
+    effects = resp.json()["effects"]
+    assert len(effects) == 1
+    assert effects[0]["ability_name"] == "Psychic Guidance"
+    assert effects[0]["option_patch"] == {"hit_modifier": 1}
+
+
 # ---------------------------------------------------------------------------
 # router
 # ---------------------------------------------------------------------------

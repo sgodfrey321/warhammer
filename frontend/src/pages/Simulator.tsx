@@ -1,9 +1,67 @@
-import { useEffect, useState } from "react";
+import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { api } from "../api";
 import { StatBoxes } from "../components/StatBoxes";
-import type { SimulateOptions, SimulateResponse, UnitDefinition, Weapon } from "../types";
+import type { Ability, DetectedEffect, SimulateOptions, SimulateResponse, UnitDefinition, Weapon } from "../types";
+import { STAT_ORDER } from "../types";
 import { groupWeaponsByRangeType } from "../weapons";
+
+const REROLL_RANK: Record<string, number> = { none: 0, ones: 1, all: 2 };
+
+// Folds each toggled-on ability effect's option_patch into the base options: hit/wound
+// modifiers add (the backend still clamps to +/-1), re-rolls take the stronger policy, and
+// FNP takes the best (lowest) value. Mirrors how these stack at the table.
+function mergeEffects(base: SimulateOptions, patches: Partial<SimulateOptions>[]): SimulateOptions {
+  const o: SimulateOptions = { ...base };
+  for (const p of patches) {
+    if (p.hit_modifier) o.hit_modifier += p.hit_modifier;
+    if (p.wound_modifier) o.wound_modifier += p.wound_modifier;
+    if (p.reroll_hits && REROLL_RANK[p.reroll_hits] > REROLL_RANK[o.reroll_hits]) o.reroll_hits = p.reroll_hits;
+    if (p.reroll_wounds && REROLL_RANK[p.reroll_wounds] > REROLL_RANK[o.reroll_wounds]) o.reroll_wounds = p.reroll_wounds;
+    if (p.fnp != null) o.fnp = o.fnp == null ? p.fnp : Math.min(o.fnp, p.fnp);
+  }
+  o.hit_modifier = Math.max(-1, Math.min(1, o.hit_modifier));
+  o.wound_modifier = Math.max(-1, Math.min(1, o.wound_modifier));
+  return o;
+}
+
+// The detected ability toggles for one side, plus a muted list of that unit's other abilities
+// that weren't auto-modelled -- so nothing is hidden and the player can fall back to the manual
+// controls for anything the heuristic missed.
+function AbilityToggles({
+  effects,
+  checked,
+  onToggle,
+  abilities,
+}: {
+  effects: DetectedEffect[];
+  checked: Set<number>;
+  onToggle: (i: number) => void;
+  abilities: Ability[];
+}) {
+  const detectedNames = new Set(effects.map((e) => e.ability_name));
+  const others = abilities.filter((a) => !detectedNames.has(a.name));
+  return (
+    <div>
+      {effects.length > 0 ? (
+        effects.map((e, i) => (
+          <label key={`${e.ability_name}-${e.summary}`} className="checkbox-label" style={{ display: "block" }}>
+            <input type="checkbox" checked={checked.has(i)} onChange={() => onToggle(i)} />
+            <strong>{e.summary}</strong> — {e.ability_name}
+            {e.condition && <span className="muted"> ({e.condition})</span>}
+          </label>
+        ))
+      ) : (
+        <p className="muted">No attack modifiers auto-detected from this unit's abilities.</p>
+      )}
+      {others.length > 0 && (
+        <p className="muted" style={{ marginTop: "0.4rem" }}>
+          Not auto-modelled (use the manual options if relevant): {others.map((a) => a.name).join(", ")}
+        </p>
+      )}
+    </div>
+  );
+}
 
 const CHART_COLOR = "#e0574a";
 const BAR_SIZE = 24;
@@ -83,9 +141,21 @@ function UnitPicker({
   );
 }
 
+// Legends and Crucible (custom-character) units aren't part of a standard matched-play list, so
+// they're hidden from the pickers unless explicitly included. Crucible units carry a "Crucible"
+// keyword and a "[Crucible]" name suffix; Legends units carry the is_legends flag.
+function isNonStandard(u: UnitDefinition): boolean {
+  return (
+    u.is_legends ||
+    u.name.includes("[Crucible]") ||
+    u.keywords.some((k) => k.toLowerCase() === "crucible")
+  );
+}
+
 export function Simulator() {
   const [factions, setFactions] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [includeNonStandard, setIncludeNonStandard] = useState(false);
 
   const [attackerFaction, setAttackerFaction] = useState("");
   const [attackerUnitDefs, setAttackerUnitDefs] = useState<UnitDefinition[]>([]);
@@ -99,6 +169,12 @@ export function Simulator() {
   const [defenderModelCount, setDefenderModelCount] = useState(1);
 
   const [options, setOptions] = useState<SimulateOptions>(DEFAULT_OPTIONS);
+
+  // Ability-derived conditional buffs for each side, and which ones the player has ticked as live.
+  const [attackerEffects, setAttackerEffects] = useState<DetectedEffect[]>([]);
+  const [defenderEffects, setDefenderEffects] = useState<DetectedEffect[]>([]);
+  const [checkedAttacker, setCheckedAttacker] = useState<Set<number>>(new Set());
+  const [checkedDefender, setCheckedDefender] = useState<Set<number>>(new Set());
 
   const [result, setResult] = useState<SimulateResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -131,11 +207,57 @@ export function Simulator() {
   const defenderUnit = defenderUnitDefs.find((u) => u.id === defenderUnitId) ?? null;
   const weapon = attackerUnit?.weapons.find((w) => w.name === weaponName) ?? null;
 
+  // What the dropdowns actually offer, filtered unless Legends/Crucible are opted in.
+  const attackerOptions = includeNonStandard ? attackerUnitDefs : attackerUnitDefs.filter((u) => !isNonStandard(u));
+  const defenderOptions = includeNonStandard ? defenderUnitDefs : defenderUnitDefs.filter((u) => !isNonStandard(u));
+
   useEffect(() => {
     setWeaponName("");
   }, [attackerUnitId]);
 
+  // Pull attack modifiers out of the picked unit's abilities so they can be offered as toggles.
+  useEffect(() => {
+    setCheckedAttacker(new Set());
+    if (!attackerUnit) {
+      setAttackerEffects([]);
+      return;
+    }
+    api
+      .analyzeAbilities(attackerUnit.abilities)
+      .then((r) => setAttackerEffects(r.effects.filter((e) => e.side === "attacker")))
+      .catch((e) => setError(String(e)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attackerUnitId]);
+
+  useEffect(() => {
+    setCheckedDefender(new Set());
+    if (!defenderUnit) {
+      setDefenderEffects([]);
+      return;
+    }
+    api
+      .analyzeAbilities(defenderUnit.abilities)
+      .then((r) => setDefenderEffects(r.effects.filter((e) => e.side === "defender")))
+      .catch((e) => setError(String(e)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defenderUnitId]);
+
   const canSimulate = !!weapon && !!defenderUnit && Object.keys(defenderUnit.stats).length > 0;
+
+  // The options actually sent: the manual controls plus every ability toggle the player ticked.
+  const effectiveOptions = mergeEffects(options, [
+    ...attackerEffects.filter((_, i) => checkedAttacker.has(i)).map((e) => e.option_patch),
+    ...defenderEffects.filter((_, i) => checkedDefender.has(i)).map((e) => e.option_patch),
+  ]);
+
+  function toggleIn(setter: Dispatch<SetStateAction<Set<number>>>, i: number) {
+    setter((prev) => {
+      const next = new Set(prev);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
+      return next;
+    });
+  }
 
   async function handleSimulate() {
     if (!weapon || !defenderUnit) return;
@@ -149,7 +271,7 @@ export function Simulator() {
         defender_stats: defenderUnit.stats,
         defender_model_count: defenderModelCount,
         weapon_count: weaponCount,
-        options,
+        options: effectiveOptions,
       });
       setResult(res);
     } catch (e) {
@@ -175,6 +297,20 @@ export function Simulator() {
     ? Object.entries(result.damage_percentiles).sort((a, b) => Number(a[0]) - Number(b[0]))
     : [];
 
+  // "Chance of dealing >= X wounds in one round" at quarter/half/etc of the target's pool.
+  const thresholds = result
+    ? Object.entries(result.damage_at_least)
+        .map(([wounds, p]) => ({ wounds: Number(wounds), pct: p * 100 }))
+        .sort((a, b) => a.wounds - b.wounds)
+    : [];
+
+  // Cumulative "destroyed by end of round N", for the rounds-to-kill chart.
+  const roundsToKill = result
+    ? Object.entries(result.destroyed_by_round)
+        .map(([round, p]) => ({ round: Number(round), pct: Math.round(p * 1000) / 10 }))
+        .sort((a, b) => a.round - b.round)
+    : [];
+
   return (
     <div className="page">
       <h1>Dice Simulator</h1>
@@ -183,6 +319,17 @@ export function Simulator() {
         spot-check the resulting damage/kill numbers.
       </p>
       {error && <p className="error">{error}</p>}
+
+      <div className="inline-form">
+        <label className="checkbox-label">
+          <input
+            type="checkbox"
+            checked={includeNonStandard}
+            onChange={(e) => setIncludeNonStandard(e.target.checked)}
+          />
+          Include Legends &amp; Crucible units
+        </label>
+      </div>
 
       <details className="role-group" open>
         <summary className="role-group-header">
@@ -193,7 +340,7 @@ export function Simulator() {
           faction={attackerFaction}
           onFaction={setAttackerFaction}
           factions={factions}
-          unitDefs={attackerUnitDefs}
+          unitDefs={attackerOptions}
           unitId={attackerUnitId}
           onUnit={setAttackerUnitId}
         />
@@ -231,6 +378,17 @@ export function Simulator() {
           "Weapons firing" is how many copies of this weapon shoot (e.g. a 5-model squad all with
           this gun = 5). The weapon's own A is the attacks per model.
         </p>
+        {attackerUnit && (
+          <>
+            <h4 className="weapon-section-heading">Ability buffs (tick the ones in effect)</h4>
+            <AbilityToggles
+              effects={attackerEffects}
+              checked={checkedAttacker}
+              onToggle={(i) => toggleIn(setCheckedAttacker, i)}
+              abilities={attackerUnit.abilities}
+            />
+          </>
+        )}
       </details>
 
       <details className="role-group" open>
@@ -242,10 +400,17 @@ export function Simulator() {
           faction={defenderFaction}
           onFaction={setDefenderFaction}
           factions={factions}
-          unitDefs={defenderUnitDefs}
+          unitDefs={defenderOptions}
           unitId={defenderUnitId}
           onUnit={setDefenderUnitId}
         />
+        {defenderUnit && Object.keys(defenderUnit.stats).length > 0 && (
+          <div className="stat-line">
+            <StatBoxes
+              pairs={STAT_ORDER.filter((k) => defenderUnit.stats[k]).map((k) => ({ label: k, value: defenderUnit.stats[k] }))}
+            />
+          </div>
+        )}
         {defenderUnit && (
           <div className="inline-form">
             <label className="checkbox-label">
@@ -260,6 +425,17 @@ export function Simulator() {
             </label>
             {Object.keys(defenderUnit.stats).length === 0 && <span className="muted">This unit has no stats on file.</span>}
           </div>
+        )}
+        {defenderUnit && (
+          <>
+            <h4 className="weapon-section-heading">Defensive abilities (tick the ones in effect)</h4>
+            <AbilityToggles
+              effects={defenderEffects}
+              checked={checkedDefender}
+              onToggle={(i) => toggleIn(setCheckedDefender, i)}
+              abilities={defenderUnit.abilities}
+            />
+          </>
         )}
       </details>
 
@@ -376,6 +552,30 @@ export function Simulator() {
             </div>
           )}
 
+          <h4 className="weapon-section-heading">Kill summary — {result.total_wounds} wounds to destroy</h4>
+          <div className="stat-line">
+            <StatBoxes
+              pairs={[
+                { label: "Target wounds", value: String(result.total_wounds) },
+                { label: "Mean/round", value: result.mean_damage.toFixed(2) },
+                {
+                  label: "Median rounds to kill",
+                  value: result.median_rounds_to_destroy != null ? String(result.median_rounds_to_destroy) : `>${roundsToKill.length}`,
+                },
+              ]}
+            />
+          </div>
+
+          <p className="muted">Chance of dealing at least this many wounds in a single round:</p>
+          <div className="stat-line">
+            <StatBoxes
+              pairs={thresholds.map((t) => ({
+                label: `≥ ${t.wounds}${t.wounds >= result.total_wounds ? " (one-shot)" : ""}`,
+                value: `${t.pct.toFixed(1)}%`,
+              }))}
+            />
+          </div>
+
           <h4 className="weapon-section-heading">Wounds Dealt Distribution</h4>
           {damageHistogram.length > 0 ? (
             <div className="chart-container">
@@ -395,6 +595,31 @@ export function Simulator() {
             </div>
           ) : (
             <p className="muted">No histogram data.</p>
+          )}
+
+          <h4 className="weapon-section-heading">Chance destroyed by end of round N (5-round game)</h4>
+          <p className="muted">
+            Damage carries between rounds (wounds don't heal). Read your confidence level off this —
+            a target still standing at round 5 is one you can't reliably kill within a game.
+          </p>
+          {roundsToKill.length > 0 ? (
+            <div className="chart-container">
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={roundsToKill}>
+                  <CartesianGrid strokeDasharray="" stroke="#333747" vertical={false} />
+                  <XAxis dataKey="round" stroke="#8b8f9e" label={{ value: "Round", position: "insideBottom", offset: -2 }} />
+                  <YAxis domain={[0, 100]} stroke="#8b8f9e" unit="%" />
+                  <Tooltip
+                    contentStyle={{ background: "#1e212b", border: "1px solid #333747" }}
+                    labelFormatter={(v) => `By round ${v}`}
+                    formatter={(value) => [`${value}%`, "Destroyed"]}
+                  />
+                  <Bar dataKey="pct" name="Destroyed %" fill={CHART_COLOR} radius={BAR_RADIUS} maxBarSize={BAR_SIZE} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <p className="muted">No rounds data.</p>
           )}
 
           <h4 className="weapon-section-heading">Models Slain Distribution</h4>

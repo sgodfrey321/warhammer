@@ -299,17 +299,33 @@ export interface SimulateRequest {
   options: SimulateOptions;
 }
 
+export interface DetectedEffect {
+  ability_name: string;
+  summary: string; // short label, e.g. "+1 to Hit"
+  condition: string; // verbatim "While ..." clause, or "" if unconditional
+  side: "attacker" | "defender";
+  option_patch: Partial<SimulateOptions>; // merged into options when toggled on
+}
+
+export interface AnalyzeResponse {
+  effects: DetectedEffect[];
+}
+
 export interface SimulateResponse {
   trials: number;
   weapon_count: number;
+  total_wounds: number; // the target unit's whole wound pool (W * model_count)
   mean_damage: number;
   median_damage: number;
   damage_percentiles: Record<string, number>;
   damage_histogram: Record<string, number>; // wounds dealt -> trial count
+  damage_at_least: Record<string, number>; // wounds threshold -> P(one round deals >= it)
   mean_models_slain: number;
   models_slain_histogram: Record<string, number>;
   p_at_least_one_kill: number;
   p_wipe: number;
+  destroyed_by_round: Record<string, number>; // round N -> cumulative P(destroyed by end of N)
+  median_rounds_to_destroy: number | null;
 }
 
 export interface Layout {

@@ -10,6 +10,8 @@ import type {
   PlayerState,
   Roster,
   RosterImportResult,
+  AnalyzeResponse,
+  Ability,
   SecondaryMission,
   SimulateRequest,
   SimulateResponse,
@@ -92,6 +94,8 @@ export const api = {
   listFactions: () => request<string[]>("/unit-definitions/factions"),
 
   simulate: (body: SimulateRequest) => request<SimulateResponse>("/simulate", { method: "POST", body: JSON.stringify(body) }),
+  analyzeAbilities: (abilities: Ability[]) =>
+    request<AnalyzeResponse>("/simulate/analyze", { method: "POST", body: JSON.stringify({ abilities }) }),
 
   listArmyRules: () => request<FactionArmyRules[]>("/army-rules"),
   listDetachments: () => request<FactionDetachments[]>("/detachments"),
