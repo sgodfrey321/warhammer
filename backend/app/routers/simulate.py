@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 from dataclasses import asdict
 
 from ..sim.abilities import extract_effects
-from ..sim.montecarlo import DEFAULT_TRIALS, simulate_lines
+from ..sim.montecarlo import DEFAULT_TRIALS, simulate_groups
 from ..sim.profiles import AttackerProfile, DefenderProfile
 from ..sim.sequence import AttackOptions
 
@@ -54,12 +54,19 @@ class WeaponLine(BaseModel):
     weapon_count: int = 1
 
 
-class SimulateRequest(BaseModel):
+class AttackerGroup(BaseModel):
+    # One attacking unit: its weapon lines plus the options that apply to ITS attacks (its own
+    # abilities/re-rolls/modifiers, plus the shared defender-side cover/FNP the caller repeats).
     weapons: list[WeaponLine] = Field(default_factory=list)
+    options: SimulateOptions = Field(default_factory=SimulateOptions)
+
+
+class SimulateRequest(BaseModel):
+    # One or more attacking units firing into the same defender (e.g. Fire Dragons + a Fire Prism).
+    attackers: list[AttackerGroup] = Field(default_factory=list)
     # A defender's `stats` dict (T/Sv/InSv/W/...) -- same shape as UnitDefinition.stats.
     defender_stats: dict[str, str] = Field(default_factory=dict)
     defender_model_count: int = 1
-    options: SimulateOptions = Field(default_factory=SimulateOptions)
 
 
 class SimulateResponse(BaseModel):
@@ -113,53 +120,65 @@ def analyze_abilities(body: AnalyzeRequest) -> AnalyzeResponse:
     return AnalyzeResponse(effects=[DetectedEffectOut(**asdict(e)) for e in effects])
 
 
-@router.post("", response_model=SimulateResponse)
-def run_simulation(body: SimulateRequest) -> SimulateResponse:
-    weapon_lines = [
-        (
-            AttackerProfile.from_characteristics(
-                {"characteristics": line.weapon_characteristics, "range_type": line.range_type}
-            ),
-            line.weapon_count,
-        )
-        for line in body.weapons
-    ]
-    defender = DefenderProfile.from_stats(body.defender_stats, body.defender_model_count)
-    options = AttackOptions(
-        half_range=body.options.half_range,
-        charged=body.options.charged,
-        cover=body.options.cover,
-        hit_modifier=body.options.hit_modifier,
-        wound_modifier=body.options.wound_modifier,
-        reroll_hits=body.options.reroll_hits,
-        reroll_wounds=body.options.reroll_wounds,
-        single_reroll_hit=body.options.single_reroll_hit,
-        single_reroll_wound=body.options.single_reroll_wound,
-        reroll_damage=body.options.reroll_damage,
-        fnp=body.options.fnp,
-        anti_active=body.options.anti_active,
-        anti_threshold=body.options.anti_threshold,
+def _attack_options(o: SimulateOptions) -> AttackOptions:
+    return AttackOptions(
+        half_range=o.half_range,
+        charged=o.charged,
+        cover=o.cover,
+        hit_modifier=o.hit_modifier,
+        wound_modifier=o.wound_modifier,
+        reroll_hits=o.reroll_hits,
+        reroll_wounds=o.reroll_wounds,
+        single_reroll_hit=o.single_reroll_hit,
+        single_reroll_wound=o.single_reroll_wound,
+        reroll_damage=o.reroll_damage,
+        fnp=o.fnp,
+        anti_active=o.anti_active,
+        anti_threshold=o.anti_threshold,
     )
 
+
+@router.post("", response_model=SimulateResponse)
+def run_simulation(body: SimulateRequest) -> SimulateResponse:
+    groups = [
+        (
+            [
+                (
+                    AttackerProfile.from_characteristics(
+                        {"characteristics": line.weapon_characteristics, "range_type": line.range_type}
+                    ),
+                    line.weapon_count,
+                )
+                for line in group.weapons
+            ],
+            _attack_options(group.options),
+        )
+        for group in body.attackers
+    ]
+    defender = DefenderProfile.from_stats(body.defender_stats, body.defender_model_count)
+    # trials/seed are sim-level; the frontend keeps them consistent across units, so read the first.
+    first_opts = body.attackers[0].options if body.attackers else SimulateOptions()
+
     logger.info(
-        "SIMULATE %s vs %s [T%s Sv%s InSv%s W%s x%d models] | opts=%s trials=%d",
-        [f"{line.weapon_characteristics.get('name', '?')} x{line.weapon_count} ({line.range_type})" for line in body.weapons],
+        "SIMULATE %s vs %s [T%s Sv%s InSv%s W%s x%d models] trials=%d",
+        [
+            [f"{line.weapon_characteristics.get('name', '?')} x{line.weapon_count}" for line in group.weapons]
+            for group in body.attackers
+        ],
         body.defender_stats.get("name", ""),
         body.defender_stats.get("T"),
         body.defender_stats.get("Sv"),
         body.defender_stats.get("InSv"),
         body.defender_stats.get("W"),
         body.defender_model_count,
-        body.options.model_dump(),
-        body.options.trials,
+        first_opts.trials,
     )
 
-    result = simulate_lines(
-        weapon_lines,
+    result = simulate_groups(
+        groups,
         defender,
-        options,
-        trials=body.options.trials,
-        seed=body.options.seed,
+        trials=first_opts.trials,
+        seed=first_opts.seed,
     )
 
     logger.info(

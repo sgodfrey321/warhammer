@@ -734,16 +734,20 @@ def test_analyze_endpoint(client):
 
 def test_simulate_endpoint(client):
     body = {
-        "weapons": [
+        "attackers": [
             {
-                "weapon_characteristics": {"A": "5", "BS": "3+", "S": "5", "AP": "-1", "D": "1", "Keywords": "Sustained Hits 1"},
-                "range_type": "Ranged Weapons",
-                "weapon_count": 1,
+                "weapons": [
+                    {
+                        "weapon_characteristics": {"A": "5", "BS": "3+", "S": "5", "AP": "-1", "D": "1", "Keywords": "Sustained Hits 1"},
+                        "range_type": "Ranged Weapons",
+                        "weapon_count": 1,
+                    }
+                ],
+                "options": {"trials": 500, "seed": 1},
             }
         ],
         "defender_stats": {"T": "4", "Sv": "3+", "W": "2"},
         "defender_model_count": 5,
-        "options": {"trials": 500, "seed": 1},
     }
     resp = client.post("/simulate", json=body)
     assert resp.status_code == 200
@@ -752,6 +756,26 @@ def test_simulate_endpoint(client):
     assert data["mean_damage"] >= 0
     assert 0.0 <= data["p_at_least_one_kill"] <= 1.0
     assert 0.0 <= data["p_wipe"] <= 1.0
+
+
+def test_simulate_endpoint_multiple_units(client):
+    # Two attacking units firing into one target -> combined weapon_count and more damage than
+    # either alone; each group keeps its own options.
+    fusion = {"weapon_characteristics": {"A": "1", "BS": "3+", "S": "9", "AP": "-4", "D": "D6"}, "range_type": "Ranged Weapons", "weapon_count": 4}
+    prism = {"weapon_characteristics": {"A": "2", "BS": "3+", "S": "18", "AP": "-4", "D": "D6"}, "range_type": "Ranged Weapons", "weapon_count": 1}
+    body = {
+        "attackers": [
+            {"weapons": [fusion], "options": {"trials": 3000, "seed": 2}},
+            {"weapons": [prism], "options": {"trials": 3000, "seed": 2}},
+        ],
+        "defender_stats": {"T": "11", "Sv": "2+", "InSv": "4+", "W": "16"},
+        "defender_model_count": 1,
+    }
+    resp = client.post("/simulate", json=body)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["weapon_count"] == 5  # 4 fusion + 1 prism
+    assert data["mean_damage"] > 0
 
 
 def test_simulate_endpoint_mixed_loadout():

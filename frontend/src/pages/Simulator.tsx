@@ -1,4 +1,4 @@
-import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
+import { type Dispatch, type SetStateAction, useEffect, useRef, useState } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { api } from "../api";
 import { StatBoxes } from "../components/StatBoxes";
@@ -239,16 +239,197 @@ function isNonStandard(u: UnitDefinition): boolean {
   );
 }
 
+function toggleSet(setter: Dispatch<SetStateAction<Set<number>>>, i: number) {
+  setter((prev) => {
+    const next = new Set(prev);
+    if (next.has(i)) next.delete(i);
+    else next.add(i);
+    return next;
+  });
+}
+
+// What one attacking unit contributes to the combined volley: its resolved weapon lines and the
+// option patches from its own (auto/ticked, target-eligible) ability buffs.
+interface AttackerContribution {
+  label: string;
+  weapons: import("../types").SimulateWeaponLine[];
+  effectPatches: Partial<SimulateOptions>[];
+}
+
+// One attacking unit: faction/unit picker, auto-populated loadout, and its ability buffs. Self-
+// contained state; reports its contribution up so several units can fire into one defender.
+function AttackerUnit({
+  index,
+  factions,
+  includeNonStandard,
+  defenderKeywords,
+  onContribution,
+  onRemove,
+  canRemove,
+  onError,
+}: {
+  index: number;
+  factions: string[];
+  includeNonStandard: boolean;
+  defenderKeywords: string[];
+  onContribution: (c: AttackerContribution) => void;
+  onRemove: () => void;
+  canRemove: boolean;
+  onError: (msg: string) => void;
+}) {
+  const [faction, setFaction] = useState("");
+  const [unitDefs, setUnitDefs] = useState<UnitDefinition[]>([]);
+  const [unitId, setUnitId] = useState("");
+  const [weaponLines, setWeaponLines] = useState<WeaponLineInput[]>([{ name: "", count: 1 }]);
+  const [effects, setEffects] = useState<DetectedEffect[]>([]);
+  const [checked, setChecked] = useState<Set<number>>(new Set());
+
+  useEffect(() => {
+    setUnitId("");
+    if (!faction) {
+      setUnitDefs([]);
+      return;
+    }
+    api.listUnitDefinitionsByFaction(faction).then(setUnitDefs).catch((e) => onError(String(e)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [faction]);
+
+  const unit = unitDefs.find((u) => u.id === unitId) ?? null;
+  const unitOptions = includeNonStandard ? unitDefs : unitDefs.filter((u) => !isNonStandard(u));
+
+  useEffect(() => {
+    const u = unitDefs.find((x) => x.id === unitId);
+    setWeaponLines(u ? autoPopulateLines(u) : [{ name: "", count: 1 }]);
+    setChecked(new Set());
+    if (!u) {
+      setEffects([]);
+      return;
+    }
+    api
+      .analyzeAbilities(u.abilities)
+      .then((r) => setEffects(r.effects.filter((e) => e.side === "attacker")))
+      .catch((e) => onError(String(e)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unitId]);
+
+  const validWeaponLines = weaponLines
+    .map((line) => ({ weapon: unit?.weapons.find((w) => w.name === line.name) ?? null, count: line.count }))
+    .filter((r): r is { weapon: Weapon; count: number } => r.weapon !== null);
+
+  // Report this unit's contribution whenever its inputs (or the defender it's gated against) change.
+  useEffect(() => {
+    const patches = effects
+      .filter((e, i) => effectApplies(e, defenderKeywords) && (isAutoApplied(e) || checked.has(i)))
+      .map((e) => e.option_patch);
+    onContribution({
+      label: unit?.name ?? `Unit ${index + 1}`,
+      weapons: validWeaponLines.map((r) => ({
+        weapon_characteristics: r.weapon.characteristics,
+        range_type: r.weapon.range_type,
+        weapon_count: r.count,
+      })),
+      effectPatches: patches,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unitId, weaponLines, effects, checked, defenderKeywords]);
+
+  function setLine(i: number, patch: Partial<WeaponLineInput>) {
+    setWeaponLines((lines) => lines.map((l, j) => (j === i ? { ...l, ...patch } : l)));
+  }
+
+  return (
+    <details className="role-group" open>
+      <summary className="role-group-header">
+        <span>
+          Attacker {index + 1}
+          {unit ? `: ${unit.name}` : ""}
+        </span>
+      </summary>
+      <UnitPicker
+        label={`Attacker ${index + 1}`}
+        faction={faction}
+        onFaction={setFaction}
+        factions={factions}
+        unitDefs={unitOptions}
+        unitId={unitId}
+        onUnit={setUnitId}
+      />
+      {unit && unit.weapons.length === 0 && <p className="muted">This unit has no weapons.</p>}
+      {unit &&
+        unit.weapons.length > 0 &&
+        weaponLines.map((line, i) => (
+          <div className="inline-form" key={i}>
+            <label className="checkbox-label">
+              Weapon
+              <select value={line.name} onChange={(e) => setLine(i, { name: e.target.value })}>
+                <option value="">Select weapon...</option>
+                {groupWeaponsByRangeType(unit.weapons).map(([rangeType, ws]) => (
+                  <optgroup key={rangeType} label={rangeType}>
+                    {ws.map((w) => (
+                      <option key={w.name} value={w.name}>
+                        {w.name} — {weaponSummary(w)}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+            </label>
+            <label className="checkbox-label">
+              Firing
+              <input
+                type="number"
+                min={1}
+                value={line.count}
+                onChange={(e) => setLine(i, { count: Math.max(1, Number(e.target.value) || 1) })}
+                style={{ width: "4rem" }}
+              />
+            </label>
+            {weaponLines.length > 1 && (
+              <button type="button" onClick={() => setWeaponLines((lines) => lines.filter((_, j) => j !== i))}>
+                Remove
+              </button>
+            )}
+          </div>
+        ))}
+      {unit && unit.weapons.length > 0 && (
+        <div className="inline-form">
+          <button type="button" onClick={() => setWeaponLines((lines) => [...lines, { name: "", count: 1 }])}>
+            + Add weapon
+          </button>
+        </div>
+      )}
+      {unit && (
+        <>
+          <h4 className="weapon-section-heading">Ability buffs (auto-applied where certain; tick situational ones)</h4>
+          <AbilityToggles
+            effects={effects}
+            checked={checked}
+            onToggle={(i) => toggleSet(setChecked, i)}
+            abilities={unit.abilities}
+            defenderKeywords={defenderKeywords}
+          />
+        </>
+      )}
+      {canRemove && (
+        <div className="inline-form">
+          <button type="button" onClick={onRemove}>
+            Remove this unit
+          </button>
+        </div>
+      )}
+    </details>
+  );
+}
+
 export function Simulator() {
   const [factions, setFactions] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [includeNonStandard, setIncludeNonStandard] = useState(false);
 
-  const [attackerFaction, setAttackerFaction] = useState("");
-  const [attackerUnitDefs, setAttackerUnitDefs] = useState<UnitDefinition[]>([]);
-  const [attackerUnitId, setAttackerUnitId] = useState("");
-  // A mixed loadout: one row per distinct weapon (e.g. 4 Fusion guns + 1 Exarch gun).
-  const [weaponLines, setWeaponLines] = useState<{ name: string; count: number }[]>([{ name: "", count: 1 }]);
+  // --- Attacking units: one or more, each firing into the same defender ---
+  const [attackerIds, setAttackerIds] = useState<number[]>([0]);
+  const nextIdRef = useRef(1);
+  const [contributions, setContributions] = useState<Record<number, AttackerContribution>>({});
 
   const [defenderFaction, setDefenderFaction] = useState("");
   const [defenderUnitDefs, setDefenderUnitDefs] = useState<UnitDefinition[]>([]);
@@ -257,10 +438,7 @@ export function Simulator() {
 
   const [options, setOptions] = useState<SimulateOptions>(DEFAULT_OPTIONS);
 
-  // Ability-derived conditional buffs for each side, and which ones the player has ticked as live.
-  const [attackerEffects, setAttackerEffects] = useState<DetectedEffect[]>([]);
   const [defenderEffects, setDefenderEffects] = useState<DetectedEffect[]>([]);
-  const [checkedAttacker, setCheckedAttacker] = useState<Set<number>>(new Set());
   const [checkedDefender, setCheckedDefender] = useState<Set<number>>(new Set());
 
   const [result, setResult] = useState<SimulateResponse | null>(null);
@@ -272,16 +450,6 @@ export function Simulator() {
   }, []);
 
   useEffect(() => {
-    setAttackerUnitId("");
-    setWeaponLines([{ name: "", count: 1 }]);
-    if (!attackerFaction) {
-      setAttackerUnitDefs([]);
-      return;
-    }
-    api.listUnitDefinitionsByFaction(attackerFaction).then(setAttackerUnitDefs).catch((e) => setError(String(e)));
-  }, [attackerFaction]);
-
-  useEffect(() => {
     setDefenderUnitId("");
     if (!defenderFaction) {
       setDefenderUnitDefs([]);
@@ -290,38 +458,9 @@ export function Simulator() {
     api.listUnitDefinitionsByFaction(defenderFaction).then(setDefenderUnitDefs).catch((e) => setError(String(e)));
   }, [defenderFaction]);
 
-  const attackerUnit = attackerUnitDefs.find((u) => u.id === attackerUnitId) ?? null;
   const defenderUnit = defenderUnitDefs.find((u) => u.id === defenderUnitId) ?? null;
-  // Resolve each loadout row to its catalogue weapon profile; drop rows with nothing selected.
-  const validWeaponLines = weaponLines
-    .map((line) => ({ weapon: attackerUnit?.weapons.find((w) => w.name === line.name) ?? null, count: line.count }))
-    .filter((r): r is { weapon: Weapon; count: number } => r.weapon !== null);
-
-  // What the dropdowns actually offer, filtered unless Legends/Crucible are opted in.
-  const attackerOptions = includeNonStandard ? attackerUnitDefs : attackerUnitDefs.filter((u) => !isNonStandard(u));
   const defenderOptions = includeNonStandard ? defenderUnitDefs : defenderUnitDefs.filter((u) => !isNonStandard(u));
-
-  // Auto-populate the loadout from the picked unit's model profiles (bulk gun + leader's gun,
-  // squad-size-aware counts). Everything stays editable.
-  useEffect(() => {
-    const unit = attackerUnitDefs.find((u) => u.id === attackerUnitId);
-    setWeaponLines(unit ? autoPopulateLines(unit) : [{ name: "", count: 1 }]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attackerUnitId]);
-
-  // Pull attack modifiers out of the picked unit's abilities so they can be offered as toggles.
-  useEffect(() => {
-    setCheckedAttacker(new Set());
-    if (!attackerUnit) {
-      setAttackerEffects([]);
-      return;
-    }
-    api
-      .analyzeAbilities(attackerUnit.abilities)
-      .then((r) => setAttackerEffects(r.effects.filter((e) => e.side === "attacker")))
-      .catch((e) => setError(String(e)));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attackerUnitId]);
+  const defenderKeywords = defenderUnit?.keywords ?? [];
 
   useEffect(() => {
     setCheckedDefender(new Set());
@@ -336,54 +475,46 @@ export function Simulator() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defenderUnitId]);
 
-  const canSimulate = validWeaponLines.length > 0 && !!defenderUnit && Object.keys(defenderUnit.stats).length > 0;
-
-  // Helpers to edit the loadout rows.
-  function setLine(i: number, patch: Partial<{ name: string; count: number }>) {
-    setWeaponLines((lines) => lines.map((l, j) => (j === i ? { ...l, ...patch } : l)));
+  function handleContribution(id: number, c: AttackerContribution) {
+    setContributions((prev) => ({ ...prev, [id]: c }));
   }
-  function addLine() {
-    setWeaponLines((lines) => [...lines, { name: "", count: 1 }]);
+  function addUnit() {
+    const id = nextIdRef.current++;
+    setAttackerIds((ids) => [...ids, id]);
   }
-  function removeLine(i: number) {
-    setWeaponLines((lines) => (lines.length > 1 ? lines.filter((_, j) => j !== i) : lines));
-  }
-
-  // The options actually sent. An effect is active when it's eligible for this matchup AND either
-  // auto-applied (nothing for the player to decide) or ticked. Target-conditional attacker buffs
-  // only count when the chosen defender qualifies -- so a buff drops automatically against a
-  // target that doesn't have the required keyword.
-  const defenderKeywords = defenderUnit?.keywords ?? [];
-  const activePatches = [
-    ...attackerEffects.filter((e, i) => effectApplies(e, defenderKeywords) && (isAutoApplied(e) || checkedAttacker.has(i))),
-    ...defenderEffects.filter((e, i) => isAutoApplied(e) || checkedDefender.has(i)),
-  ].map((e) => e.option_patch);
-  const effectiveOptions = mergeEffects(options, activePatches);
-
-  function toggleIn(setter: Dispatch<SetStateAction<Set<number>>>, i: number) {
-    setter((prev) => {
-      const next = new Set(prev);
-      if (next.has(i)) next.delete(i);
-      else next.add(i);
+  function removeUnit(id: number) {
+    setAttackerIds((ids) => ids.filter((x) => x !== id));
+    setContributions((prev) => {
+      const next = { ...prev };
+      delete next[id];
       return next;
     });
   }
 
+  // Defender-side ability patches (FNP etc.) apply to every incoming attack.
+  const defenderPatches = defenderEffects
+    .filter((e, i) => isAutoApplied(e) || checkedDefender.has(i))
+    .map((e) => e.option_patch);
+
+  // Each attacking unit's final options = shared manual options + defender-side patches + that
+  // unit's OWN ability patches, so one unit's re-roll aura never leaks onto another.
+  const attackerGroups = attackerIds
+    .map((id) => contributions[id])
+    .filter((c): c is AttackerContribution => !!c && c.weapons.length > 0)
+    .map((c) => ({ weapons: c.weapons, options: mergeEffects(options, [...c.effectPatches, ...defenderPatches]) }));
+
+  const canSimulate = attackerGroups.length > 0 && !!defenderUnit && Object.keys(defenderUnit.stats).length > 0;
+
   async function handleSimulate() {
-    if (validWeaponLines.length === 0 || !defenderUnit) return;
+    if (attackerGroups.length === 0 || !defenderUnit) return;
     setLoading(true);
     setSimError(null);
     setResult(null);
     try {
       const res = await api.simulate({
-        weapons: validWeaponLines.map((r) => ({
-          weapon_characteristics: r.weapon.characteristics,
-          range_type: r.weapon.range_type,
-          weapon_count: r.count,
-        })),
+        attackers: attackerGroups,
         defender_stats: defenderUnit.stats,
         defender_model_count: defenderModelCount,
-        options: effectiveOptions,
       });
       setResult(res);
     } catch (e) {
@@ -443,81 +574,29 @@ export function Simulator() {
         </label>
       </div>
 
-      <details className="role-group" open>
-        <summary className="role-group-header">
-          <span>Attacker</span>
-        </summary>
-        <UnitPicker
-          label="Attacker"
-          faction={attackerFaction}
-          onFaction={setAttackerFaction}
+      {attackerIds.map((id, i) => (
+        <AttackerUnit
+          key={id}
+          index={i}
           factions={factions}
-          unitDefs={attackerOptions}
-          unitId={attackerUnitId}
-          onUnit={setAttackerUnitId}
+          includeNonStandard={includeNonStandard}
+          defenderKeywords={defenderKeywords}
+          onContribution={(c) => handleContribution(id, c)}
+          onRemove={() => removeUnit(id)}
+          canRemove={attackerIds.length > 1}
+          onError={setError}
         />
-        {attackerUnit && attackerUnit.weapons.length === 0 && <p className="muted">This unit has no weapons.</p>}
-        {attackerUnit &&
-          attackerUnit.weapons.length > 0 &&
-          weaponLines.map((line, i) => (
-            <div className="inline-form" key={i}>
-              <label className="checkbox-label">
-                Weapon
-                <select value={line.name} onChange={(e) => setLine(i, { name: e.target.value })}>
-                  <option value="">Select weapon...</option>
-                  {groupWeaponsByRangeType(attackerUnit.weapons).map(([rangeType, ws]) => (
-                    <optgroup key={rangeType} label={rangeType}>
-                      {ws.map((w) => (
-                        <option key={w.name} value={w.name}>
-                          {w.name} — {weaponSummary(w)}
-                        </option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </select>
-              </label>
-              <label className="checkbox-label">
-                Firing
-                <input
-                  type="number"
-                  min={1}
-                  value={line.count}
-                  onChange={(e) => setLine(i, { count: Math.max(1, Number(e.target.value) || 1) })}
-                  style={{ width: "4rem" }}
-                />
-              </label>
-              {weaponLines.length > 1 && (
-                <button type="button" onClick={() => removeLine(i)}>
-                  Remove
-                </button>
-              )}
-            </div>
-          ))}
-        {attackerUnit && attackerUnit.weapons.length > 0 && (
-          <div className="inline-form">
-            <button type="button" onClick={addLine}>
-              + Add weapon
-            </button>
-          </div>
-        )}
-        <p className="muted">
-          One row per distinct weapon — "Firing" is how many models carry that gun (e.g. 4 Fusion
-          guns + 1 Exarch weapon = two rows). Each weapon's own A is the attacks per model. All rows
-          fire at the same defender.
-        </p>
-        {attackerUnit && (
-          <>
-            <h4 className="weapon-section-heading">Ability buffs (auto-applied where certain; tick situational ones)</h4>
-            <AbilityToggles
-              effects={attackerEffects}
-              checked={checkedAttacker}
-              onToggle={(i) => toggleIn(setCheckedAttacker, i)}
-              abilities={attackerUnit.abilities}
-              defenderKeywords={defenderUnit?.keywords ?? []}
-            />
-          </>
-        )}
-      </details>
+      ))}
+      <div className="inline-form">
+        <button type="button" onClick={addUnit}>
+          + Add attacking unit
+        </button>
+      </div>
+      <p className="muted">
+        Add a unit per firing unit (e.g. Fire Dragons + a Fire Prism into the same target). Each
+        unit auto-fills its loadout (bulk gun + a differently-armed leader) and applies its own
+        abilities; the shared Options below cover the whole attack.
+      </p>
 
       <details className="role-group" open>
         <summary className="role-group-header">
@@ -560,7 +639,7 @@ export function Simulator() {
             <AbilityToggles
               effects={defenderEffects}
               checked={checkedDefender}
-              onToggle={(i) => toggleIn(setCheckedDefender, i)}
+              onToggle={(i) => toggleSet(setCheckedDefender, i)}
               abilities={defenderUnit.abilities}
             />
           </>

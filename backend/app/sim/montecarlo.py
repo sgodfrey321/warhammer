@@ -54,26 +54,32 @@ def _percentile(sorted_values: list[int], pct: int) -> float:
 
 
 # One firing line: a weapon profile and how many copies of it fire (e.g. 4 Fusion guns, plus a
-# separate line for the Exarch's different gun). All lines fire into one shared DefenderState.
+# separate line for the Exarch's different gun).
 WeaponLine = tuple[AttackerProfile, int]
+# One attacking unit: its weapon lines plus the AttackOptions that apply to ITS attacks (its own
+# abilities/re-rolls/modifiers). Several groups (e.g. Fire Dragons + a Fire Prism) can fire into
+# one target, each keeping its own options -- so one unit's re-roll aura doesn't leak onto another.
+WeaponGroup = tuple[list[WeaponLine], AttackOptions]
 
 
-def _one_round(weapon_lines: list[WeaponLine], defender, options, state, rng) -> None:
-    """One shooting round = every copy of every weapon line resolved into the persisting state."""
-    for profile, count in weapon_lines:
-        for _weapon in range(count):
-            if state.wiped:
-                return
-            resolve_into_state(profile, defender, options, state, rng)
+def _fire_round(groups: list[WeaponGroup], defender, state, rng) -> None:
+    """One shooting round = every copy of every weapon line, of every group,
+    resolved into the persisting state using that group's own options."""
+    for weapon_lines, options in groups:
+        for profile, count in weapon_lines:
+            for _weapon in range(count):
+                if state.wiped:
+                    return
+                resolve_into_state(profile, defender, options, state, rng)
 
 
-def _rounds_to_destroy(weapon_lines: list[WeaponLine], defender, options, rng) -> int | None:
+def _rounds_to_destroy(groups: list[WeaponGroup], defender, rng) -> int | None:
     """Repeats the whole volley round after round against ONE persisting unit
     (damage carries over -- wounds don't heal between rounds) until it's
     destroyed, returning the round it died on, or None if alive after the cap."""
     state = DefenderState.fresh(defender)
     for r in range(1, BATTLE_ROUNDS + 1):
-        _one_round(weapon_lines, defender, options, state, rng)
+        _fire_round(groups, defender, state, rng)
         if state.wiped:
             return r
     return None
@@ -87,9 +93,7 @@ def simulate(
     seed: int | None = None,
     weapon_count: int = 1,
 ) -> SimulationResult:
-    """Single-weapon convenience wrapper: `weapon_count` copies of one weapon.
-    See `simulate_lines` for a mixed loadout (e.g. a squad's guns plus a
-    differently-armed Exarch)."""
+    """Single-weapon convenience wrapper: `weapon_count` copies of one weapon."""
 
     return simulate_lines([(attacker, max(1, weapon_count))], defender, options, trials=trials, seed=seed)
 
@@ -101,14 +105,26 @@ def simulate_lines(
     trials: int = DEFAULT_TRIALS,
     seed: int | None = None,
 ) -> SimulationResult:
-    """Runs `trials` independent volleys of a whole (possibly mixed) loadout
-    against a fresh copy of `defender`'s unit each time, returning the resulting
-    distribution of wounds dealt / models slain. Every weapon line fires into
-    one shared DefenderState per trial, so damage accumulates and allocation
-    (with no spillover) carries across the unit's whole shooting."""
+    """One-unit convenience wrapper: a whole (possibly mixed) loadout under one
+    set of options. See `simulate_groups` for several units firing together."""
 
-    weapon_lines = [(p, max(1, c)) for p, c in weapon_lines] or []
-    total_weapons = sum(c for _, c in weapon_lines)
+    return simulate_groups([(weapon_lines, options)], defender, trials=trials, seed=seed)
+
+
+def simulate_groups(
+    groups: list[WeaponGroup],
+    defender: DefenderProfile,
+    trials: int = DEFAULT_TRIALS,
+    seed: int | None = None,
+) -> SimulationResult:
+    """Runs `trials` independent volleys of one or more attacking units (each a
+    group of weapon lines with its own options) against a fresh copy of
+    `defender`'s unit each time. Every group fires into one shared DefenderState
+    per trial, so damage accumulates and no-spillover allocation carries across
+    the whole combined attack -- while each group keeps its own re-rolls/buffs."""
+
+    groups = [([(p, max(1, c)) for p, c in lines], opts) for lines, opts in groups]
+    total_weapons = sum(c for lines, _ in groups for _, c in lines)
     rng = Random(seed)
     total_wounds = max(1, defender.wounds_per_model * defender.model_count)
 
@@ -117,7 +133,7 @@ def simulate_lines(
     slain_counts: list[int] = []
     for _ in range(trials):
         state = DefenderState.fresh(defender)
-        _one_round(weapon_lines, defender, options, state, rng)
+        _fire_round(groups, defender, state, rng)
         damages.append(state.damage_dealt)
         slain_counts.append(state.models_slain)
 
@@ -142,7 +158,7 @@ def simulate_lines(
 
     # --- Rounds-to-destroy (fresh RNG stream; damage persists across rounds) ---
     rounds_rng = Random(None if seed is None else seed + 1)
-    rounds_samples = [_rounds_to_destroy(weapon_lines, defender, options, rounds_rng) for _ in range(trials)]
+    rounds_samples = [_rounds_to_destroy(groups, defender, rounds_rng) for _ in range(trials)]
     destroyed_by_round: dict[int, float] = {}
     if trials:
         for n in range(1, BATTLE_ROUNDS + 1):
