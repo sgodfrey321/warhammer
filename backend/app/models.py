@@ -19,6 +19,9 @@ class UnitDefinition(SQLModel, table=True):
     faction: str
     name: str
     points_cost: int = 0
+    # Smallest legal squad size (the min 'models' across the unit's points tiers), used to
+    # default the simulator's per-weapon "firing" counts. 0 when the source has no tier data.
+    min_models: int = 0
     keywords: list[str] = Field(default_factory=list, sa_column=Column(JSON))
     # GW's "Battlefield Role" badge (Character, Battleline, Infantry, Vehicle, Epic Hero, ...) --
     # the one categoryLink BSData marks primary. None for a unit with no primary category.

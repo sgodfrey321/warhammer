@@ -35,6 +35,11 @@ def test_import_real_aeldari_output(session):
     assert dire_avengers.stats.get("M") is not None
     assert "Battle Focus" in dire_avengers.rules
 
+    # min_models = the smallest squad size across the unit's points tiers (Fire Dragons: 5).
+    fire_dragons = session.exec(select(UnitDefinition).where(UnitDefinition.name == "Fire Dragons")).first()
+    assert fire_dragons is not None
+    assert fire_dragons.min_models == 5
+
     # A Monster -- genuinely excluded from Battle Focus eligibility in the real rules, and
     # that's reflected in the real catalogue data (no matching infoLinks), not assumed.
     wraithlord = session.exec(select(UnitDefinition).where(UnitDefinition.name == "Wraithlord")).first()

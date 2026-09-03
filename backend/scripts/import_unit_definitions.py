@@ -27,6 +27,13 @@ def _points_cost(points: list[dict]) -> int:
     return points[0]["points"] if points else 0
 
 
+def _min_models(points: list[dict]) -> int:
+    # The smallest squad size the unit is sold at (min 'models' across tiers) -- the
+    # simulator uses it to default how many of each weapon are firing. 0 if unknown.
+    sizes = [t["models"] for t in points if isinstance(t.get("models"), int)]
+    return min(sizes) if sizes else 0
+
+
 def import_faction_file(path: Path, session: Session) -> int:
     data = json.loads(path.read_text(encoding="utf-8"))
     count = 0
@@ -36,6 +43,7 @@ def import_faction_file(path: Path, session: Session) -> int:
             faction=unit["faction"],
             name=unit["name"],
             points_cost=_points_cost(unit.get("points", [])),
+            min_models=_min_models(unit.get("points", [])),
             keywords=unit.get("keywords", []),
             role=unit.get("role"),
             source_catalogue_id=unit["source_catalogue_id"],

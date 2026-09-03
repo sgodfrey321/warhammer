@@ -2,9 +2,51 @@ import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { api } from "../api";
 import { StatBoxes } from "../components/StatBoxes";
-import type { Ability, DetectedEffect, SimulateOptions, SimulateResponse, UnitDefinition, Weapon } from "../types";
+import type { Ability, DetectedEffect, ModelProfile, SimulateOptions, SimulateResponse, UnitDefinition, Weapon } from "../types";
 import { STAT_ORDER } from "../types";
 import { groupWeaponsByRangeType } from "../weapons";
+
+type WeaponLineInput = { name: string; count: number };
+
+// Model-profile name fragments that mark a single "leader" model (one per unit) carrying its own
+// distinct weapon -- so it gets a count of 1 while the rest of the squad forms the bulk line.
+const LEADER_TERMS = ["exarch", "sergeant", "champion", "superior", "aspiring", "leader", "princeps"];
+
+function isLeaderModel(name: string): boolean {
+  const n = name.toLowerCase();
+  return LEADER_TERMS.some((t) => n.includes(t));
+}
+
+function primaryWeaponName(mp: ModelProfile): string {
+  const w = mp.ranged_weapons[0] ?? mp.melee_weapons[0];
+  return w ? w.name : "";
+}
+
+// Best-effort default loadout for a freshly-picked unit: one row per model type (each defaulting to
+// its first weapon), a leader model counted as 1, and the remaining squad size (min_models minus
+// leaders) assigned to the single bulk model type. Falls back to one blank row when there's no
+// per-model data to work from. Everything stays editable afterwards.
+function autoPopulateLines(unit: UnitDefinition): WeaponLineInput[] {
+  const profiles = unit.model_profiles ?? [];
+  if (profiles.length === 0) return [{ name: "", count: 1 }];
+
+  const leaders = profiles.filter((p) => isLeaderModel(p.name));
+  const bulk = profiles.filter((p) => !isLeaderModel(p.name));
+  const size = unit.min_models || 0;
+  const lines: WeaponLineInput[] = [];
+
+  for (const p of bulk) {
+    const name = primaryWeaponName(p);
+    // If there's a single bulk model type and we know the squad size, it takes the remainder.
+    const count = bulk.length === 1 && size > 0 ? Math.max(1, size - leaders.length) : 1;
+    if (name) lines.push({ name, count });
+  }
+  for (const p of leaders) {
+    const name = primaryWeaponName(p);
+    if (name) lines.push({ name, count: 1 });
+  }
+  return lines.length > 0 ? lines : [{ name: "", count: 1 }];
+}
 
 const REROLL_RANK: Record<string, number> = { none: 0, ones: 1, all: 2 };
 
@@ -259,8 +301,12 @@ export function Simulator() {
   const attackerOptions = includeNonStandard ? attackerUnitDefs : attackerUnitDefs.filter((u) => !isNonStandard(u));
   const defenderOptions = includeNonStandard ? defenderUnitDefs : defenderUnitDefs.filter((u) => !isNonStandard(u));
 
+  // Auto-populate the loadout from the picked unit's model profiles (bulk gun + leader's gun,
+  // squad-size-aware counts). Everything stays editable.
   useEffect(() => {
-    setWeaponLines([{ name: "", count: 1 }]);
+    const unit = attackerUnitDefs.find((u) => u.id === attackerUnitId);
+    setWeaponLines(unit ? autoPopulateLines(unit) : [{ name: "", count: 1 }]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attackerUnitId]);
 
   // Pull attack modifiers out of the picked unit's abilities so they can be offered as toggles.

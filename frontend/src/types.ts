@@ -21,6 +21,9 @@ export interface UnitDefinition {
   faction: string;
   name: string;
   points_cost: number;
+  // Smallest legal squad size (min models across points tiers); 0 if unknown. Used to
+  // default the simulator's per-weapon firing counts.
+  min_models: number;
   keywords: string[];
   // GW's "Battlefield Role" badge (Character, Battleline, Infantry, Vehicle, Epic Hero, ...).
   // null for a unit with no primary category in the source data.
