@@ -471,6 +471,24 @@ export function Simulator() {
         </div>
         <div className="inline-form">
           <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={options.reroll_hits === "all"}
+              onChange={(e) => setOptions((o) => ({ ...o, reroll_hits: e.target.checked ? "all" : "none" }))}
+            />
+            Re-roll failed Hits
+          </label>
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={options.reroll_wounds === "all"}
+              onChange={(e) => setOptions((o) => ({ ...o, reroll_wounds: e.target.checked ? "all" : "none" }))}
+            />
+            Re-roll failed Wounds
+          </label>
+        </div>
+        <div className="inline-form">
+          <label className="checkbox-label">
             Hit modifier
             <input
               type="number"

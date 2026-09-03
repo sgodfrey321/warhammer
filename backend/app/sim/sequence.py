@@ -89,16 +89,45 @@ def _wound_target(strength: int, toughness: int) -> int:
     return 5
 
 
-def _maybe_reroll(rng: Random, raw: int, target: int, policy: RerollPolicy) -> int:
-    """Applies a reroll policy to an unmodified die result. Rerolls happen
-    before modifiers are applied and a rerolled die is used as-is (no
-    re-rerolling), per the task spec."""
+def _hit_outcome(raw: int, skill: int, modifier: int) -> tuple[bool, bool]:
+    """(success, crit) for a hit die: unmodified 1 always fails, unmodified 6
+    always crits (and hits); otherwise the modified roll must meet the skill."""
 
-    if policy == "ones" and raw == 1:
-        return rng.randint(1, 6)
-    if policy == "all" and (raw == 1 or raw < target):
-        return rng.randint(1, 6)
-    return raw
+    if raw == 1:
+        return False, False
+    if raw == 6:
+        return True, True
+    return (raw + modifier) >= skill, False
+
+
+def _wound_outcome(
+    raw: int, target: int, modifier: int, anti_active: bool, anti_threshold: int | None
+) -> tuple[bool, bool]:
+    """(success, crit) for a wound die. Same 1-always-fails / 6-always-crits
+    rule as hits, plus Anti-X: an unmodified roll >= the anti threshold is also
+    a critical wound."""
+
+    if raw == 1:
+        return False, False
+    crit = raw == 6 or (anti_active and anti_threshold is not None and raw >= anti_threshold)
+    if crit:
+        return True, True
+    return (raw + modifier) >= target, False
+
+
+def _reroll_applies(raw: int, success: bool, policy: RerollPolicy) -> bool:
+    """The re-roll waterfall for a die you're allowed to re-roll: only failures
+    are ever re-rolled (never a success or crit). An unmodified 1 always counts
+    as a failure, so it's always a re-roll candidate; a 're-roll failures'/all
+    policy additionally re-rolls any roll that failed AFTER modifiers, while
+    're-roll 1s' re-rolls only natural 1s. Each die is re-rolled at most once --
+    the re-rolled result stands even if it too fails (no re-re-rolls)."""
+
+    if success or policy == "none":
+        return False
+    if policy == "ones":
+        return raw == 1
+    return True  # "all": re-roll any failure (natural 1s included)
 
 
 def _resolve_hits(attacker: AttackerProfile, options: AttackOptions, num_attacks: int, rng: Random) -> list[bool]:
@@ -118,15 +147,10 @@ def _resolve_hits(attacker: AttackerProfile, options: AttackOptions, num_attacks
     events: list[bool] = []
     for _ in range(num_attacks):
         raw = rng.randint(1, 6)
-        raw = _maybe_reroll(rng, raw, skill, options.reroll_hits)
-
-        if raw == 1:
-            continue  # unmodified 1 always fails
-        if raw == 6:
-            crit, success = True, True
-        else:
-            success = (raw + hit_mod) >= skill
-            crit = False
+        success, crit = _hit_outcome(raw, skill, hit_mod)
+        if _reroll_applies(raw, success, options.reroll_hits):
+            raw = rng.randint(1, 6)
+            success, crit = _hit_outcome(raw, skill, hit_mod)
         if not success:
             continue
 
@@ -181,18 +205,10 @@ def _resolve_wounds(
             continue
 
         raw = rng.randint(1, 6)
-        raw = _maybe_reroll(rng, raw, target, reroll_policy)
-
-        if raw == 1:
-            continue  # unmodified 1 always fails
-        crit = raw == 6
-        if not crit and options.anti_active and anti_threshold is not None and raw >= anti_threshold:
-            crit = True  # Anti-X Y+: an unmodified Y+ is also a critical wound
-
-        if crit:
-            success = True
-        else:
-            success = (raw + wound_mod) >= target
+        success, crit = _wound_outcome(raw, target, wound_mod, options.anti_active, anti_threshold)
+        if _reroll_applies(raw, success, reroll_policy):
+            raw = rng.randint(1, 6)
+            success, crit = _wound_outcome(raw, target, wound_mod, options.anti_active, anti_threshold)
         if not success:
             continue
 

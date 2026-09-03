@@ -222,6 +222,49 @@ def test_reroll_hits_all_rerolls_any_unmodified_failure():
     assert rng.exhausted()
 
 
+def test_reroll_failures_uses_post_modifier_result_not_raw():
+    # skill 3+, +1 to hit. A raw 2 becomes a modified 3 = a HIT, so "re-roll
+    # failures" must NOT re-roll it (the old raw<target logic wrongly would).
+    attacker = _weapon(skill=3)
+    options = AttackOptions(reroll_hits="all", hit_modifier=1)
+    rng = QueueRandom([2])  # only one die should be rolled -- no re-roll
+    events = _resolve_hits(attacker, options, num_attacks=1, rng=rng)
+    assert events == [False]  # a (non-crit) hit
+    assert rng.exhausted()
+
+
+def test_reroll_failures_rerolls_a_post_modifier_failure():
+    # skill 3+, -1 to hit. A raw 3 becomes a modified 2 = a MISS, so it IS
+    # re-rolled; the re-rolled 5 (modified 4) then hits.
+    attacker = _weapon(skill=3)
+    options = AttackOptions(reroll_hits="all", hit_modifier=-1)
+    rng = QueueRandom([3, 5])
+    events = _resolve_hits(attacker, options, num_attacks=1, rng=rng)
+    assert events == [False]
+    assert rng.exhausted()
+
+
+def test_reroll_ones_ignores_non_one_modified_failures():
+    # skill 3+, -1 to hit. A raw 3 (modified 2) is a failure but not a natural
+    # 1, so "re-roll 1s" leaves it alone -> miss, no second die rolled.
+    attacker = _weapon(skill=3)
+    options = AttackOptions(reroll_hits="ones", hit_modifier=-1)
+    rng = QueueRandom([3])
+    events = _resolve_hits(attacker, options, num_attacks=1, rng=rng)
+    assert events == []  # missed, not re-rolled
+    assert rng.exhausted()
+
+
+def test_reroll_never_rerolls_a_success_or_crit():
+    # An unmodified 6 is a crit success -- must never be re-rolled even under "all".
+    attacker = _weapon(skill=4)
+    options = AttackOptions(reroll_hits="all")
+    rng = QueueRandom([6])  # a single die; a re-roll would exhaust and raise
+    events = _resolve_hits(attacker, options, num_attacks=1, rng=rng)
+    assert events == [False]  # a crit hit (no lethal, so guaranteed_wound False)
+    assert rng.exhausted()
+
+
 def test_full_pipeline_no_spillover_across_two_attacks():
     # 2 attacks, both hit and wound automatically (BS/wound target both 2,
     # rolled a comfortable 4), save is a guaranteed fail (rolled a 1), damage
