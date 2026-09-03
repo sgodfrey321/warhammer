@@ -338,23 +338,39 @@ function AttackerUnit({
   }
 
   return (
-    <details className="role-group" open>
-      <summary className="role-group-header">
-        <span>
-          Attacker {index + 1}
-          {unit ? `: ${unit.name}` : ""}
-        </span>
-      </summary>
-      <UnitPicker
-        label={`Attacker ${index + 1}`}
-        faction={faction}
-        onFaction={setFaction}
-        factions={factions}
-        unitDefs={unitOptions}
-        unitId={unitId}
-        onUnit={setUnitId}
-      />
-      {unit && unit.weapons.length === 0 && <p className="muted">This unit has no weapons.</p>}
+    <div className="sim-unit-card">
+      <div className="sim-unit-picker">
+        <label>
+          Faction
+          <select value={faction} onChange={(e) => setFaction(e.target.value)}>
+            <option value="">Select faction...</option>
+            {factions.map((f) => (
+              <option key={f} value={f}>
+                {f}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Unit
+          <select value={unitId} onChange={(e) => setUnitId(e.target.value)} disabled={!faction}>
+            <option value="">Select unit...</option>
+            {unitOptions.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        {canRemove && (
+          <button type="button" onClick={onRemove}>
+            Remove unit
+          </button>
+        )}
+      </div>
+      <div className="sim-unit-body">
+        <p className="sim-unit-title">Attacker {index + 1}{unit ? `: ${unit.name}` : ""}</p>
+        {unit && unit.weapons.length === 0 && <p className="muted">This unit has no weapons.</p>}
       {unit &&
         unit.weapons.length > 0 &&
         weaponLines.map((line, i) => (
@@ -398,26 +414,20 @@ function AttackerUnit({
           </button>
         </div>
       )}
-      {unit && (
-        <>
-          <h4 className="weapon-section-heading">Ability buffs (auto-applied where certain; tick situational ones)</h4>
-          <AbilityToggles
-            effects={effects}
-            checked={checked}
-            onToggle={(i) => toggleSet(setChecked, i)}
-            abilities={unit.abilities}
-            defenderKeywords={defenderKeywords}
-          />
-        </>
-      )}
-      {canRemove && (
-        <div className="inline-form">
-          <button type="button" onClick={onRemove}>
-            Remove this unit
-          </button>
-        </div>
-      )}
-    </details>
+        {unit && (
+          <>
+            <h4 className="weapon-section-heading">Ability buffs (auto-applied where certain; tick situational ones)</h4>
+            <AbilityToggles
+              effects={effects}
+              checked={checked}
+              onToggle={(i) => toggleSet(setChecked, i)}
+              abilities={unit.abilities}
+              defenderKeywords={defenderKeywords}
+            />
+          </>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -555,7 +565,7 @@ export function Simulator() {
     : [];
 
   return (
-    <div className="page">
+    <div className="page sim-page">
       <h1>Dice Simulator</h1>
       <p className="muted">
         Pick an attacking weapon and a defending unit, run a batch of simulated trials, and
@@ -574,23 +584,26 @@ export function Simulator() {
         </label>
       </div>
 
-      {attackerIds.map((id, i) => (
-        <AttackerUnit
-          key={id}
-          index={i}
-          factions={factions}
-          includeNonStandard={includeNonStandard}
-          defenderKeywords={defenderKeywords}
-          onContribution={(c) => handleContribution(id, c)}
-          onRemove={() => removeUnit(id)}
-          canRemove={attackerIds.length > 1}
-          onError={setError}
-        />
-      ))}
-      <div className="inline-form">
-        <button type="button" onClick={addUnit}>
-          + Add attacking unit
-        </button>
+      <div className="sim-units-box">
+        <div className="sim-units-box-header">
+          <span>Attacking units</span>
+          <button type="button" onClick={addUnit}>
+            + Add unit
+          </button>
+        </div>
+        {attackerIds.map((id, i) => (
+          <AttackerUnit
+            key={id}
+            index={i}
+            factions={factions}
+            includeNonStandard={includeNonStandard}
+            defenderKeywords={defenderKeywords}
+            onContribution={(c) => handleContribution(id, c)}
+            onRemove={() => removeUnit(id)}
+            canRemove={attackerIds.length > 1}
+            onError={setError}
+          />
+        ))}
       </div>
       <p className="muted">
         Add a unit per firing unit (e.g. Fire Dragons + a Fire Prism into the same target). Each

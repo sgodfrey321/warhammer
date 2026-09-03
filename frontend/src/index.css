@@ -898,6 +898,88 @@ section {
   cursor: pointer;
 }
 
+/* --- Simulator layout --- */
+.sim-page {
+  max-width: 1100px;
+}
+
+/* The box that holds all the attacking units, with its own header + "Add unit" button. */
+.sim-units-box {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.sim-units-box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.85em;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+
+/* Each attacking unit: a picker column on the left, its loadout/abilities on the right. */
+.sim-unit-card {
+  display: flex;
+  gap: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.85rem;
+  margin-bottom: 0.75rem;
+  background: var(--panel);
+}
+
+.sim-unit-card:last-child {
+  margin-bottom: 0;
+}
+
+.sim-unit-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  flex: 0 0 220px;
+}
+
+.sim-unit-picker label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.8em;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+
+.sim-unit-picker select {
+  width: 100%;
+}
+
+.sim-unit-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.sim-unit-title {
+  font-weight: 700;
+  margin: 0 0 0.4rem;
+}
+
+@media (max-width: 800px) {
+  .sim-unit-card {
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .sim-unit-picker {
+    flex-basis: auto;
+  }
+}
+
 .layout-pick-button {
   display: block;
   margin: 0.5rem auto 0;
