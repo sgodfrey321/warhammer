@@ -69,6 +69,11 @@ class SimulateRequest(BaseModel):
     defender_model_count: int = 1
 
 
+class PerUnitOut(BaseModel):
+    mean_damage: float
+    mean_models_slain: float
+
+
 class SimulateResponse(BaseModel):
     trials: int
     weapon_count: int
@@ -84,6 +89,7 @@ class SimulateResponse(BaseModel):
     p_wipe: float
     destroyed_by_round: dict[int, float]  # round N -> cumulative P(destroyed by end of N)
     median_rounds_to_destroy: Optional[int]
+    per_unit: list[PerUnitOut]  # per attacking unit, in the order sent
 
 
 class AnalyzeAbility(BaseModel):
@@ -207,4 +213,8 @@ def run_simulation(body: SimulateRequest) -> SimulateResponse:
         p_wipe=result.p_wipe,
         destroyed_by_round=result.destroyed_by_round,
         median_rounds_to_destroy=result.median_rounds_to_destroy,
+        per_unit=[
+            PerUnitOut(mean_damage=d, mean_models_slain=s)
+            for d, s in zip(result.per_group_damage, result.per_group_slain)
+        ],
     )

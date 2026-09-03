@@ -339,6 +339,7 @@ export interface SimulateResponse {
   p_wipe: number;
   destroyed_by_round: Record<string, number>; // round N -> cumulative P(destroyed by end of N)
   median_rounds_to_destroy: number | null;
+  per_unit: { mean_damage: number; mean_models_slain: number }[]; // per attacking unit, in the order sent
 }
 
 export interface Layout {

@@ -42,6 +42,10 @@ class SimulationResult:
     # cumulative P(target destroyed by end of round N). Read off your confidence level.
     destroyed_by_round: dict[int, float]
     median_rounds_to_destroy: int | None  # smallest N with cumulative P >= 0.5, or None if never within cap
+    # Mean wounds / models each attacking group actually removed within the combined attack (in
+    # firing order, so the parts sum to the total). Empty for the single-group wrappers.
+    per_group_damage: list[float]
+    per_group_slain: list[float]
 
 
 def _percentile(sorted_values: list[int], pct: int) -> float:
@@ -62,15 +66,19 @@ WeaponLine = tuple[AttackerProfile, int]
 WeaponGroup = tuple[list[WeaponLine], AttackOptions]
 
 
+def _fire_group(weapon_lines, options, defender, state, rng) -> None:
+    """Resolve one attacking unit's whole loadout into the persisting state."""
+    for profile, count in weapon_lines:
+        for _weapon in range(count):
+            if state.wiped:
+                return
+            resolve_into_state(profile, defender, options, state, rng)
+
+
 def _fire_round(groups: list[WeaponGroup], defender, state, rng) -> None:
-    """One shooting round = every copy of every weapon line, of every group,
-    resolved into the persisting state using that group's own options."""
+    """One shooting round = every group's loadout, in order, into the persisting state."""
     for weapon_lines, options in groups:
-        for profile, count in weapon_lines:
-            for _weapon in range(count):
-                if state.wiped:
-                    return
-                resolve_into_state(profile, defender, options, state, rng)
+        _fire_group(weapon_lines, options, defender, state, rng)
 
 
 def _rounds_to_destroy(groups: list[WeaponGroup], defender, rng) -> int | None:
@@ -128,12 +136,18 @@ def simulate_groups(
     rng = Random(seed)
     total_wounds = max(1, defender.wounds_per_model * defender.model_count)
 
-    # --- Single-round distribution ---
+    # --- Single-round distribution (with per-group contribution) ---
     damages: list[int] = []
     slain_counts: list[int] = []
+    group_damage_totals = [0] * len(groups)  # summed wounds each group actually removed, in firing order
+    group_slain_totals = [0] * len(groups)
     for _ in range(trials):
         state = DefenderState.fresh(defender)
-        _fire_round(groups, defender, state, rng)
+        for gi, (weapon_lines, options) in enumerate(groups):
+            d0, s0 = state.damage_dealt, state.models_slain
+            _fire_group(weapon_lines, options, defender, state, rng)
+            group_damage_totals[gi] += state.damage_dealt - d0
+            group_slain_totals[gi] += state.models_slain - s0
         damages.append(state.damage_dealt)
         slain_counts.append(state.models_slain)
 
@@ -180,4 +194,6 @@ def simulate_groups(
         p_wipe=wipes / trials if trials else 0.0,
         destroyed_by_round=destroyed_by_round,
         median_rounds_to_destroy=median_rounds,
+        per_group_damage=[t / trials if trials else 0.0 for t in group_damage_totals],
+        per_group_slain=[t / trials if trials else 0.0 for t in group_slain_totals],
     )

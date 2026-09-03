@@ -796,3 +796,21 @@ def test_simulate_endpoint_mixed_loadout():
 
     assert combined.weapon_count == 5  # 4 + 1 copies
     assert combined.mean_damage > squad_only.mean_damage
+
+
+def test_per_group_contributions_sum_to_total():
+    from app.sim.montecarlo import simulate_groups
+
+    a = AttackerProfile.from_characteristics(
+        {"range_type": "Ranged Weapons", "characteristics": {"A": "3", "BS": "3+", "S": "6", "AP": "-1", "D": "1"}}
+    )
+    b = AttackerProfile.from_characteristics(
+        {"range_type": "Ranged Weapons", "characteristics": {"A": "2", "BS": "2+", "S": "8", "AP": "-2", "D": "2"}}
+    )
+    defender = DefenderProfile.from_stats({"T": "6", "Sv": "4+", "W": "40"}, model_count=1)
+
+    r = simulate_groups([([(a, 3)], AttackOptions()), ([(b, 2)], AttackOptions())], defender, trials=8000, seed=5)
+
+    assert len(r.per_group_damage) == 2
+    # Per-group mean contributions sum to the combined mean (both fire into one shared target).
+    assert abs(sum(r.per_group_damage) - r.mean_damage) < 1e-9

@@ -407,6 +407,7 @@ export function Simulator() {
   const [checkedDefender, setCheckedDefender] = useState<Set<number>>(new Set());
 
   const [result, setResult] = useState<SimulateResponse | null>(null);
+  const [resultLabels, setResultLabels] = useState<string[]>([]); // unit names for the last run's per-unit breakdown
   const [loading, setLoading] = useState(false);
   const [simError, setSimError] = useState<string | null>(null);
 
@@ -463,10 +464,13 @@ export function Simulator() {
 
   // Each attacking unit's final options = shared manual options + defender-side patches + that
   // unit's OWN ability patches, so one unit's re-roll aura never leaks onto another.
-  const attackerGroups = attackerIds
+  const attackerContribs = attackerIds
     .map((id) => contributions[id])
-    .filter((c): c is AttackerContribution => !!c && c.weapons.length > 0)
-    .map((c) => ({ weapons: c.weapons, options: mergeEffects(options, [...c.effectPatches, ...defenderPatches]) }));
+    .filter((c): c is AttackerContribution => !!c && c.weapons.length > 0);
+  const attackerGroups = attackerContribs.map((c) => ({
+    weapons: c.weapons,
+    options: mergeEffects(options, [...c.effectPatches, ...defenderPatches]),
+  }));
 
   const canSimulate = attackerGroups.length > 0 && !!defenderUnit && Object.keys(defenderUnit.stats).length > 0;
 
@@ -481,6 +485,7 @@ export function Simulator() {
         defender_stats: defenderUnit.stats,
         defender_model_count: defenderModelCount,
       });
+      setResultLabels(attackerContribs.map((c) => c.label));
       setResult(res);
     } catch (e) {
       setSimError(String(e));
@@ -736,8 +741,9 @@ export function Simulator() {
           </label>
         </div>
         <p className="muted">
-          Feel No Pain isn't a stat in the unit data, so it isn't detected automatically — set it
-          here if the defender has one (e.g. Angron has FNP 5+).
+          Feel No Pain isn't a stat in the unit data, so it isn't auto-detected from a bare stat
+          line — set it here if the defender has one (a detected "Feel No Pain X+" ability toggle
+          will also apply it).
         </p>
       </details>
 
@@ -768,6 +774,25 @@ export function Simulator() {
             <div className="stat-line">
               <StatBoxes pairs={percentiles.map(([p, v]) => ({ label: `p${p}`, value: v.toFixed(1) }))} />
             </div>
+          )}
+
+          {result.per_unit.length > 1 && (
+            <>
+              <h4 className="weapon-section-heading">Per-unit contribution (mean wounds this round)</h4>
+              <div className="stat-line">
+                <StatBoxes
+                  pairs={result.per_unit.map((u, i) => ({
+                    label: resultLabels[i] ?? `Unit ${i + 1}`,
+                    value: u.mean_damage.toFixed(2),
+                  }))}
+                />
+              </div>
+              <p className="muted">
+                How much of the combined damage each unit actually deals, in firing order (so they
+                sum to the mean total). A later unit gets less credit when an earlier one has already
+                over-killed the target.
+              </p>
+            </>
           )}
 
           <h4 className="weapon-section-heading">Kill summary — {result.total_wounds} wounds to destroy</h4>
