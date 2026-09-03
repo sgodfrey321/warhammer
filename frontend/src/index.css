@@ -923,10 +923,11 @@ section {
   color: var(--muted);
 }
 
-/* Each attacking unit: a picker column on the left, its loadout/abilities on the right. */
+/* Each attacking unit: a card stacking a Faction/Unit picker row over its loadout/abilities. */
 .sim-unit-card {
   display: flex;
-  gap: 1.25rem;
+  flex-direction: column;
+  gap: 0.75rem;
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 0.85rem;
@@ -938,17 +939,20 @@ section {
   margin-bottom: 0;
 }
 
+/* Faction and Unit sit side by side as two columns. */
 .sim-unit-picker {
   display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  flex: 0 0 220px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
 }
 
 .sim-unit-picker label {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  flex: 1 1 200px;
   font-size: 0.8em;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -960,24 +964,12 @@ section {
 }
 
 .sim-unit-body {
-  flex: 1;
   min-width: 0;
 }
 
 .sim-unit-title {
   font-weight: 700;
   margin: 0 0 0.4rem;
-}
-
-@media (max-width: 800px) {
-  .sim-unit-card {
-    flex-direction: column;
-    gap: 0.6rem;
-  }
-
-  .sim-unit-picker {
-    flex-basis: auto;
-  }
 }
 
 .layout-pick-button {
