@@ -37,6 +37,14 @@ function effectApplies(e: DetectedEffect, defenderKeywords: string[]): boolean {
   return e.requires_target_keywords.some((req) => have.includes(req.toLowerCase()));
 }
 
+// An effect the app can fully verify is applied automatically (no click): one with no free-text
+// positional condition -- i.e. unconditional, or gated only on the target's keywords (which the
+// app checks via effectApplies). A "While within 12\" of..." style condition stays manual because
+// only the player knows the board state.
+function isAutoApplied(e: DetectedEffect): boolean {
+  return e.condition === "";
+}
+
 // The detected ability toggles for one side, plus a muted list of that unit's other abilities
 // that weren't auto-modelled -- so nothing is hidden and the player can fall back to the manual
 // controls for anything the heuristic missed.
@@ -61,14 +69,19 @@ function AbilityToggles({
         effects.map((e, i) => {
           // A target-conditional effect is disabled unless the chosen defender qualifies.
           const applies = effectApplies(e, defenderKeywords);
+          // Auto-applied effects (no positional condition) are on whenever eligible and can't be
+          // unticked -- they're a fact of the matchup, not a player choice. Positional ones toggle.
+          const auto = isAutoApplied(e);
+          const isChecked = applies && (auto || checked.has(i));
           return (
             <label
               key={`${e.ability_name}-${e.summary}`}
               className="checkbox-label"
               style={{ display: "block", opacity: applies ? 1 : 0.45 }}
             >
-              <input type="checkbox" checked={applies && checked.has(i)} disabled={!applies} onChange={() => onToggle(i)} />
+              <input type="checkbox" checked={isChecked} disabled={auto || !applies} onChange={() => onToggle(i)} />
               <strong>{e.summary}</strong> — {e.ability_name}
+              {auto && applies && <span className="muted"> (auto)</span>}
               {e.condition && <span className="muted"> ({e.condition})</span>}
               {e.requires_target_keywords.length > 0 && (
                 <span className="muted">
@@ -276,16 +289,16 @@ export function Simulator() {
 
   const canSimulate = !!weapon && !!defenderUnit && Object.keys(defenderUnit.stats).length > 0;
 
-  // The options actually sent: manual controls plus every ticked ability toggle -- but a
-  // target-conditional attacker buff is only applied if the chosen defender qualifies (so a
-  // buff ticked against a Monster silently drops when you switch to an Infantry target).
+  // The options actually sent. An effect is active when it's eligible for this matchup AND either
+  // auto-applied (nothing for the player to decide) or ticked. Target-conditional attacker buffs
+  // only count when the chosen defender qualifies -- so a buff drops automatically against a
+  // target that doesn't have the required keyword.
   const defenderKeywords = defenderUnit?.keywords ?? [];
-  const effectiveOptions = mergeEffects(options, [
-    ...attackerEffects
-      .filter((e, i) => checkedAttacker.has(i) && effectApplies(e, defenderKeywords))
-      .map((e) => e.option_patch),
-    ...defenderEffects.filter((_, i) => checkedDefender.has(i)).map((e) => e.option_patch),
-  ]);
+  const activePatches = [
+    ...attackerEffects.filter((e, i) => effectApplies(e, defenderKeywords) && (isAutoApplied(e) || checkedAttacker.has(i))),
+    ...defenderEffects.filter((e, i) => isAutoApplied(e) || checkedDefender.has(i)),
+  ].map((e) => e.option_patch);
+  const effectiveOptions = mergeEffects(options, activePatches);
 
   function toggleIn(setter: Dispatch<SetStateAction<Set<number>>>, i: number) {
     setter((prev) => {
@@ -417,7 +430,7 @@ export function Simulator() {
         </p>
         {attackerUnit && (
           <>
-            <h4 className="weapon-section-heading">Ability buffs (tick the ones in effect)</h4>
+            <h4 className="weapon-section-heading">Ability buffs (auto-applied where certain; tick situational ones)</h4>
             <AbilityToggles
               effects={attackerEffects}
               checked={checkedAttacker}
@@ -466,7 +479,7 @@ export function Simulator() {
         )}
         {defenderUnit && (
           <>
-            <h4 className="weapon-section-heading">Defensive abilities (tick the ones in effect)</h4>
+            <h4 className="weapon-section-heading">Defensive abilities (auto-applied where certain; tick situational ones)</h4>
             <AbilityToggles
               effects={defenderEffects}
               checked={checkedDefender}
