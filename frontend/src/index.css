@@ -972,6 +972,11 @@ section {
   margin: 0 0 0.4rem;
 }
 
+/* Let the results charts use the widened simulator page instead of the shared 640px cap. */
+.sim-page .chart-container {
+  max-width: none;
+}
+
 .layout-pick-button {
   display: block;
   margin: 0.5rem auto 0;

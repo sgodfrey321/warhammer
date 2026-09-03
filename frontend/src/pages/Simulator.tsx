@@ -183,51 +183,6 @@ function weaponSummary(w: Weapon): string {
   return parts.join(" ");
 }
 
-function UnitPicker({
-  label,
-  faction,
-  onFaction,
-  factions,
-  unitDefs,
-  unitId,
-  onUnit,
-}: {
-  label: string;
-  faction: string;
-  onFaction: (f: string) => void;
-  factions: string[];
-  unitDefs: UnitDefinition[];
-  unitId: string;
-  onUnit: (id: string) => void;
-}) {
-  return (
-    <div className="inline-form">
-      <label className="checkbox-label">
-        {label} faction
-        <select value={faction} onChange={(e) => onFaction(e.target.value)}>
-          <option value="">Select faction...</option>
-          {factions.map((f) => (
-            <option key={f} value={f}>
-              {f}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="checkbox-label">
-        {label} unit
-        <select value={unitId} onChange={(e) => onUnit(e.target.value)} disabled={!faction}>
-          <option value="">Select unit...</option>
-          {unitDefs.map((u) => (
-            <option key={u.id} value={u.id}>
-              {u.name}
-            </option>
-          ))}
-        </select>
-      </label>
-    </div>
-  );
-}
-
 // Legends and Crucible (custom-character) units aren't part of a standard matched-play list, so
 // they're hidden from the pickers unless explicitly included. Crucible units carry a "Crucible"
 // keyword and a "[Crucible]" name suffix; Legends units carry the is_legends flag.
@@ -611,53 +566,70 @@ export function Simulator() {
         abilities; the shared Options below cover the whole attack.
       </p>
 
-      <details className="role-group" open>
-        <summary className="role-group-header">
+      <div className="sim-units-box">
+        <div className="sim-units-box-header">
           <span>Defender</span>
-        </summary>
-        <UnitPicker
-          label="Defender"
-          faction={defenderFaction}
-          onFaction={setDefenderFaction}
-          factions={factions}
-          unitDefs={defenderOptions}
-          unitId={defenderUnitId}
-          onUnit={setDefenderUnitId}
-        />
-        {defenderUnit && Object.keys(defenderUnit.stats).length > 0 && (
-          <div className="stat-line">
-            <StatBoxes
-              pairs={STAT_ORDER.filter((k) => defenderUnit.stats[k]).map((k) => ({ label: k, value: defenderUnit.stats[k] }))}
-            />
-          </div>
-        )}
-        {defenderUnit && (
-          <div className="inline-form">
-            <label className="checkbox-label">
+        </div>
+        <div className="sim-unit-card">
+          <div className="sim-unit-picker">
+            <label>
+              Faction
+              <select value={defenderFaction} onChange={(e) => setDefenderFaction(e.target.value)}>
+                <option value="">Select faction...</option>
+                {factions.map((f) => (
+                  <option key={f} value={f}>
+                    {f}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Unit
+              <select value={defenderUnitId} onChange={(e) => setDefenderUnitId(e.target.value)} disabled={!defenderFaction}>
+                <option value="">Select unit...</option>
+                {defenderOptions.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
               Model count
               <input
                 type="number"
                 min={1}
                 value={defenderModelCount}
                 onChange={(e) => setDefenderModelCount(Math.max(1, Number(e.target.value) || 1))}
-                style={{ width: "4rem" }}
               />
             </label>
-            {Object.keys(defenderUnit.stats).length === 0 && <span className="muted">This unit has no stats on file.</span>}
           </div>
-        )}
-        {defenderUnit && (
-          <>
-            <h4 className="weapon-section-heading">Defensive abilities (auto-applied where certain; tick situational ones)</h4>
-            <AbilityToggles
-              effects={defenderEffects}
-              checked={checkedDefender}
-              onToggle={(i) => toggleSet(setCheckedDefender, i)}
-              abilities={defenderUnit.abilities}
-            />
-          </>
-        )}
-      </details>
+          <div className="sim-unit-body">
+            {defenderUnit && <p className="sim-unit-title">{defenderUnit.name}</p>}
+            {defenderUnit && Object.keys(defenderUnit.stats).length > 0 && (
+              <div className="stat-line">
+                <StatBoxes
+                  pairs={STAT_ORDER.filter((k) => defenderUnit.stats[k]).map((k) => ({ label: k, value: defenderUnit.stats[k] }))}
+                />
+              </div>
+            )}
+            {defenderUnit && Object.keys(defenderUnit.stats).length === 0 && (
+              <p className="muted">This unit has no stats on file.</p>
+            )}
+            {defenderUnit && (
+              <>
+                <h4 className="weapon-section-heading">Defensive abilities (auto-applied where certain; tick situational ones)</h4>
+                <AbilityToggles
+                  effects={defenderEffects}
+                  checked={checkedDefender}
+                  onToggle={(i) => toggleSet(setCheckedDefender, i)}
+                  abilities={defenderUnit.abilities}
+                />
+              </>
+            )}
+          </div>
+        </div>
+      </div>
 
       <details className="role-group" open>
         <summary className="role-group-header">
