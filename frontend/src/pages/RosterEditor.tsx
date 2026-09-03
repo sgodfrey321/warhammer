@@ -3,15 +3,106 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { api } from "../api";
 import { Keyword } from "../components/Keyword";
-import { UnitAutocomplete } from "../components/UnitAutocomplete";
+import { StatBoxes, statPairs, weaponPairs } from "../components/StatBoxes";
 import { UnitDetailsModal } from "../components/UnitDetailsModal";
+import { UnitListModal } from "../components/UnitListModal";
 import { WeaponContributionsModal } from "../components/WeaponContributionsModal";
 import { renderAbilityText } from "../markup";
 import { PHASES, POOL_SCOPES, STAT_ORDER } from "../types";
-import type { BattleOut, DeclaredStatePool, Roster, UnitAttachment, UnitBuff, UnitOut, UnitSynergy } from "../types";
+import type {
+  BattleOut,
+  DeclaredStatePool,
+  FactionDetachments,
+  Roster,
+  UnitAttachment,
+  UnitBuff,
+  UnitDefinition,
+  UnitOut,
+  UnitSynergy,
+} from "../types";
 import { auraAbilityReferences, groupUnitsByRole, leaderAbilityReferences, psychicAbilityReferences } from "../units";
-import { unitsByMovement, unitsBySave, weaponAttacksByStrengthAndSkill } from "../weapons";
-import type { StrengthSkillBucket, StrengthSkillResult, WeaponContribution } from "../weapons";
+import {
+  groupLoadoutByRangeType,
+  groupWeaponsByRangeType,
+  parseMovement,
+  parseSaveValue,
+  parseToughness,
+  parseWounds,
+  unitsByMovement,
+  unitsBySave,
+  unitsByToughness,
+  unitsByWounds,
+  weaponAttacksByStrengthAndSkill,
+  weaponBaseName,
+} from "../weapons";
+import type {
+  MovementBucket,
+  SaveBucket,
+  SkillStrengthBucket,
+  StrengthSkillBucket,
+  StrengthSkillResult,
+  ToughnessBucket,
+  WeaponContribution,
+  WoundsBucket,
+} from "../weapons";
+
+// detachments.json's faction keys use a different category-prefix convention than a roster's own
+// faction string for some factions -- confirmed against real data: "Aeldari - Craftworlds"'s
+// detachments live under "Xenos - Aeldari", "Imperium - Space Marines"'s under "Imperium -
+// Adeptus Astartes - Space Marines". Exact match first; otherwise try each of the roster
+// faction's own " - "-separated segments, most specific (last) first, against every candidate
+// faction key -- "Space Marines" alone is specific enough to land correctly, whereas trying the
+// generic "Imperium" segment first would match the wrong (alphabetically first) Imperium entry.
+function matchDetachments(all: FactionDetachments[], faction: string): FactionDetachments | undefined {
+  const exact = all.find((f) => f.faction === faction);
+  if (exact) return exact;
+  const segments = faction.split(" - ").reverse();
+  for (const seg of segments) {
+    const match = all.find((f) => f.faction.includes(seg));
+    if (match) return match;
+  }
+  return undefined;
+}
+
+// Same GW Battlefield Role ordering as UnitsBrowser.tsx's archetype grouping -- used here for the
+// "Available Units" browse panel so it reads the same way as the standalone Units catalogue page.
+const ROLE_ORDER = [
+  "Character",
+  "Epic Hero",
+  "Battleline",
+  "Infantry",
+  "Mounted",
+  "Beast",
+  "Monster",
+  "Vehicle",
+  "Dedicated Transport",
+  "Fortification",
+];
+
+function roleRank(role: string): number {
+  const idx = ROLE_ORDER.indexOf(role);
+  return idx === -1 ? ROLE_ORDER.length : idx;
+}
+
+// Same convention as UnitsBrowser.tsx -- no dedicated backend flag for this (unlike is_legends),
+// BSData only marks a Crucible of War datasheet by suffixing the name itself.
+function isCrucible(u: UnitDefinition): boolean {
+  return u.name.includes("[Crucible]");
+}
+
+function groupDefsByRole(defs: UnitDefinition[]): [string, UnitDefinition[]][] {
+  const byRole = new Map<string, UnitDefinition[]>();
+  for (const u of defs) {
+    const role = u.role ?? "Other";
+    const arr = byRole.get(role) ?? [];
+    arr.push(u);
+    byRole.set(role, arr);
+  }
+  return Array.from(byRole.entries()).sort((a, b) => {
+    const rankDiff = roleRank(a[0]) - roleRank(b[0]);
+    return rankDiff !== 0 ? rankDiff : a[0].localeCompare(b[0]);
+  });
+}
 
 // Validated with the dataviz skill's palette checker against this app's dark panel surface
 // (#1e212b): single-series charts share one hue; the two-series save chart uses a pair that
@@ -26,6 +117,11 @@ const CHART_COLOR_SECONDARY = "#4a90c9";
 // values a given roster happens to have. Validated together (`validate_palette.js
 // "#e0574a,#4a90c9,#d95926,#199e70,#9085e9" --mode dark --surface "#1e212b"` -- all checks pass).
 const SKILL_COLORS = ["#e0574a", "#4a90c9", "#d95926", "#199e70", "#9085e9"];
+
+// Neutral "everything else" color for the swapped chart's folded Strength values -- matches
+// this app's own --muted token, so a folded "Other" segment reads as deliberately de-emphasized
+// rather than as a 6th hue competing with the real categorical colors.
+const OTHER_COLOR = "#8b8f9e";
 
 // Shared bar-chart mark spec (dataviz skill: <=24px thick, 4px rounded data-end square at the
 // baseline, solid recessive gridlines -- never dashed).
@@ -78,42 +174,89 @@ function StrengthSkillChart({
   );
 }
 
+// The same data cut the other way round: to-hit value (BS/WS) as the primary axis, stacked by
+// Strength -- "what do we hit on" read first, "what do we wound with" as the breakdown. Clicking
+// a segment drills down to every unit/weapon at that to-hit value, across all Strengths.
+function SkillStrengthChart({
+  result,
+  skillLabel,
+  onSelectBucket,
+}: {
+  result: StrengthSkillResult;
+  skillLabel: "BS" | "WS";
+  onSelectBucket: (skill: string) => void;
+}) {
+  if (result.bySkillBuckets.length === 0) return null;
+  return (
+    <div className="chart-container chart-clickable">
+      <ResponsiveContainer width="100%" height={260}>
+        <BarChart data={result.bySkillBuckets}>
+          <CartesianGrid strokeDasharray="" stroke="#333747" vertical={false} />
+          <XAxis dataKey="skill" tickFormatter={(s) => `${skillLabel}${s}`} stroke="#8b8f9e" />
+          <YAxis allowDecimals={false} stroke="#8b8f9e" />
+          <Tooltip
+            contentStyle={{ background: "#1e212b", border: "1px solid #333747" }}
+            labelFormatter={(s) => `${skillLabel}${s}`}
+            formatter={(value, name) => [value, name === "Other" ? "Other" : `S${name}`]}
+          />
+          <Legend formatter={(value) => (value === "Other" ? "Other" : `S${value}`)} />
+          {result.displayStrengths.map((strength, i) => (
+            <Bar
+              key={strength}
+              dataKey={String(strength)}
+              stackId="a"
+              fill={strength === "Other" ? OTHER_COLOR : SKILL_COLORS[i % SKILL_COLORS.length]}
+              stroke="#1e212b"
+              strokeWidth={2}
+              radius={i === result.displayStrengths.length - 1 ? BAR_RADIUS : undefined}
+              maxBarSize={BAR_SIZE}
+              onClick={(data) => onSelectBucket((data.payload as SkillStrengthBucket).skill)}
+            />
+          ))}
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
 // One row renderer shared by a plain unit and a leader nested into the unit it leads (see
 // RosterEditor's Units section) -- avoids duplicating this JSX for both cases.
 function UnitRow({
   unit,
   isLeader,
+  expanded,
+  onToggleDetails,
   onRemove,
   onRemoveBuff,
   onShowDetails,
 }: {
   unit: UnitOut;
   isLeader?: boolean;
+  expanded: boolean;
+  onToggleDetails: () => void;
   onRemove: (unitId: number) => void;
   onRemoveBuff: (unit: UnitOut, index: number) => void;
   onShowDetails?: () => void;
 }) {
+  const abilities = unit.unit_definition.abilities;
+  const weaponsCount = unit.loadout.length;
   return (
     <div className={`unit-row${isLeader ? " leader" : ""}`}>
       <span className="unit-name">{unit.unit_definition.name}</span>
       <span className="muted"> ({unit.unit_definition.points_cost}pts)</span>
+      {(abilities.length > 0 || weaponsCount > 0) && (
+        <button type="button" className="link-button" onClick={onToggleDetails}>
+          {expanded ? "hide details" : "details"}
+        </button>
+      )}
       {onShowDetails && (
         <button type="button" className="link-button" onClick={onShowDetails}>
-          details
+          full details
         </button>
       )}
       <button type="button" className="link-button" onClick={() => onRemove(unit.id)}>
         remove
       </button>
-      {unit.loadout.length > 0 && (
-        <ul className="ability-list loadout-list">
-          {unit.loadout.map((item) => (
-            <li key={item.name}>
-              {item.count}x {item.name}
-            </li>
-          ))}
-        </ul>
-      )}
       {unit.unit_definition.rules.length > 0 && (
         <div className="rule-tags">
           {unit.unit_definition.rules.map((r) => (
@@ -135,6 +278,44 @@ function UnitRow({
           ))}
         </div>
       )}
+      {expanded &&
+        unit.loadout.length > 0 &&
+        groupLoadoutByRangeType(unit.loadout, unit.unit_definition.weapons).map(([rangeType, items]) => (
+          <div key={rangeType}>
+            <h4 className="weapon-section-heading">{rangeType}</h4>
+            <ul className="ability-list">
+              {items.map((item) => {
+                // A weapon with multiple firing modes (strike/sweep etc.) has more than one
+                // catalogue profile for one loadout item -- show every matching mode, not just
+                // the first (same convention as BattleTracker.tsx).
+                const matches = unit.unit_definition.weapons.filter((w) => weaponBaseName(w.name) === item.name);
+                return (
+                  <li key={item.name}>
+                    <strong>
+                      {item.count}x {item.name}
+                    </strong>
+                    {matches.length === 0 && <span className="muted"> profile not indexed</span>}
+                    {matches.map((w) => (
+                      <div key={w.name} className="stat-line">
+                        {matches.length > 1 && `${w.name.replace(/^➤\s*/, "")}: `}
+                        <StatBoxes pairs={weaponPairs(w)} />
+                      </div>
+                    ))}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+      {expanded && abilities.length > 0 && (
+        <ul className="ability-list">
+          {abilities.map((a) => (
+            <li key={a.name}>
+              <strong>{a.name}:</strong> {renderAbilityText(a.text, `${unit.id}-${a.name}`)}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -146,6 +327,11 @@ export function RosterEditor() {
 
   const [roster, setRoster] = useState<Roster | null>(null);
   const [units, setUnits] = useState<UnitOut[]>([]);
+  const [availableUnits, setAvailableUnits] = useState<UnitDefinition[]>([]);
+  const [allDetachments, setAllDetachments] = useState<FactionDetachments[]>([]);
+  const [detachmentDetailsOpen, setDetachmentDetailsOpen] = useState(false);
+  const [showLegends, setShowLegends] = useState(false);
+  const [showCrucible, setShowCrucible] = useState(false);
   const [synergies, setSynergies] = useState<UnitSynergy[]>([]);
   const [pools, setPools] = useState<DeclaredStatePool[]>([]);
   const [attachments, setAttachments] = useState<UnitAttachment[]>([]);
@@ -157,6 +343,8 @@ export function RosterEditor() {
     skillLabel: "BS" | "WS";
     contributions: WeaponContribution[];
   } | null>(null);
+  const [unitListModal, setUnitListModal] = useState<{ title: string; units: UnitOut[] } | null>(null);
+  const [expandedDetails, setExpandedDetails] = useState<Set<number>>(new Set());
 
   const [renaming, setRenaming] = useState(false);
   const [nameDraft, setNameDraft] = useState("");
@@ -191,6 +379,24 @@ export function RosterEditor() {
 
   useEffect(refresh, [rosterId]);
 
+  useEffect(() => {
+    if (!roster) return;
+    api.listUnitDefinitionsByFaction(roster.faction).then(setAvailableUnits).catch((e) => setError(String(e)));
+  }, [roster?.faction]);
+
+  useEffect(() => {
+    api.listDetachments().then(setAllDetachments).catch((e) => setError(String(e)));
+  }, []);
+
+  async function handleSelectDetachment(name: string) {
+    try {
+      const updated = await api.updateRoster(rosterId, { detachments: name ? [{ name, dp: 0 }] : [] });
+      setRoster(updated);
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
   async function handleAddUnit(unit: { id: string }) {
     try {
       await api.addUnit(rosterId, { unit_definition_id: unit.id, quantity: 1 });
@@ -207,6 +413,15 @@ export function RosterEditor() {
     } catch (e) {
       setError(String(e));
     }
+  }
+
+  function toggleDetails(unitId: number) {
+    setExpandedDetails((prev) => {
+      const next = new Set(prev);
+      if (next.has(unitId)) next.delete(unitId);
+      else next.add(unitId);
+      return next;
+    });
   }
 
   async function handleAddBuff(e: React.FormEvent) {
@@ -343,17 +558,53 @@ export function RosterEditor() {
   const rangedResult = weaponAttacksByStrengthAndSkill(units, "Ranged Weapons");
   const meleeResult = weaponAttacksByStrengthAndSkill(units, "Melee Weapons");
   const movementBuckets = unitsByMovement(units);
+  const toughnessBuckets = unitsByToughness(units);
   const saveBuckets = unitsBySave(units);
+  const woundsBuckets = unitsByWounds(units);
 
   function showWeaponDrilldown(result: StrengthSkillResult, skillLabel: "BS" | "WS", strength: number) {
     const contributions = result.skillKeys.flatMap((skill) => result.contributions.get(`${strength}|${skill}`) ?? []);
     setWeaponDrilldown({ title: `Strength ${strength}`, skillLabel, contributions });
   }
+
+  function showSkillDrilldown(result: StrengthSkillResult, skillLabel: "BS" | "WS", skill: string) {
+    const contributions = result.strengthKeys.flatMap((s) => result.contributions.get(`${s}|${skill}`) ?? []);
+    setWeaponDrilldown({ title: `${skillLabel}${skill}`, skillLabel, contributions });
+  }
+
+  function showMovementDrilldown(movement: number) {
+    const matches = units.filter((u) => parseMovement(u.unit_definition.stats.M ?? "") === movement);
+    setUnitListModal({ title: `Movement ${movement}"`, units: matches });
+  }
+
+  function showSaveDrilldown(stat: "Sv" | "InSv", save: string) {
+    const label = stat === "Sv" ? "Armor Save" : "Invulnerable Save";
+    const matches = units.filter((u) => parseSaveValue(u.unit_definition.stats[stat]) === save);
+    setUnitListModal({ title: `${label} ${save}`, units: matches });
+  }
+
+  function showToughnessDrilldown(toughness: number) {
+    const matches = units.filter((u) => parseToughness(u.unit_definition.stats.T ?? "") === toughness);
+    setUnitListModal({ title: `Toughness ${toughness}`, units: matches });
+  }
+
+  function showWoundsDrilldown(wounds: number) {
+    const matches = units.filter((u) => parseWounds(u.unit_definition.stats.W ?? "") === wounds);
+    setUnitListModal({ title: `Wounds ${wounds}`, units: matches });
+  }
   const roleGroups = groupUnitsByRole(units, attachments);
   const nestedLeaderIds = new Set(attachments.map((a) => a.leader_unit_id));
+  const filteredAvailableUnits = availableUnits.filter((u) => {
+    if (!showLegends && u.is_legends) return false;
+    if (!showCrucible && isCrucible(u)) return false;
+    return true;
+  });
   const leaderReferences = leaderAbilityReferences(units);
   const auraReferences = auraAbilityReferences(units);
   const psychicReferences = psychicAbilityReferences(units);
+  const factionDetachments = matchDetachments(allDetachments, roster.faction);
+  const selectedDetachmentName = roster.detachments[0]?.name ?? "";
+  const selectedDetachment = factionDetachments?.detachments.find((d) => d.name === selectedDetachmentName);
 
   return (
     <div className="page">
@@ -383,6 +634,40 @@ export function RosterEditor() {
         {roster.faction} {roster.points_limit ? `— ${roster.points_limit}pts limit` : ""}
       </p>
       {error && <p className="error">{error}</p>}
+
+      <div className="inline-form">
+        <label className="checkbox-label">
+          Detachment
+          <select value={selectedDetachmentName} onChange={(e) => handleSelectDetachment(e.target.value)}>
+            <option value="">None chosen</option>
+            {factionDetachments?.detachments.map((d) => (
+              <option key={d.name} value={d.name}>
+                {d.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        {!factionDetachments && <span className="muted">No detachments indexed for this faction yet.</span>}
+        {selectedDetachment && (
+          <button type="button" className="link-button" onClick={() => setDetachmentDetailsOpen((v) => !v)}>
+            {detachmentDetailsOpen ? "hide details" : "details"}
+          </button>
+        )}
+      </div>
+      {selectedDetachment && detachmentDetailsOpen && (
+        <ul className="ability-list">
+          {selectedDetachment.rules.map((r) => (
+            <li key={r.name}>
+              <strong>{r.name}:</strong> {renderAbilityText(r.text, `detachment-${r.name}`)}
+            </li>
+          ))}
+        </ul>
+      )}
+      {selectedDetachment && (
+        <p className="muted">
+          <Link to={`/battles/setup?rosterId=${rosterId}`}>Next: choose your battle disposition →</Link>
+        </p>
+      )}
 
       <button type="button" onClick={handleStartBattle} className="primary">
         Start Battle
@@ -424,8 +709,91 @@ export function RosterEditor() {
       )}
 
       <details className="accordion" open>
+        <summary>Available Units</summary>
+        <div className="available-units-panel">
+          <div className="inline-form">
+            <label className="checkbox-label">
+              <input type="checkbox" checked={showLegends} onChange={(e) => setShowLegends(e.target.checked)} />
+              Legends
+            </label>
+            <label className="checkbox-label">
+              <input type="checkbox" checked={showCrucible} onChange={(e) => setShowCrucible(e.target.checked)} />
+              Crucible
+            </label>
+          </div>
+          {groupDefsByRole(filteredAvailableUnits).map(([role, defs]) => (
+            <details key={role} className="unit-role-group" open>
+              <summary className="unit-role-heading">
+                {role} <span className="muted">({defs.length})</span>
+              </summary>
+              <ul className="available-unit-list">
+                {defs.map((u) => (
+                  <li key={u.id} className="available-unit-row">
+                    <details className="unit-card">
+                      <summary className="unit-def-summary">
+                        <span className="unit-def-name">{u.name}</span>
+                        <span className="muted"> ({u.points_cost}pts)</span>
+                        {u.is_legends && <span className="tag">Legends</span>}
+                        {isCrucible(u) && <span className="tag">Crucible</span>}
+                        {statPairs(u.stats).length > 0 && (
+                          <div className="stat-line">
+                            <StatBoxes pairs={statPairs(u.stats)} />
+                          </div>
+                        )}
+                        {u.rules.length > 0 && (
+                          <div className="rule-tags">
+                            {u.rules.map((r) => (
+                              <span key={r} className="tag">
+                                <Keyword name={r} />
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </summary>
+                      <div className="unit-def-details">
+                        {groupWeaponsByRangeType(u.weapons).map(([rangeType, ws]) => (
+                          <div key={rangeType}>
+                            <h4 className="weapon-section-heading">{rangeType}</h4>
+                            <ul className="ability-list">
+                              {ws.map((w) => (
+                                <li key={w.name}>
+                                  <strong>{w.name}</strong>
+                                  <div className="stat-line">
+                                    <StatBoxes pairs={weaponPairs(w)} />
+                                  </div>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                        {u.abilities.length > 0 && (
+                          <ul className="ability-list">
+                            {u.abilities.map((a) => (
+                              <li key={a.name}>
+                                <strong>{a.name}:</strong> {renderAbilityText(a.text, `${u.id}-${a.name}`)}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </details>
+                    <button type="button" className="link-button" onClick={() => handleAddUnit(u)}>
+                      add
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ))}
+          {availableUnits.length === 0 && <p className="muted">No units indexed for this faction yet.</p>}
+          {availableUnits.length > 0 && filteredAvailableUnits.length === 0 && (
+            <p className="muted">No units match — try enabling Legends or Crucible above.</p>
+          )}
+        </div>
+      </details>
+
+      <details className="accordion" open>
         <summary>Units</summary>
-        <UnitAutocomplete onSelect={handleAddUnit} />
         {roleGroups.map((group) => (
           <details key={group.role} className="role-group" open>
             <summary className="role-group-header">
@@ -446,12 +814,16 @@ export function RosterEditor() {
                         key={leader.id}
                         unit={leader}
                         isLeader
+                        expanded={expandedDetails.has(leader.id)}
+                        onToggleDetails={() => toggleDetails(leader.id)}
                         onRemove={handleRemoveUnit}
                         onRemoveBuff={handleRemoveBuff}
                       />
                     ))}
                     <UnitRow
                       unit={u}
+                      expanded={expandedDetails.has(u.id)}
+                      onToggleDetails={() => toggleDetails(u.id)}
                       onRemove={handleRemoveUnit}
                       onRemoveBuff={handleRemoveBuff}
                       onShowDetails={() => setDetailsGroup({ primary: u, leaders })}
@@ -461,7 +833,7 @@ export function RosterEditor() {
               })}
           </details>
         ))}
-        {units.length === 0 && <p className="muted">No units yet — search above to add one.</p>}
+        {units.length === 0 && <p className="muted">No units yet — add some from Available Units above.</p>}
       </details>
 
       <details className="accordion">
@@ -479,11 +851,19 @@ export function RosterEditor() {
               ` ${rangedResult.skippedUnits} unit${rangedResult.skippedUnits === 1 ? "" : "s"} with no confirmed loadout not included.`}
           </p>
           {rangedResult.buckets.length > 0 ? (
-            <StrengthSkillChart
-              result={rangedResult}
-              skillLabel="BS"
-              onSelectBucket={(strength) => showWeaponDrilldown(rangedResult, "BS", strength)}
-            />
+            <>
+              <StrengthSkillChart
+                result={rangedResult}
+                skillLabel="BS"
+                onSelectBucket={(strength) => showWeaponDrilldown(rangedResult, "BS", strength)}
+              />
+              <p className="muted">Same data, cut the other way — Ballistic Skill first, stacked by Strength.</p>
+              <SkillStrengthChart
+                result={rangedResult}
+                skillLabel="BS"
+                onSelectBucket={(skill) => showSkillDrilldown(rangedResult, "BS", skill)}
+              />
+            </>
           ) : (
             <p className="muted">No ranged weapon data to chart yet.</p>
           )}
@@ -501,11 +881,19 @@ export function RosterEditor() {
               ` ${meleeResult.skippedUnits} unit${meleeResult.skippedUnits === 1 ? "" : "s"} with no confirmed loadout not included.`}
           </p>
           {meleeResult.buckets.length > 0 ? (
-            <StrengthSkillChart
-              result={meleeResult}
-              skillLabel="WS"
-              onSelectBucket={(strength) => showWeaponDrilldown(meleeResult, "WS", strength)}
-            />
+            <>
+              <StrengthSkillChart
+                result={meleeResult}
+                skillLabel="WS"
+                onSelectBucket={(strength) => showWeaponDrilldown(meleeResult, "WS", strength)}
+              />
+              <p className="muted">Same data, cut the other way — Weapon Skill first, stacked by Strength.</p>
+              <SkillStrengthChart
+                result={meleeResult}
+                skillLabel="WS"
+                onSelectBucket={(skill) => showSkillDrilldown(meleeResult, "WS", skill)}
+              />
+            </>
           ) : (
             <p className="muted">No melee weapon data to chart yet.</p>
           )}
@@ -517,10 +905,11 @@ export function RosterEditor() {
           </summary>
           <p className="muted">
             Units in this roster grouped by Movement — one bar contribution per unit entry, not
-            weighted by squad size (there's no reliable per-model count to work from).
+            weighted by squad size (there's no reliable per-model count to work from). Click a bar
+            to see which units it's made of.
           </p>
           {movementBuckets.length > 0 ? (
-            <div className="chart-container">
+            <div className="chart-container chart-clickable">
               <ResponsiveContainer width="100%" height={260}>
                 <BarChart data={movementBuckets}>
                   <CartesianGrid strokeDasharray="" stroke="#333747" vertical={false} />
@@ -531,7 +920,13 @@ export function RosterEditor() {
                     labelFormatter={(m) => `Movement ${m}"`}
                     formatter={(value) => [value, "units"]}
                   />
-                  <Bar dataKey="units" fill={CHART_COLOR} radius={BAR_RADIUS} maxBarSize={BAR_SIZE} />
+                  <Bar
+                    dataKey="units"
+                    fill={CHART_COLOR}
+                    radius={BAR_RADIUS}
+                    maxBarSize={BAR_SIZE}
+                    onClick={(data) => showMovementDrilldown((data.payload as MovementBucket).movement)}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -542,14 +937,49 @@ export function RosterEditor() {
 
         <details className="role-group" open>
           <summary className="role-group-header">
+            <span>Toughness</span>
+          </summary>
+          <p className="muted">
+            Units in this roster grouped by Toughness — one bar contribution per unit entry, not
+            weighted by squad size. Click a bar to see which units it's made of.
+          </p>
+          {toughnessBuckets.length > 0 ? (
+            <div className="chart-container chart-clickable">
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={toughnessBuckets}>
+                  <CartesianGrid strokeDasharray="" stroke="#333747" vertical={false} />
+                  <XAxis dataKey="toughness" stroke="#8b8f9e" />
+                  <YAxis allowDecimals={false} stroke="#8b8f9e" />
+                  <Tooltip
+                    contentStyle={{ background: "#1e212b", border: "1px solid #333747" }}
+                    labelFormatter={(t) => `Toughness ${t}`}
+                    formatter={(value) => [value, "units"]}
+                  />
+                  <Bar
+                    dataKey="units"
+                    fill={CHART_COLOR}
+                    radius={BAR_RADIUS}
+                    maxBarSize={BAR_SIZE}
+                    onClick={(data) => showToughnessDrilldown((data.payload as ToughnessBucket).toughness)}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <p className="muted">No toughness data to chart yet.</p>
+          )}
+        </details>
+
+        <details className="role-group" open>
+          <summary className="role-group-header">
             <span>Save / Invulnerable Save</span>
           </summary>
           <p className="muted">
             Units grouped by armor Save and Invulnerable Save (best 2+ to worst 7+/none), so both
-            distributions read on the same scale.
+            distributions read on the same scale. Click a bar to see which units it's made of.
           </p>
           {saveBuckets.length > 0 ? (
-            <div className="chart-container">
+            <div className="chart-container chart-clickable">
               <ResponsiveContainer width="100%" height={260}>
                 <BarChart data={saveBuckets}>
                   <CartesianGrid strokeDasharray="" stroke="#333747" vertical={false} />
@@ -557,19 +987,62 @@ export function RosterEditor() {
                   <YAxis allowDecimals={false} stroke="#8b8f9e" />
                   <Tooltip contentStyle={{ background: "#1e212b", border: "1px solid #333747" }} />
                   <Legend />
-                  <Bar dataKey="sv" name="Armor Save" fill={CHART_COLOR} radius={BAR_RADIUS} maxBarSize={BAR_SIZE} />
+                  <Bar
+                    dataKey="sv"
+                    name="Armor Save"
+                    fill={CHART_COLOR}
+                    radius={BAR_RADIUS}
+                    maxBarSize={BAR_SIZE}
+                    onClick={(data) => showSaveDrilldown("Sv", (data.payload as SaveBucket).save)}
+                  />
                   <Bar
                     dataKey="insv"
                     name="Invulnerable Save"
                     fill={CHART_COLOR_SECONDARY}
                     radius={BAR_RADIUS}
                     maxBarSize={BAR_SIZE}
+                    onClick={(data) => showSaveDrilldown("InSv", (data.payload as SaveBucket).save)}
                   />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           ) : (
             <p className="muted">No save data to chart yet.</p>
+          )}
+        </details>
+
+        <details className="role-group" open>
+          <summary className="role-group-header">
+            <span>Wounds</span>
+          </summary>
+          <p className="muted">
+            Units in this roster grouped by Wounds — one bar contribution per unit entry, not
+            weighted by squad size. Click a bar to see which units it's made of.
+          </p>
+          {woundsBuckets.length > 0 ? (
+            <div className="chart-container chart-clickable">
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={woundsBuckets}>
+                  <CartesianGrid strokeDasharray="" stroke="#333747" vertical={false} />
+                  <XAxis dataKey="wounds" stroke="#8b8f9e" />
+                  <YAxis allowDecimals={false} stroke="#8b8f9e" />
+                  <Tooltip
+                    contentStyle={{ background: "#1e212b", border: "1px solid #333747" }}
+                    labelFormatter={(w) => `Wounds ${w}`}
+                    formatter={(value) => [value, "units"]}
+                  />
+                  <Bar
+                    dataKey="units"
+                    fill={CHART_COLOR}
+                    radius={BAR_RADIUS}
+                    maxBarSize={BAR_SIZE}
+                    onClick={(data) => showWoundsDrilldown((data.payload as WoundsBucket).wounds)}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <p className="muted">No wounds data to chart yet.</p>
           )}
         </details>
       </details>
@@ -842,6 +1315,14 @@ export function RosterEditor() {
           skillLabel={weaponDrilldown.skillLabel}
           contributions={weaponDrilldown.contributions}
           onClose={() => setWeaponDrilldown(null)}
+        />
+      )}
+
+      {unitListModal && (
+        <UnitListModal
+          title={unitListModal.title}
+          units={unitListModal.units}
+          onClose={() => setUnitListModal(null)}
         />
       )}
     </div>

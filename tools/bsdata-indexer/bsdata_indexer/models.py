@@ -46,6 +46,9 @@ class UnitDefinition:
     faction: str  # catalogue file stem, e.g. "Aeldari - Craftworlds"
     name: str
     keywords: list[str] = field(default_factory=list)
+    # GW's "Battlefield Role" badge (Character, Battleline, Infantry, Vehicle, Epic Hero, ...) --
+    # the one categoryLink BSData marks primary. None for an entry with no primary category.
+    role: str | None = None
     is_legends: bool = False
     stats: dict[str, str] = field(default_factory=dict)  # M/T/Sv/W/LD/OC from the "Unit" profile
     abilities: list[Ability] = field(default_factory=list)  # from "Abilities"-typed profiles

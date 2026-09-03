@@ -33,6 +33,7 @@ def test_resolve_faction_matches_known_points_and_keywords():
     assert wraithlord.catalogue_points == 130
     assert "Monster" in wraithlord.keywords
     assert "Walker" in wraithlord.keywords
+    assert wraithlord.role == "Monster"  # the primary categoryLink, not "Walker" (primary: false)
     assert wraithlord.stats == {"M": '8"', "T": "10", "Sv": "2+", "W": "10", "LD": "8+", "OC": "3"}
     assert len(wraithlord.abilities) == 1
     assert wraithlord.abilities[0].name == "Fated Hero"
@@ -52,6 +53,7 @@ def test_resolve_faction_flags_unresolvable_target():
     missing = by_name["Totally New Unit"]
     assert missing.resolved is False
     assert missing.keywords == []
+    assert missing.role is None
     assert missing.catalogue_points is None
 
 

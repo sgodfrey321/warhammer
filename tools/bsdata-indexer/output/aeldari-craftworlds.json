@@ -79,6 +79,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Epic Hero",
       "rules": [
         "Stealth",
         "Infiltrators",
@@ -208,6 +209,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Epic Hero",
       "rules": [
         "Leader",
         "Battle Focus"
@@ -428,6 +430,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Battle Focus",
         "Fights First",
@@ -685,6 +688,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Battle Focus",
         "Leader"
@@ -940,6 +944,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Battle Focus",
         "Deep Strike",
@@ -1167,6 +1172,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Epic Hero",
       "rules": [
         "Deadly Demise",
         "Battle Focus"
@@ -1308,6 +1314,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Epic Hero",
       "rules": [
         "Deep Strike",
         "Leader",
@@ -1420,6 +1427,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Battle Focus"
@@ -1546,6 +1554,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Battle Focus",
         "Leader",
@@ -1752,6 +1761,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Battle Focus"
@@ -2150,6 +2160,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Mounted",
       "rules": [
         "Scouts"
       ],
@@ -2643,6 +2654,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Fights First"
       ],
@@ -2994,6 +3006,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Battle Focus",
         "Scouts",
@@ -3401,6 +3414,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Battleline",
       "rules": [
         "Scouts",
         "Battle Focus",
@@ -3833,6 +3847,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Scouts",
         "Battle Focus",
@@ -4467,6 +4482,7 @@
       ],
       "name": "Craftworld Warleader [Crucible]",
       "points": [],
+      "role": "Character",
       "rules": [
         "Crucible",
         "Leader",
@@ -4967,6 +4983,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [],
       "source_catalogue_id": "54dc-d372-1974-2384",
       "source_entry_id": "90c9-aaac-5ef8-f043",
@@ -5120,6 +5137,7 @@
           "range": "[2,)"
         }
       ],
+      "role": "Infantry",
       "rules": [],
       "source_catalogue_id": "d91c-7d02-673a-97ed",
       "source_entry_id": "82ac-7d93-df55-5504",
@@ -5358,16 +5376,17 @@
         {
           "label": "Your Unit Costs",
           "models": 5,
-          "points": 100,
+          "points": 95,
           "range": "[1,)"
         },
         {
           "label": "Your Unit Costs",
           "models": 10,
-          "points": 210,
+          "points": 200,
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Battle Focus"
       ],
@@ -5550,6 +5569,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Lone Operative",
         "Battle Focus",
@@ -5739,16 +5759,17 @@
         {
           "label": "Your Unit Costs",
           "models": 5,
-          "points": 75,
+          "points": 70,
           "range": "[1,)"
         },
         {
           "label": "Your Unit Costs",
           "models": 10,
-          "points": 150,
+          "points": 140,
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Battle Focus"
       ],
@@ -5977,6 +5998,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Mounted",
       "rules": [
         "Battle Focus",
         "Scouts",
@@ -6126,10 +6148,11 @@
         {
           "label": "Your Unit Costs",
           "models": 1,
-          "points": 130,
+          "points": 120,
           "range": "[1,)"
         }
       ],
+      "role": "Epic Hero",
       "rules": [
         "Battle Focus",
         "Leader"
@@ -6350,6 +6373,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Deep Strike",
@@ -6588,6 +6612,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Battle Focus",
         "Leader"
@@ -6781,6 +6806,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Battle Focus",
         "Leader"
@@ -7046,6 +7072,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Battle Focus"
       ],
@@ -7266,6 +7293,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Battle Focus"
@@ -7446,6 +7474,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Battle Focus",
         "Deadly Demise"
@@ -7610,6 +7639,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Epic Hero",
       "rules": [
         "Battle Focus",
         "Leader"
@@ -8087,6 +8117,7 @@
       ],
       "name": "Ghost Warrior [Crucible]",
       "points": [],
+      "role": "Character",
       "rules": [
         "Crucible",
         "Battle Focus",
@@ -8664,6 +8695,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Battleline",
       "rules": [
         "Battle Focus",
         "Fights First",
@@ -8859,6 +8891,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Battle Focus"
       ],
@@ -9042,6 +9075,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Battle Focus"
@@ -9315,6 +9349,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Battle Focus",
         "Fights First"
@@ -9491,6 +9526,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Epic Hero",
       "rules": [
         "Infiltrators",
         "Leader",
@@ -9618,6 +9654,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Epic Hero",
       "rules": [
         "Leader",
         "Deep Strike",
@@ -9733,6 +9770,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Epic Hero",
       "rules": [
         "Leader",
         "Fights First",
@@ -9864,6 +9902,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Epic Hero",
       "rules": [
         "Leader",
         "Infiltrators",
@@ -9992,6 +10031,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Epic Hero",
       "rules": [
         "Scouts",
         "Battle Focus",
@@ -10122,6 +10162,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Battle Focus",
         "Lone Operative",
@@ -10277,6 +10318,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Epic Hero",
       "rules": [
         "Battle Focus",
         "Leader",
@@ -10483,6 +10525,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Battle Focus"
@@ -10669,6 +10712,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Epic Hero",
       "rules": [
         "Leader",
         "Battle Focus"
@@ -10806,6 +10850,7 @@
           "range": "[2,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Battle Focus"
@@ -10962,6 +11007,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Battle Focus"
       ],
@@ -11175,6 +11221,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Monster",
       "rules": [
         "Deadly Demise",
         "Battle Focus"
@@ -11389,6 +11436,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Battle Focus"
@@ -11551,6 +11599,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Epic Hero",
       "rules": [
         "Leader",
         "Battle Focus",
@@ -11698,6 +11747,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Infiltrators",
         "Stealth",
@@ -11868,6 +11918,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Monster",
       "rules": [
         "Deadly Demise",
         "Battle Focus"
@@ -12086,6 +12137,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Battle Focus"
@@ -12351,6 +12403,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Deep Strike",
         "Stealth",
@@ -12491,6 +12544,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [],
       "source_catalogue_id": "20a4-a9b7-26ae-9291",
       "source_entry_id": "2c93-f32d-64ea-b829",
@@ -12640,6 +12694,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Stealth",
         "Leader",
@@ -12858,6 +12913,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Mounted",
       "rules": [
         "Battle Focus"
       ],
@@ -13042,6 +13098,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Mounted",
       "rules": [
         "Scouts",
         "Stealth",
@@ -13255,6 +13312,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Monster",
       "rules": [
         "Deadly Demise",
         "Deep Strike",
@@ -13786,6 +13844,7 @@
       ],
       "name": "Skyrunner [Crucible]",
       "points": [],
+      "role": "Character",
       "rules": [
         "Crucible",
         "Leader",
@@ -14302,6 +14361,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Mounted",
       "rules": [
         "Battle Focus",
         "Disparate Paths",
@@ -14447,6 +14507,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Epic Hero",
       "rules": [
         "Fights First",
         "Lone Operative",
@@ -14558,10 +14619,11 @@
         {
           "label": "Your Unit Costs",
           "models": 1,
-          "points": 55,
+          "points": 50,
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Battle Focus",
         "Stealth"
@@ -14698,6 +14760,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Battle Focus"
       ],
@@ -14834,6 +14897,7 @@
           "range": "[4,)"
         }
       ],
+      "role": "Dedicated Transport",
       "rules": [
         "Deadly Demise",
         "Firing Deck",
@@ -14997,6 +15061,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Battle Focus",
         "Support"
@@ -15377,10 +15442,11 @@
         {
           "label": "Your Unit Costs",
           "models": 11,
-          "points": 110,
+          "points": 100,
           "range": "[1,)"
         }
       ],
+      "role": "Battleline",
       "rules": [
         "Battle Focus",
         "Fights First",
@@ -15620,6 +15686,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Infiltrators",
         "Battle Focus",
@@ -15888,6 +15955,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Deep Strike",
         "Battle Focus"
@@ -16088,10 +16156,11 @@
         {
           "label": "Your Unit Costs",
           "models": 1,
-          "points": 90,
+          "points": 80,
           "range": "[1,)"
         }
       ],
+      "role": "Epic Hero",
       "rules": [
         "Battle Focus",
         "Disparate Paths",
@@ -16245,6 +16314,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Epic Hero",
       "rules": [
         "Deadly Demise",
         "Battle Focus",
@@ -16639,6 +16709,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Battle Focus",
         "Infiltrators",
@@ -16859,6 +16930,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Battle Focus",
         "Leader",
@@ -17044,6 +17116,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Battle Focus"
@@ -17204,6 +17277,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Battle Focus",
@@ -17343,6 +17417,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [],
       "source_catalogue_id": "7101-e092-02da-6476",
       "source_entry_id": "5df4-e13a-f6f4-b672",
@@ -17505,6 +17580,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Battle Focus",
@@ -17713,6 +17789,7 @@
       ],
       "name": "Vypers",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Battle Focus"
       ],
@@ -17940,7 +18017,7 @@
         {
           "label": "Your Unit Costs",
           "models": 1,
-          "points": 85,
+          "points": 80,
           "range": "[1,)"
         },
         {
@@ -17950,6 +18027,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Battle Focus",
         "Scouts"
@@ -18159,10 +18237,11 @@
         {
           "label": "Your Unit Costs",
           "models": 1,
-          "points": 45,
+          "points": 40,
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Support",
         "Battle Focus"
@@ -18388,6 +18467,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Battle Focus",
         "Support",
@@ -18631,7 +18711,7 @@
         {
           "label": "Your Unit Costs",
           "models": 1,
-          "points": 55,
+          "points": 45,
           "range": "[1,)"
         },
         {
@@ -18641,6 +18721,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Mounted",
       "rules": [
         "Battle Focus",
         "Support",
@@ -18838,6 +18919,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Battle Focus"
@@ -19103,6 +19185,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Battle Focus",
         "Deep Strike"
@@ -19343,6 +19426,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deep Strike",
         "Battle Focus"
@@ -19622,6 +19706,7 @@
           "range": "[4,)"
         }
       ],
+      "role": "Dedicated Transport",
       "rules": [
         "Deadly Demise",
         "Battle Focus"
@@ -19806,6 +19891,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Fortification",
       "rules": [
         "Battle Focus",
         "Deadly Demise"
@@ -19981,6 +20067,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Mounted",
       "rules": [
         "Battle Focus",
         "Scouts",
@@ -20123,6 +20210,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Feel No Pain"
       ],
@@ -20249,6 +20337,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Feel No Pain"
       ],
@@ -20440,6 +20529,7 @@
           "range": "[2,)"
         }
       ],
+      "role": "Monster",
       "rules": [
         "Deadly Demise",
         "Battle Focus"
@@ -20666,6 +20756,7 @@
           "range": "[2,)"
         }
       ],
+      "role": "Monster",
       "rules": [
         "Deadly Demise",
         "Battle Focus"
@@ -20945,6 +21036,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Monster",
       "rules": [
         "Deadly Demise",
         "Feel No Pain"
@@ -21272,6 +21364,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Monster",
       "rules": [
         "Deadly Demise",
         "Battle Focus"
@@ -21508,6 +21601,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Battle Focus",
@@ -21691,6 +21785,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Battle Focus",
         "Disparate Paths",
@@ -22061,6 +22156,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Battleline",
       "rules": [
         "Disparate Paths",
         "Battle Focus",
@@ -22286,6 +22382,7 @@
           "range": "[4,)"
         }
       ],
+      "role": "Dedicated Transport",
       "rules": [
         "Deadly Demise",
         "Firing Deck",
@@ -22633,6 +22730,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Mounted",
       "rules": [
         "Disparate Paths",
         "Battle Focus"
@@ -22821,6 +22919,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Battle Focus",
         "Disparate Paths"
@@ -22970,6 +23069,7 @@
           "range": "[4,)"
         }
       ],
+      "role": "Dedicated Transport",
       "rules": [
         "Deadly Demise",
         "Firing Deck",
@@ -23155,6 +23255,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Battleline",
       "rules": [
         "Battle Focus",
         "Disparate Paths",
@@ -23298,6 +23399,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Epic Hero",
       "rules": [
         "Battle Focus",
         "Leader",

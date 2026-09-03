@@ -52,3 +52,10 @@ def test_search_by_name(client, session):
     assert resp.status_code == 200
     names = [u["name"] for u in resp.json()]
     assert names == ["Asurmen"]
+
+
+def test_list_factions(client, session):
+    _seed(session)
+    resp = client.get("/unit-definitions/factions")
+    assert resp.status_code == 200
+    assert resp.json() == ["Aeldari - Craftworlds", "Chaos - World Eaters"]

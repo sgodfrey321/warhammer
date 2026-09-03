@@ -20,6 +20,9 @@ class UnitDefinition(SQLModel, table=True):
     name: str
     points_cost: int = 0
     keywords: list[str] = Field(default_factory=list, sa_column=Column(JSON))
+    # GW's "Battlefield Role" badge (Character, Battleline, Infantry, Vehicle, Epic Hero, ...) --
+    # the one categoryLink BSData marks primary. None for a unit with no primary category.
+    role: Optional[str] = None
     source_catalogue_id: str
     source_entry_id: str
     is_legends: bool = False

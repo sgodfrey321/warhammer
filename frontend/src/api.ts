@@ -4,12 +4,15 @@ import type {
   DeclaredStatePool,
   Disposition,
   FactionArmyRules,
+  FactionDetachments,
   LayoutMatchup,
   Mission,
   PlayerState,
   Roster,
   RosterImportResult,
   SecondaryMission,
+  SimulateRequest,
+  SimulateResponse,
   TurnStateOut,
   Unit,
   UnitAttachment,
@@ -42,7 +45,7 @@ export const api = {
   getRoster: (id: number) => request<Roster>(`/rosters/${id}`),
   createRoster: (payload: { name: string; faction: string; points_limit?: number | null }) =>
     request<Roster>("/rosters", { method: "POST", body: JSON.stringify(payload) }),
-  updateRoster: (id: number, payload: Partial<Pick<Roster, "name" | "faction" | "points_limit">>) =>
+  updateRoster: (id: number, payload: Partial<Pick<Roster, "name" | "faction" | "points_limit" | "detachments">>) =>
     request<Roster>(`/rosters/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
   deleteRoster: (id: number) => request<void>(`/rosters/${id}`, { method: "DELETE" }),
   importRoster: (data: unknown) =>
@@ -83,8 +86,15 @@ export const api = {
 
   searchUnitDefinitions: (search: string) =>
     request<UnitDefinition[]>(`/unit-definitions?search=${encodeURIComponent(search)}`),
+  listAllUnitDefinitions: () => request<UnitDefinition[]>("/unit-definitions"),
+  listUnitDefinitionsByFaction: (faction: string) =>
+    request<UnitDefinition[]>(`/unit-definitions?faction=${encodeURIComponent(faction)}`),
+  listFactions: () => request<string[]>("/unit-definitions/factions"),
+
+  simulate: (body: SimulateRequest) => request<SimulateResponse>("/simulate", { method: "POST", body: JSON.stringify(body) }),
 
   listArmyRules: () => request<FactionArmyRules[]>("/army-rules"),
+  listDetachments: () => request<FactionDetachments[]>("/detachments"),
   listPrimaryMissions: () => request<Mission[]>("/primary-missions"),
   listSecondaryMissions: () => request<SecondaryMission[]>("/secondary-missions"),
   listLayouts: () => request<LayoutMatchup[]>("/layouts"),
@@ -97,6 +107,7 @@ export const api = {
     layout_number?: number | null;
   }) => request<BattleOut>("/battles", { method: "POST", body: JSON.stringify(payload) }),
   listBattlesForRoster: (rosterId: number) => request<BattleOut[]>(`/battles?roster_id=${rosterId}`),
+  listBattles: () => request<BattleOut[]>("/battles"),
   getBattle: (id: number) => request<BattleOut>(`/battles/${id}`),
   updateBattleSetup: (
     battleId: number,

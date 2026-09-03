@@ -11,6 +11,12 @@ from ..models import UnitDefinition
 router = APIRouter(prefix="/unit-definitions", tags=["unit-definitions"])
 
 
+@router.get("/factions", response_model=list[str])
+def list_factions(session: Session = Depends(get_session)):
+    rows = session.exec(select(UnitDefinition.faction).distinct()).all()
+    return sorted(rows)
+
+
 @router.get("", response_model=list[UnitDefinition])
 def list_unit_definitions(
     faction: Optional[str] = None,

@@ -82,7 +82,7 @@ def main() -> None:
         )
 
     backend = subprocess.Popen(
-        [str(VENV_PYTHON), "-m", "uvicorn", "app.main:app", "--reload", "--host", "0.0.0.0"],
+        [str(VENV_PYTHON), "-m", "uvicorn", "app.main:app",  "--host", "0.0.0.0"],
         cwd=BACKEND_DIR,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,

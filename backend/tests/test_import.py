@@ -24,6 +24,7 @@ def test_import_real_aeldari_output(session):
     assert asurmen is not None
     assert asurmen.points_cost > 0
     assert "Phoenix Lord" in asurmen.keywords
+    assert asurmen.role == "Epic Hero"
     assert asurmen.stats.get("M") == '7"'
     assert any(a["name"] == "Hand of Asuryan" for a in asurmen.abilities)
 

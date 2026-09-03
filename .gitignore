@@ -4,3 +4,6 @@ __pycache__/
 *.pyc
 *.db
 *.log
+
+# GW copyrighted rulebook PDFs -- kept locally for reference, never committed
+docs/rules/*.pdf

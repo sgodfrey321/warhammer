@@ -39,6 +39,7 @@ class ResolvedEntry:
     name: str  # the entryLink's own name -- carries faction-specific overrides / "[Legends]"
     target_id: str | None
     keywords: list[str]
+    role: str | None  # the primary categoryLink's name, e.g. "Character", "Battleline"
     stats: dict[str, str]  # M/T/Sv/W/LD/OC, from the entry's own "Unit"-typed profile
     abilities: list[Ability]  # from the entry's own "Abilities"-typed profiles
     rules: list[str]  # names linked via the entry's own infoLinks[type=="rule"]
@@ -119,6 +120,18 @@ def _primary_points(entry: dict) -> int | None:
 
 def _keywords(entry: dict) -> list[str]:
     return [link["name"] for link in entry.get("categoryLinks") or []]
+
+
+# GW's "Battlefield Role" badge (Character, Battleline, Infantry, Vehicle, Epic Hero, ...) --
+# BSData marks exactly this category with categoryLinks[].primary == true (confirmed against
+# real cached data: Angron's categoryLinks include both "Monster" and "Epic Hero", only "Epic
+# Hero" carries primary: true, matching Angron's real datasheet role). Falls back to None for
+# an entry with no primary category rather than guessing from keyword names.
+def _battlefield_role(entry: dict) -> str | None:
+    for link in entry.get("categoryLinks") or []:
+        if link.get("primary"):
+            return link["name"]
+    return None
 
 
 def _characteristics(profile: dict) -> dict[str, str]:
@@ -403,6 +416,7 @@ def resolve_faction(
                 name=link["name"],
                 target_id=link.get("targetId"),
                 keywords=_keywords(target) if target else [],
+                role=_battlefield_role(target) if target else None,
                 stats=(
                     (
                         _stats(target)

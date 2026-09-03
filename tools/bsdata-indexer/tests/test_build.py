@@ -106,6 +106,7 @@ def test_build_faction_joins_catalogue_and_mfm(monkeypatch):
     assert wraithlord.mfm_matched is True
     assert wraithlord.points[0].points == 125  # MFM value wins over the catalogue's 130
     assert wraithlord.is_legends is False
+    assert wraithlord.role == "Monster"
     assert wraithlord.id == "aeldari-craftworlds/wraithlord"
     assert wraithlord.stats["T"] == "10"
     assert wraithlord.abilities[0].name == "Fated Hero"

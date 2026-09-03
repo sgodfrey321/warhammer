@@ -184,6 +184,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Oath of Moment",
         "Templar Vows"
@@ -367,6 +368,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Support",
         "Oath of Moment",
@@ -600,6 +602,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Support",
         "Deep Strike",
@@ -935,6 +938,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Oath of Moment",
@@ -1224,6 +1228,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Support",
         "Oath of Moment",
@@ -1385,6 +1390,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Support",
         "Oath of Moment",
@@ -1545,6 +1551,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Oath of Moment",
@@ -1807,6 +1814,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Battleline",
       "rules": [
         "Oath of Moment",
         "Templar Vows"
@@ -2171,6 +2179,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Oath of Moment",
         "Deep Strike",
@@ -2692,6 +2701,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Oath of Moment",
         "Templar Vows"
@@ -3331,6 +3341,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Deep Strike",
         "Oath of Moment",
@@ -3693,6 +3704,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Oath of Moment",
         "Templar Vows"
@@ -3957,6 +3969,7 @@
           "range": "[2,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -4211,6 +4224,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Mounted",
       "rules": [
         "Oath of Moment"
       ],
@@ -4391,6 +4405,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -5019,6 +5034,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Mounted",
       "rules": [
         "Oath of Moment",
         "Templar Vows"
@@ -5407,6 +5423,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Support",
         "Oath of Moment",
@@ -5633,6 +5650,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Oath of Moment",
         "Templar Vows"
@@ -5857,6 +5875,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -6055,6 +6074,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Hover",
@@ -6287,6 +6307,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Oath of Moment",
@@ -6586,6 +6607,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Oath of Moment",
@@ -6810,6 +6832,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Infiltrators",
@@ -6996,6 +7019,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Deep Strike",
@@ -7331,6 +7355,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Oath of Moment",
@@ -7720,6 +7745,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Deep Strike",
         "Leader",
@@ -7970,6 +7996,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Epic Hero",
       "rules": [
         "Deadly Demise",
         "Oath of Moment"
@@ -8206,6 +8233,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Oath of Moment",
         "Templar Vows"
@@ -8477,10 +8505,11 @@
         {
           "label": "Your Unit Costs",
           "models": 6,
-          "points": 350,
+          "points": 365,
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Oath of Moment",
         "Templar Vows"
@@ -8706,6 +8735,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -9483,6 +9513,7 @@
       ],
       "name": "Champion of the Chapter [Crucible]",
       "points": [],
+      "role": "Character",
       "rules": [
         "Oath of Moment",
         "Templar Vows",
@@ -10214,6 +10245,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Oath of Moment",
@@ -10444,6 +10476,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -10679,6 +10712,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Deep Strike",
         "Leader",
@@ -10839,6 +10873,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Oath of Moment",
@@ -11127,6 +11162,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Deep Strike",
         "Leader",
@@ -12053,6 +12089,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Oath of Moment",
         "Templar Vows"
@@ -12560,6 +12597,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Oath of Moment",
         "Leader",
@@ -12863,6 +12901,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Oath of Moment",
         "Templar Vows"
@@ -13352,6 +13391,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Mounted",
       "rules": [
         "Oath of Moment",
         "Templar Vows"
@@ -13654,6 +13694,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Deep Strike",
@@ -13884,6 +13925,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -14215,6 +14257,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -14568,6 +14611,7 @@
           "range": "[2,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Oath of Moment",
         "Templar Vows"
@@ -15050,6 +15094,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Oath of Moment",
         "Templar Vows"
@@ -15494,6 +15539,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -15694,6 +15740,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Deep Strike",
@@ -15773,6 +15820,7 @@
           "range": "[4,)"
         }
       ],
+      "role": "Dedicated Transport",
       "rules": [
         "Deadly Demise",
         "Deep Strike",
@@ -15957,6 +16005,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Infiltrators",
         "Stealth",
@@ -16247,6 +16296,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Oath of Moment",
         "Templar Vows"
@@ -16398,6 +16448,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [],
       "source_catalogue_id": "a5ca-1425-805a-360d",
       "source_entry_id": "3bc7-8328-a080-3958",
@@ -16621,6 +16672,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -17002,6 +17054,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -17287,6 +17340,7 @@
       ],
       "name": "Ferren Areios [Legends]",
       "points": [],
+      "role": "Epic Hero",
       "rules": [
         "Oath of Moment",
         "Leader"
@@ -17450,6 +17504,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Hover",
@@ -17634,6 +17689,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Oath of Moment"
       ],
@@ -17816,6 +17872,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment"
@@ -18025,6 +18082,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment"
@@ -18221,6 +18279,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment"
@@ -18400,6 +18459,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Fortification",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -18665,6 +18725,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Battleline",
       "rules": [
         "Oath of Moment",
         "Templar Vows"
@@ -18901,6 +18962,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Oath of Moment",
         "Templar Vows"
@@ -19090,6 +19152,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -19263,6 +19326,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Oath of Moment",
@@ -19489,6 +19553,7 @@
           "range": "[4,)"
         }
       ],
+      "role": "Dedicated Transport",
       "rules": [
         "Deadly Demise",
         "Firing Deck",
@@ -19790,6 +19855,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Deep Strike",
         "Oath of Moment",
@@ -20016,6 +20082,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Scouts",
         "Oath of Moment",
@@ -20215,6 +20282,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Oath of Moment",
         "Templar Vows"
@@ -20425,6 +20493,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Infiltrators",
         "Oath of Moment",
@@ -20820,6 +20889,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Battleline",
       "rules": [
         "Oath of Moment",
         "Templar Vows"
@@ -21097,6 +21167,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Mounted",
       "rules": [
         "Oath of Moment",
         "Templar Vows"
@@ -21300,6 +21371,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Scouts",
         "Deadly Demise",
@@ -21544,6 +21616,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -21796,6 +21869,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Deep Strike",
@@ -22001,6 +22075,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Oath of Moment",
@@ -22306,6 +22381,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -22661,6 +22737,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -22935,6 +23012,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -23230,6 +23308,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment"
@@ -23466,6 +23545,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -23685,6 +23765,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -23879,6 +23960,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -24102,6 +24184,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -24348,16 +24431,17 @@
         {
           "label": "Your 1st To 2nd Units Cost",
           "models": 1,
-          "points": 250,
+          "points": 260,
           "range": "[1,2]"
         },
         {
           "label": "Your 3rd + Unit Costs",
           "models": 1,
-          "points": 270,
+          "points": 280,
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -24560,6 +24644,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Oath of Moment",
         "Templar Vows",
@@ -24729,6 +24814,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Dedicated Transport",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -24879,6 +24965,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Deep Strike",
@@ -25056,6 +25143,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Deep Strike",
@@ -25246,6 +25334,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Deep Strike",
@@ -25502,6 +25591,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -25772,6 +25862,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Oath of Moment"
@@ -25971,6 +26062,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Infiltrators",
@@ -26180,10 +26272,11 @@
         {
           "label": "Your Unit Costs",
           "models": 1,
-          "points": 75,
+          "points": 85,
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Oath of Moment",
@@ -26486,6 +26579,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Oath of Moment"
@@ -26878,6 +26972,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Oath of Moment"
@@ -27734,6 +27829,7 @@
       ],
       "name": "Librarius Adept [Crucible]",
       "points": [],
+      "role": "Character",
       "rules": [
         "Leader",
         "Oath of Moment",
@@ -28551,6 +28647,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Support",
         "Oath of Moment",
@@ -28797,6 +28894,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Infiltrators",
         "Scouts",
@@ -28961,6 +29059,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Scouts",
         "Support",
@@ -29113,6 +29212,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Feel No Pain",
         "Infiltrators",
@@ -29310,6 +29410,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -29603,6 +29704,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Oath of Moment",
         "Deadly Demise",
@@ -29988,6 +30090,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Mounted",
       "rules": [
         "Oath of Moment",
         "Templar Vows"
@@ -30220,6 +30323,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -30428,6 +30532,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -30603,6 +30708,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Oath of Moment",
@@ -30791,6 +30897,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Oath of Moment",
         "Templar Vows"
@@ -31018,6 +31125,7 @@
           "range": "[4,)"
         }
       ],
+      "role": "Dedicated Transport",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -31267,6 +31375,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -31521,6 +31630,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Scouts",
         "Oath of Moment",
@@ -31877,6 +31987,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -32279,6 +32390,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Dedicated Transport",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -32764,6 +32876,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Deep Strike",
         "Oath of Moment",
@@ -33053,6 +33166,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment"
@@ -33342,6 +33456,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment"
@@ -33582,6 +33697,7 @@
           "range": "[4,)"
         }
       ],
+      "role": "Dedicated Transport",
       "rules": [
         "Firing Deck",
         "Deadly Demise",
@@ -33743,6 +33859,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -34145,6 +34262,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Mounted",
       "rules": [
         "Scouts",
         "Oath of Moment",
@@ -34573,6 +34691,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Infiltrators",
         "Stealth",
@@ -35082,6 +35201,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Scouts",
         "Infiltrators",
@@ -35347,6 +35467,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -35559,6 +35680,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -35785,6 +35907,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -36009,6 +36132,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -36221,6 +36345,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -36416,6 +36541,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -36639,6 +36765,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -36867,6 +36994,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -37246,6 +37374,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Oath of Moment"
       ],
@@ -37521,6 +37650,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Hover",
@@ -37744,6 +37874,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deep Strike",
         "Deadly Demise",
@@ -37914,6 +38045,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deep Strike",
         "Deadly Demise",
@@ -38082,6 +38214,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Deep Strike",
@@ -38297,6 +38430,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -38611,6 +38745,7 @@
           "range": "[2,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Hover",
         "Deadly Demise",
@@ -38904,6 +39039,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -39136,6 +39272,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Deep Strike",
         "Oath of Moment",
@@ -39767,6 +39904,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Battleline",
       "rules": [
         "Oath of Moment",
         "Templar Vows"
@@ -40178,6 +40316,7 @@
       ],
       "name": "Tarantula Air Defense Battery [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Templar Vows"
@@ -40301,6 +40440,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Oath of Moment",
         "Templar Vows"
@@ -40466,6 +40606,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Oath of Moment",
@@ -40822,6 +40963,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Oath of Moment",
@@ -41193,6 +41335,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Deep Strike",
         "Oath of Moment",
@@ -41531,6 +41674,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Deep Strike",
         "Oath of Moment"
@@ -41784,6 +41928,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -41999,6 +42144,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Dedicated Transport",
       "rules": [
         "Deadly Demise",
         "Deep Strike",
@@ -42235,6 +42381,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Oath of Moment",
         "Templar Vows"
@@ -42455,6 +42602,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Hover",
@@ -42643,6 +42791,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Hover",
         "Deadly Demise",
@@ -42831,6 +42980,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -43183,6 +43333,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Oath of Moment",
         "Templar Vows"
@@ -43612,6 +43763,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Oath of Moment",
         "Deep Strike",
@@ -44041,6 +44193,7 @@
       ],
       "name": "Venerable Battle-Brother [Crucible]",
       "points": [],
+      "role": "Character",
       "rules": [
         "Oath of Moment",
         "Templar Vows",
@@ -44566,6 +44719,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -44889,6 +45043,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -45065,6 +45220,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -45247,6 +45403,7 @@
           "range": "[2,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -45409,6 +45566,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -45559,6 +45717,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",

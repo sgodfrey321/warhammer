@@ -101,6 +101,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Epic Hero",
       "rules": [
         "Leader",
         "Cabal of Sorcerers"
@@ -239,6 +240,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Battleline",
       "rules": [
         "Deep Strike",
         "Infiltrators"
@@ -658,6 +660,7 @@
       ],
       "name": "Brayherd Chieftain [Crucible]",
       "points": [],
+      "role": "Character",
       "rules": [
         "Cabal of Sorcerers",
         "Leader",
@@ -1336,6 +1339,7 @@
       ],
       "name": "Brayherd Shaman [Crucible]",
       "points": [],
+      "role": "Character",
       "rules": [
         "Cabal of Sorcerers",
         "Leader",
@@ -1786,6 +1790,7 @@
       ],
       "name": "Cerberus [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -2022,6 +2027,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise"
       ],
@@ -2288,6 +2294,7 @@
       ],
       "name": "Chaos Lord on Disc of Tzeentch [Legends]",
       "points": [],
+      "role": "Character",
       "rules": [
         "Leader"
       ],
@@ -2572,6 +2579,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise"
       ],
@@ -2818,6 +2826,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise"
       ],
@@ -3028,6 +3037,7 @@
           "range": "[4,)"
         }
       ],
+      "role": "Dedicated Transport",
       "rules": [
         "Deadly Demise",
         "Firing Deck"
@@ -3153,6 +3163,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Beast",
       "rules": [
         "Feel No Pain"
       ],
@@ -3232,6 +3243,7 @@
       ],
       "name": "Chaos Spawn (Flesh Change)",
       "points": [],
+      "role": "Beast",
       "rules": [
         "Feel No Pain",
         "Lone Operative"
@@ -3381,6 +3393,7 @@
       ],
       "name": "Chaos Thunderhawk [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Hover"
@@ -3590,6 +3603,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise"
       ],
@@ -3777,6 +3791,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Deadly Demise",
         "Cabal of Sorcerers"
@@ -3956,6 +3971,7 @@
           "range": "[2,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Deadly Demise",
         "Cabal of Sorcerers",
@@ -4367,6 +4383,7 @@
       ],
       "name": "Daemonic Charioteer [Crucible]",
       "points": [],
+      "role": "Character",
       "rules": [
         "Deep Strike",
         "Leader",
@@ -5024,6 +5041,7 @@
       ],
       "name": "Daemonic Herald [Crucible]",
       "points": [],
+      "role": "Character",
       "rules": [
         "Deep Strike",
         "Leader",
@@ -5543,10 +5561,11 @@
         {
           "label": "Your 2nd + Unit Costs",
           "models": 1,
-          "points": 340,
+          "points": 350,
           "range": "[2,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise"
       ],
@@ -5880,6 +5899,7 @@
       ],
       "name": "Deredeo Dreadnought [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -6130,10 +6150,11 @@
         {
           "label": "Your Unit Costs",
           "models": 1,
-          "points": 90,
+          "points": 95,
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Cabal of Sorcerers"
@@ -6313,6 +6334,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Cabal of Sorcerers"
@@ -6546,6 +6568,7 @@
       ],
       "name": "Falchion [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -6920,6 +6943,7 @@
       ],
       "name": "Fellblade [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -7243,6 +7267,7 @@
       ],
       "name": "Fire Raptor Gunship [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Hover",
@@ -7418,6 +7443,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Deep Strike"
       ],
@@ -7562,6 +7588,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise"
       ],
@@ -7842,6 +7869,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise"
       ],
@@ -8107,6 +8135,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Hover"
@@ -8253,6 +8282,7 @@
       ],
       "name": "Hell Talon [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise"
       ],
@@ -8398,6 +8428,7 @@
       ],
       "name": "Hellblade [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise"
       ],
@@ -8793,6 +8824,7 @@
       ],
       "name": "Immortal Champion [Crucible]",
       "points": [],
+      "role": "Character",
       "rules": [
         "Deep Strike",
         "The Shadow of Chaos",
@@ -9213,10 +9245,11 @@
         {
           "label": "Your Unit Costs",
           "models": 1,
-          "points": 95,
+          "points": 100,
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Cabal of Sorcerers"
@@ -9385,6 +9418,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Epic Hero",
       "rules": [
         "Deadly Demise",
         "Deep Strike"
@@ -9682,6 +9716,7 @@
       ],
       "name": "Kratos [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -10078,6 +10113,7 @@
       ],
       "name": "Land Raider Achilles [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -10372,6 +10408,7 @@
       ],
       "name": "Land Raider Proteus [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -10659,6 +10696,7 @@
       ],
       "name": "Leviathan Dreadnought [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -10935,6 +10973,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Deadly Demise",
         "Deep Strike"
@@ -11370,6 +11409,7 @@
       ],
       "name": "Magister [Crucible]",
       "points": [],
+      "role": "Character",
       "rules": [
         "Cabal of Sorcerers",
         "Leader"
@@ -11806,6 +11846,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Epic Hero",
       "rules": [
         "Deep Strike",
         "Deadly Demise",
@@ -12007,6 +12048,7 @@
       ],
       "name": "Mastodon [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -12205,6 +12247,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise"
       ],
@@ -12379,6 +12422,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Monster",
       "rules": [
         "Deadly Demise",
         "Feel No Pain"
@@ -12587,6 +12631,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Battleline",
       "rules": [
         "Deep Strike"
       ],
@@ -12803,6 +12848,7 @@
       ],
       "name": "Rapier Carrier [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Oath of Moment",
         "Templar Vows"
@@ -13189,6 +13235,7 @@
       ],
       "name": "Relic Contemptor Dreadnought [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -13618,6 +13665,7 @@
           "range": "[4,)"
         }
       ],
+      "role": "Battleline",
       "rules": [],
       "source_catalogue_id": "4b-186d-15aa-8749",
       "source_entry_id": "5d3d-e13b-8b76-dad3",
@@ -13892,6 +13940,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Deep Strike"
       ],
@@ -14015,8 +14064,8 @@
         "Daemon",
         "Tzeentch",
         "Summoned",
-        "Screamers",
-        "Faction: Scintillating Legions"
+        "Faction: Scintillating Legions",
+        "Screamers"
       ],
       "mfm_matched": true,
       "model_profiles": [
@@ -14064,6 +14113,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Beast",
       "rules": [
         "Deep Strike"
       ],
@@ -14286,6 +14336,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Infiltrators",
         "Stealth",
@@ -14491,6 +14542,7 @@
       ],
       "name": "Sicaran Battle Tank [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -14696,6 +14748,7 @@
       ],
       "name": "Sicaran Punisher [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -14901,6 +14954,7 @@
       ],
       "name": "Sicaran Venator [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -15089,6 +15143,7 @@
       ],
       "name": "Sokar-pattern Stormbird [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -15258,16 +15313,17 @@
         {
           "label": "Your 1st To 2nd Units Cost",
           "models": 1,
-          "points": 85,
+          "points": 95,
           "range": "[1,2]"
         },
         {
           "label": "Your 3rd + Unit Costs",
           "models": 1,
-          "points": 95,
+          "points": 105,
           "range": "[3,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Cabal of Sorcerers"
@@ -15437,16 +15493,17 @@
         {
           "label": "Your 1st To 2nd Units Cost",
           "models": 1,
-          "points": 95,
+          "points": 100,
           "range": "[1,2]"
         },
         {
           "label": "Your 3rd + Unit Costs",
           "models": 1,
-          "points": 105,
+          "points": 110,
           "range": "[3,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Deep Strike",
@@ -15664,6 +15721,7 @@
       ],
       "name": "Spartan [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -15936,6 +15994,7 @@
       ],
       "name": "Storm Eagle Gunship [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Hover",
@@ -16158,6 +16217,7 @@
       ],
       "name": "Terrax-pattern Termite [Legends]",
       "points": [],
+      "role": "Dedicated Transport",
       "rules": [
         "Deadly Demise",
         "Deep Strike",
@@ -16366,6 +16426,7 @@
       ],
       "name": "Typhon [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -16565,6 +16626,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Mounted",
       "rules": [],
       "source_catalogue_id": "a714-99f7-a2da-2362",
       "source_entry_id": "1703-3edd-5eb3-fcef",
@@ -16698,6 +16760,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Mounted",
       "rules": [],
       "source_catalogue_id": "9656-70ca-43b4-bc9d",
       "source_entry_id": "8b9f-917f-37c1-99c3",
@@ -16822,6 +16885,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Cabal of Sorcerers"
@@ -16955,6 +17019,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Scouts"
       ],
@@ -17095,6 +17160,7 @@
       ],
       "name": "Whirlwind Scorpius [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -17238,6 +17304,7 @@
       ],
       "name": "Xiphon Interceptor [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",

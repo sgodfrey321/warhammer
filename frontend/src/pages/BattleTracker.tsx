@@ -1,11 +1,22 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { api } from "../api";
 import { renderAbilityText } from "../markup";
-import { DISPOSITION_LABELS, DURATION_TYPES, PHASES, STAT_ORDER, WEAPON_STAT_ORDER } from "../types";
-import type { BattleOut, DeclaredStatePool, Mission, Phase, UnitAttachment, UnitBuff, UnitOut, Weapon } from "../types";
-import { groupUnitsByRole } from "../units";
-import { weaponBaseName } from "../weapons";
+import { DURATION_TYPES, PHASES, STAT_ORDER, WEAPON_STAT_ORDER } from "../types";
+import type {
+  BattleOut,
+  DeclaredStatePool,
+  FactionArmyRules,
+  Mission,
+  Phase,
+  Roster,
+  UnitAttachment,
+  UnitBuff,
+  UnitOut,
+  Weapon,
+} from "../types";
+import { auraAbilityReferences, groupUnitsByRole, leaderAbilityReferences, psychicAbilityReferences } from "../units";
+import { groupLoadoutByRangeType, weaponBaseName } from "../weapons";
 
 // A unit's stats rendered token-by-token (not one joined string) so a declared buff (see
 // RosterEditor's "Unit Buffs") can be pinned as a badge right next to the one characteristic
@@ -71,6 +82,19 @@ function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+// A roster's own faction string doesn't always match an army-rules.json entry exactly --
+// confirmed against real data: "Chaos - World Eaters" has its own named entry, but "Aeldari -
+// Craftworlds" (and Ynnari, Drukhari, Harlequins) all draw their army-level rules from one
+// shared "Aeldari - Aeldari Library" catalogue instead of a Craftworlds-specific one. Falls back
+// to the shared "<category> - ... Library" entry for the same top-level category (Aeldari/Chaos/
+// Imperium/Xenos) when there's no exact match.
+function matchArmyRules(all: FactionArmyRules[], faction: string): FactionArmyRules | undefined {
+  const exact = all.find((f) => f.faction === faction);
+  if (exact) return exact;
+  const category = faction.split(" - ")[0];
+  return all.find((f) => f.faction.startsWith(`${category} - `) && f.faction.includes("Library"));
+}
+
 const PHASE_CHECKLIST: Record<Phase, string[]> = {
   command: [
     "Gain Core CP (automatic, both players, every Command phase).",
@@ -95,35 +119,28 @@ export function BattleTracker() {
   const battleId = Number(id);
 
   const [battle, setBattle] = useState<BattleOut | null>(null);
+  const [roster, setRoster] = useState<Roster | null>(null);
   const [units, setUnits] = useState<UnitOut[]>([]);
   const [attachments, setAttachments] = useState<UnitAttachment[]>([]);
   const [pools, setPools] = useState<DeclaredStatePool[]>([]);
   const [missions, setMissions] = useState<Mission[]>([]);
+  const [armyRules, setArmyRules] = useState<FactionArmyRules[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"meta" | "rules" | "units">("meta");
 
   const [label, setLabel] = useState("");
   const [ownerPlayer, setOwnerPlayer] = useState(1);
   const [durationType, setDurationType] = useState<string>(DURATION_TYPES[0]);
   const [effectUnitId, setEffectUnitId] = useState<number | "">("");
   const [stackingInputs, setStackingInputs] = useState<Record<number, { owner: number; value: number }>>({});
-  const [expandedAbilities, setExpandedAbilities] = useState<Set<number>>(new Set());
-  const [expandedWeapons, setExpandedWeapons] = useState<Set<number>>(new Set());
+  const [expandedDetails, setExpandedDetails] = useState<Set<number>>(new Set());
 
   function unitName(unitId: number): string {
     return units.find((u) => u.id === unitId)?.unit_definition.name ?? `#${unitId}`;
   }
 
-  function toggleAbilities(unitId: number) {
-    setExpandedAbilities((prev) => {
-      const next = new Set(prev);
-      if (next.has(unitId)) next.delete(unitId);
-      else next.add(unitId);
-      return next;
-    });
-  }
-
-  function toggleWeapons(unitId: number) {
-    setExpandedWeapons((prev) => {
+  function toggleDetails(unitId: number) {
+    setExpandedDetails((prev) => {
       const next = new Set(prev);
       if (next.has(unitId)) next.delete(unitId);
       else next.add(unitId);
@@ -135,6 +152,7 @@ export function BattleTracker() {
     api.getBattle(battleId).then((b) => {
       setBattle(b);
       if (b.roster_id) {
+        api.getRoster(b.roster_id).then(setRoster).catch((e) => setError(String(e)));
         api.listUnits(b.roster_id).then(setUnits).catch((e) => setError(String(e)));
         api.listAttachments(b.roster_id).then(setAttachments).catch((e) => setError(String(e)));
         api.listPools(b.roster_id).then(setPools).catch((e) => setError(String(e)));
@@ -143,6 +161,10 @@ export function BattleTracker() {
   }
 
   useEffect(refresh, [battleId]);
+
+  useEffect(() => {
+    api.listArmyRules().then(setArmyRules).catch((e) => setError(String(e)));
+  }, []);
 
   useEffect(() => {
     api.listPrimaryMissions().then(setMissions).catch((e) => setError(String(e)));
@@ -186,6 +208,27 @@ export function BattleTracker() {
   async function handleDismiss(effectId: number) {
     try {
       setBattle(await api.dismissEffect(battleId, effectId));
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  // One-click version of "Log Effect" for a Psychic Power Reference entry -- owner_player is
+  // always 1 (the tracked roster's own player, matching missionForPlayer's convention below),
+  // and duration_type defaults to "until_next_command_phase" since that's the wording nearly
+  // every psychic power in the indexed data actually uses ("until the start of your next
+  // Command phase"). Still just a starting point in the same Active Effects list -- edit or
+  // dismiss it there like any manually-logged effect if a given power reads differently.
+  async function handleLogAbility(unit: UnitOut, abilityName: string) {
+    try {
+      setBattle(
+        await api.addEffect(battleId, {
+          label: `${abilityName} — ${unit.unit_definition.name}`,
+          owner_player: 1,
+          duration_type: "until_next_command_phase",
+          unit_id: unit.id,
+        }),
+      );
     } catch (e) {
       setError(String(e));
     }
@@ -257,6 +300,10 @@ export function BattleTracker() {
   if (!battle) return <div className="page">Loading...</div>;
 
   const nestedLeaderIds = new Set(attachments.map((a) => a.leader_unit_id));
+  const leaderReferences = leaderAbilityReferences(units);
+  const auraReferences = auraAbilityReferences(units);
+  const psychicReferences = psychicAbilityReferences(units);
+  const factionRules = roster ? matchArmyRules(armyRules, roster.faction) : undefined;
 
   const nextStep = battle.global_step + 1;
   const prevStep = battle.global_step - 1;
@@ -290,43 +337,46 @@ export function BattleTracker() {
       <h1>Battle #{battle.id}</h1>
       {error && <p className="error">{error}</p>}
 
-      <div className="battle-columns">
-        <div className="battle-meta">
-          <section className="mission-summary">
-            {hasMissionSetup ? (
-              <span className="muted small">
-                {DISPOSITION_LABELS[battle.your_disposition!]} vs {DISPOSITION_LABELS[battle.opponent_disposition!]}
-              </span>
-            ) : (
-              <span className="muted">No mission set up for this battle</span>
-            )}
-            <Link to={`/battles/setup?battleId=${battle.id}`} className="link-button">
-              {hasMissionSetup ? "Edit setup" : "Set up now"}
-            </Link>
-          </section>
-
-          <div className={`phase-banner phase-${battle.current_phase}`}>
+      <div className={`phase-banner phase-${battle.current_phase}`}>
+        <div className="phase-banner-main">
+          <div>
             <div className="phase-name">{battle.current_phase.toUpperCase()} PHASE</div>
             <div className="muted">
               Battle Round {battle.battle_round} — step {battle.global_step}
             </div>
-            <div className="phase-nav">
-              <button type="button" onClick={handleRetreat} disabled={prevStep < 0}>
-                {prevPhase
-                  ? `← ${capitalize(prevPhase)}${prevPlayer !== battle.active_player ? ` (P${prevPlayer})` : ""}`
-                  : "← Previous Phase"}
-              </button>
-              <button type="button" className="primary" onClick={handleAdvance}>
-                {capitalize(nextPhase)}
-                {nextPlayer !== battle.active_player ? ` (P${nextPlayer})` : ""} →
-              </button>
-            </div>
-            <div className="muted small">
-              Going back only moves the phase pointer — CP already granted and resource pools
-              already refilled/cleared crossing that boundary aren't undone.
-            </div>
           </div>
+          <div className="phase-nav">
+            <button type="button" onClick={handleRetreat} disabled={prevStep < 0}>
+              {prevPhase
+                ? `← ${capitalize(prevPhase)}${prevPlayer !== battle.active_player ? ` (P${prevPlayer})` : ""}`
+                : "← Previous Phase"}
+            </button>
+            <button type="button" className="primary" onClick={handleAdvance}>
+              {capitalize(nextPhase)}
+              {nextPlayer !== battle.active_player ? ` (P${nextPlayer})` : ""} →
+            </button>
+          </div>
+        </div>
+        <div className="muted small">
+          Going back only moves the phase pointer — CP already granted and resource pools already
+          refilled/cleared crossing that boundary aren't undone.
+        </div>
+      </div>
 
+      <div className="tab-bar battle-tabs">
+        <button type="button" className={activeTab === "meta" ? "active" : ""} onClick={() => setActiveTab("meta")}>
+          Meta
+        </button>
+        <button type="button" className={activeTab === "rules" ? "active" : ""} onClick={() => setActiveTab("rules")}>
+          Rules
+        </button>
+        <button type="button" className={activeTab === "units" ? "active" : ""} onClick={() => setActiveTab("units")}>
+          Units
+        </button>
+      </div>
+
+      <div className="battle-columns">
+        <div className={`battle-meta battle-tab-panel${activeTab !== "meta" ? " mobile-hidden" : ""}`}>
           <ul className="phase-checklist">
             {PHASE_CHECKLIST[battle.current_phase].map((item) => (
               <li key={item}>{item}</li>
@@ -590,6 +640,92 @@ export function BattleTracker() {
         </div>
 
         <div className="battle-units">
+          <div className={`battle-tab-panel${activeTab !== "rules" ? " mobile-hidden" : ""}`}>
+            {factionRules && (
+              <details className="accordion" open>
+                <summary>Army Rules — {factionRules.faction}</summary>
+                <ul className="ability-list">
+                  {factionRules.rules.map((r) => (
+                    <li key={r.name}>
+                      <strong>{r.name}:</strong> {renderAbilityText(r.text, r.name)}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+
+            {(leaderReferences.length > 0 || auraReferences.length > 0 || psychicReferences.length > 0) && (
+              <details className="accordion" open>
+                <summary>Ability Reminders</summary>
+
+                {psychicReferences.length > 0 && (
+                  <details className="role-group" open>
+                    <summary className="role-group-header">
+                      <span>Psychic Powers</span>
+                    </summary>
+                    <p className="muted small">
+                      Usually picked live each turn against an enemy unit. "Log" drops it into
+                      Active Effects (Meta tab) below (until your next Command phase by default)
+                      so it isn't forgotten by the time Shooting rolls around.
+                    </p>
+                    <ul className="ability-list">
+                      {psychicReferences.map(({ unit, abilities }) =>
+                        abilities.map((a, i) => (
+                          <li key={`psy-${unit.id}-${i}`}>
+                            <strong>{unit.unit_definition.name}</strong> — <strong>{a.name}</strong>:{" "}
+                            {renderAbilityText(a.text, `psy-${unit.id}-${i}`)}{" "}
+                            <button type="button" className="link-button" onClick={() => handleLogAbility(unit, a.name)}>
+                              log
+                            </button>
+                          </li>
+                        )),
+                      )}
+                    </ul>
+                  </details>
+                )}
+
+                {auraReferences.length > 0 && (
+                  <details className="role-group" open>
+                    <summary className="role-group-header">
+                      <span>Auras</span>
+                    </summary>
+                    <p className="muted small">Passive while this model's on the table -- nothing to log, just a reminder.</p>
+                    <ul className="ability-list">
+                      {auraReferences.map(({ unit, abilities }) =>
+                        abilities.map((a, i) => (
+                          <li key={`aura-${unit.id}-${i}`}>
+                            <strong>{unit.unit_definition.name}</strong> — <strong>{a.name}</strong>:{" "}
+                            {renderAbilityText(a.text, `aura-${unit.id}-${i}`)}
+                          </li>
+                        )),
+                      )}
+                    </ul>
+                  </details>
+                )}
+
+                {leaderReferences.length > 0 && (
+                  <details className="role-group">
+                    <summary className="role-group-header">
+                      <span>Leader Buffs</span>
+                    </summary>
+                    <p className="muted small">Applies to whatever unit each Leader is currently attached to.</p>
+                    <ul className="ability-list">
+                      {leaderReferences.map(({ unit, abilities }) =>
+                        abilities.map((a, i) => (
+                          <li key={`lead-${unit.id}-${i}`}>
+                            <strong>{unit.unit_definition.name}</strong> — <strong>{a.name}</strong>:{" "}
+                            {renderAbilityText(a.text, `lead-${unit.id}-${i}`)}
+                          </li>
+                        )),
+                      )}
+                    </ul>
+                  </details>
+                )}
+              </details>
+            )}
+          </div>
+
+          <div className={`battle-tab-panel${activeTab !== "units" ? " mobile-hidden" : ""}`}>
           {units.length > 0 && (
             <section>
               <h2>Unit Turn States</h2>
@@ -613,7 +749,7 @@ export function BattleTracker() {
               const groupLabel = group.units.map((u) => u.unit_definition.name).join(" + ");
               return (
                 <li key={group.key} className={grouped ? "unit-group" : undefined}>
-                <details className="role-group" open>
+                <details className="role-group">
                   <summary className="role-group-header">
                     <span>{grouped ? `Attached: ${groupLabel}` : groupLabel}</span>
                   </summary>
@@ -639,6 +775,15 @@ export function BattleTracker() {
                             return map;
                           }, new Map<string, Weapon[]>()),
                         );
+                    // Split by Ranged/Melee same as the loadout case -- every profile behind
+                    // one base-name group shares a range_type (strike/sweep are both the same
+                    // weapon's modes), so the group's first profile decides its section.
+                    const catalogueGroupsByRangeType = ["Ranged Weapons", "Melee Weapons"]
+                      .map((rangeType): [string, [string, Weapon[]][]] => [
+                        rangeType,
+                        catalogueGroups.filter(([, profiles]) => profiles[0]?.range_type === rangeType),
+                      ])
+                      .filter(([, groups]) => groups.length > 0);
                     const weaponsCount = hasLoadout ? loadout.length : catalogueGroups.length;
                     const line = renderStatLine(stats, u.buffs);
                     return (
@@ -646,14 +791,9 @@ export function BattleTracker() {
                         <div className="unit-header">
                           <strong>{u.unit_definition.name}</strong>
                           {line ?? <span className="muted"> stats not indexed yet</span>}
-                          {abilities.length > 0 && (
-                            <button type="button" className="link-button" onClick={() => toggleAbilities(u.id)}>
-                              {expandedAbilities.has(u.id) ? "hide abilities" : `abilities (${abilities.length})`}
-                            </button>
-                          )}
-                          {weaponsCount > 0 && (
-                            <button type="button" className="link-button" onClick={() => toggleWeapons(u.id)}>
-                              {expandedWeapons.has(u.id) ? "hide weapons" : `weapons (${weaponsCount})`}
+                          {(abilities.length > 0 || weaponsCount > 0) && (
+                            <button type="button" className="link-button" onClick={() => toggleDetails(u.id)}>
+                              {expandedDetails.has(u.id) ? "hide details" : "details"}
                             </button>
                           )}
                         </div>
@@ -666,7 +806,7 @@ export function BattleTracker() {
                             ))}
                           </div>
                         )}
-                        {expandedAbilities.has(u.id) && (
+                        {expandedDetails.has(u.id) && (
                           <ul className="ability-list">
                             {abilities.map((a) => (
                               <li key={a.name}>
@@ -675,48 +815,62 @@ export function BattleTracker() {
                             ))}
                           </ul>
                         )}
-                        {expandedWeapons.has(u.id) && hasLoadout && (
-                          <ul className="ability-list">
-                            {loadout.map((item) => {
-                              // A weapon with multiple firing modes (strike/sweep etc.) has
-                              // more than one catalogue profile for one loadout item -- show
-                              // every matching mode, not just the first.
-                              const matches = u.unit_definition.weapons.filter(
-                                (w) => weaponBaseName(w.name) === item.name,
-                              );
-                              return (
-                                <li key={item.name}>
-                                  <strong>
-                                    {item.count}x {item.name}
-                                  </strong>
-                                  {matches.length === 0 && <span className="muted"> profile not indexed</span>}
-                                  {matches.map((w) => (
-                                    <div key={w.name} className="stat-line">
-                                      {matches.length > 1 ? `${w.name.replace(/^➤\s*/, "")}: ` : ""}
-                                      {weaponLine(w)}
-                                    </div>
-                                  ))}
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        )}
-                        {expandedWeapons.has(u.id) && !hasLoadout && (
+                        {expandedDetails.has(u.id) &&
+                          hasLoadout &&
+                          groupLoadoutByRangeType(loadout, u.unit_definition.weapons).map(([rangeType, items]) => (
+                            <div key={rangeType}>
+                              <h4 className="weapon-section-heading">{rangeType}</h4>
+                              <ul className="ability-list">
+                                {items.map((item) => {
+                                  // A weapon with multiple firing modes (strike/sweep etc.) has
+                                  // more than one catalogue profile for one loadout item -- show
+                                  // every matching mode, not just the first.
+                                  const matches = u.unit_definition.weapons.filter(
+                                    (w) => weaponBaseName(w.name) === item.name,
+                                  );
+                                  return (
+                                    <li key={item.name}>
+                                      <strong>
+                                        {item.count}x {item.name}
+                                      </strong>
+                                      {matches.length === 0 && <span className="muted"> profile not indexed</span>}
+                                      {matches.map((w) => (
+                                        <div key={w.name} className="stat-line">
+                                          {matches.length > 1 ? `${w.name.replace(/^➤\s*/, "")}: ` : ""}
+                                          {weaponLine(w)}
+                                        </div>
+                                      ))}
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            </div>
+                          ))}
+                        {expandedDetails.has(u.id) && !hasLoadout && (
                           <ul className="ability-list">
                             <li className="muted">No chosen loadout on this roster — showing catalogue options.</li>
-                            {catalogueGroups.map(([base, profiles]) => (
-                              <li key={base}>
-                                <strong>{base}</strong>
-                                {profiles.map((w) => (
-                                  <div key={w.name} className="stat-line">
-                                    {profiles.length > 1 ? `${w.name.replace(/^➤\s*/, "")}: ` : ""}
-                                    {weaponLine(w)}
-                                  </div>
-                                ))}
-                              </li>
-                            ))}
                           </ul>
                         )}
+                        {expandedDetails.has(u.id) &&
+                          !hasLoadout &&
+                          catalogueGroupsByRangeType.map(([rangeType, groups]) => (
+                            <div key={rangeType}>
+                              <h4 className="weapon-section-heading">{rangeType}</h4>
+                              <ul className="ability-list">
+                                {groups.map(([base, profiles]) => (
+                                  <li key={base}>
+                                    <strong>{base}</strong>
+                                    {profiles.map((w) => (
+                                      <div key={w.name} className="stat-line">
+                                        {profiles.length > 1 ? `${w.name.replace(/^➤\s*/, "")}: ` : ""}
+                                        {weaponLine(w)}
+                                      </div>
+                                    ))}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          ))}
                         {battle.effects.some((eff) => eff.unit_id === u.id) && (
                           <ul className="effect-list unit-effects">
                             {battle.effects
@@ -736,50 +890,60 @@ export function BattleTracker() {
                       </div>
                     );
                   })}
-                  <select
-                    value={state?.move_type ?? ""}
-                    onChange={(e) => handleTurnStateChange(unitIds, "move_type", e.target.value)}
-                  >
-                    <option value="">move type...</option>
-                    <option value="stationary">stationary</option>
-                    <option value="normal">normal</option>
-                    <option value="advance">advance</option>
-                    <option value="fall_back">fall back</option>
-                    <option value="disembark">disembark</option>
-                    <option value="ingress">ingress</option>
-                  </select>
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={state?.has_shot ?? false}
-                      onChange={(e) => handleTurnStateChange(unitIds, "has_shot", e.target.checked)}
-                    />
-                    shot
-                  </label>
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={state?.has_charged ?? false}
-                      onChange={(e) => handleTurnStateChange(unitIds, "has_charged", e.target.checked)}
-                    />
-                    charged
-                  </label>
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={state?.has_fought ?? false}
-                      onChange={(e) => handleTurnStateChange(unitIds, "has_fought", e.target.checked)}
-                    />
-                    fought
-                  </label>
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={state?.is_fights_first ?? false}
-                      onChange={(e) => handleTurnStateChange(unitIds, "is_fights_first", e.target.checked)}
-                    />
-                    fights first
-                  </label>
+                  {battle.current_phase === "movement" && (
+                    <select
+                      value={state?.move_type ?? ""}
+                      onChange={(e) => handleTurnStateChange(unitIds, "move_type", e.target.value)}
+                    >
+                      <option value="">move type...</option>
+                      <option value="stationary">stationary</option>
+                      <option value="normal">normal</option>
+                      <option value="advance">advance</option>
+                      <option value="fall_back">fall back</option>
+                      <option value="disembark">disembark</option>
+                      <option value="ingress">ingress</option>
+                    </select>
+                  )}
+                  {battle.current_phase === "shooting" && (
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={state?.has_shot ?? false}
+                        onChange={(e) => handleTurnStateChange(unitIds, "has_shot", e.target.checked)}
+                      />
+                      shot
+                    </label>
+                  )}
+                  {battle.current_phase === "charge" && (
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={state?.has_charged ?? false}
+                        onChange={(e) => handleTurnStateChange(unitIds, "has_charged", e.target.checked)}
+                      />
+                      charged
+                    </label>
+                  )}
+                  {battle.current_phase === "fight" && (
+                    <>
+                      <label className="checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={state?.has_fought ?? false}
+                          onChange={(e) => handleTurnStateChange(unitIds, "has_fought", e.target.checked)}
+                        />
+                        fought
+                      </label>
+                      <label className="checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={state?.is_fights_first ?? false}
+                          onChange={(e) => handleTurnStateChange(unitIds, "is_fights_first", e.target.checked)}
+                        />
+                        fights first
+                      </label>
+                    </>
+                  )}
                   {warnings.map((w) => (
                     <div key={w} className="warning">
                       {w}
@@ -794,6 +958,7 @@ export function BattleTracker() {
               ))}
             </section>
           )}
+          </div>
         </div>
       </div>
     </div>

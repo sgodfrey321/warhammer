@@ -88,6 +88,7 @@ def build_faction(
                 faction=faction_stem,
                 name=entry.name,
                 keywords=entry.keywords,
+                role=entry.role,
                 is_legends=is_legends,
                 stats=entry.stats,
                 abilities=entry.abilities,

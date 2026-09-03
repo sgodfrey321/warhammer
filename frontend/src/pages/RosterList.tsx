@@ -3,10 +3,39 @@ import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api";
 import type { Roster, RosterImportResult } from "../types";
 
+// GW's own top-level army groupings -- Space Marines gets its own bucket rather than folding
+// into "Imperium" since it's by far the largest single faction (chapters/successors all share
+// this one faction name). Anything Imperium that isn't Space Marines (Astra Militarum, Custodes,
+// etc., once indexed) falls into "Imperium"; anything else unrecognized falls into "Other" rather
+// than being silently dropped from the list.
+function factionCategory(faction: string): string {
+  if (faction.startsWith("Imperium - Space Marines")) return "Space Marines";
+  if (faction.startsWith("Chaos")) return "Chaos";
+  if (faction.startsWith("Aeldari") || faction.startsWith("Xenos")) return "Xenos";
+  if (faction.startsWith("Imperium")) return "Imperium";
+  return "Other";
+}
+
+const CATEGORY_ORDER = ["Space Marines", "Imperium", "Chaos", "Xenos", "Other"];
+
+function groupFactionsByCategory(factions: string[]): [string, string[]][] {
+  const byCategory = new Map<string, string[]>();
+  for (const f of factions) {
+    const category = factionCategory(f);
+    const list = byCategory.get(category) ?? [];
+    list.push(f);
+    byCategory.set(category, list);
+  }
+  return CATEGORY_ORDER.map((c) => [c, byCategory.get(c) ?? []] as [string, string[]]).filter(
+    ([, list]) => list.length > 0,
+  );
+}
+
 export function RosterList() {
   const [rosters, setRosters] = useState<Roster[]>([]);
   const [name, setName] = useState("");
-  const [faction, setFaction] = useState("Aeldari - Craftworlds");
+  const [faction, setFaction] = useState("");
+  const [factions, setFactions] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<RosterImportResult | null>(null);
@@ -29,6 +58,16 @@ export function RosterList() {
   }
 
   useEffect(refresh, []);
+
+  useEffect(() => {
+    api
+      .listFactions()
+      .then((fs) => {
+        setFactions(fs);
+        setFaction((prev) => prev || fs[0] || "");
+      })
+      .catch((e) => setError(String(e)));
+  }, []);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -76,14 +115,21 @@ export function RosterList() {
           onChange={(e) => setName(e.target.value)}
           required
         />
-        <input
-          type="text"
-          placeholder="Faction"
-          value={faction}
-          onChange={(e) => setFaction(e.target.value)}
-          required
-        />
-        <button type="submit">New Roster</button>
+        <select value={faction} onChange={(e) => setFaction(e.target.value)} required>
+          {factions.length === 0 && <option value="">No factions indexed yet</option>}
+          {groupFactionsByCategory(factions).map(([category, list]) => (
+            <optgroup key={category} label={category}>
+              {list.map((f) => (
+                <option key={f} value={f}>
+                  {f}
+                </option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+        <button type="submit" disabled={!faction}>
+          New Roster
+        </button>
       </form>
 
       <div className="import-panel">
@@ -137,11 +183,7 @@ export function RosterList() {
               <>
                 <Link to={`/rosters/${r.id}`}>{r.name}</Link>
                 <span className="muted"> — {r.faction}</span>
-                <button
-                  type="button"
-                  className="link-button"
-                  onClick={() => setConfirmingDeleteId(r.id)}
-                >
+                <button type="button" className="link-button" onClick={() => setConfirmingDeleteId(r.id)}>
                   delete
                 </button>
               </>

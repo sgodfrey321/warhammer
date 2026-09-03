@@ -22,6 +22,9 @@ export interface UnitDefinition {
   name: string;
   points_cost: number;
   keywords: string[];
+  // GW's "Battlefield Role" badge (Character, Battleline, Infantry, Vehicle, Epic Hero, ...).
+  // null for a unit with no primary category in the source data.
+  role: string | null;
   source_catalogue_id: string;
   source_entry_id: string;
   is_legends: boolean;
@@ -197,6 +200,16 @@ export interface FactionArmyRules {
   rules: ArmyRule[];
 }
 
+export interface Detachment {
+  name: string;
+  rules: ArmyRule[];
+}
+
+export interface FactionDetachments {
+  faction: string;
+  detachments: Detachment[];
+}
+
 export const DISPOSITIONS = ["take-and-hold", "purge-the-foe", "reconnaissance", "priority-assets", "disruption"] as const;
 export type Disposition = (typeof DISPOSITIONS)[number];
 
@@ -258,6 +271,45 @@ export interface SecondaryMission {
   when_drawn: string | null;
   action: Action | null;
   sections: SecondarySection[];
+}
+
+export interface SimulateOptions {
+  half_range: boolean;
+  charged: boolean;
+  cover: boolean;
+  hit_modifier: number;
+  wound_modifier: number;
+  reroll_hits: "none" | "ones" | "all";
+  reroll_wounds: "none" | "ones" | "all";
+  fnp: number | null; // the X in "Feel No Pain X+", e.g. 5 for 5+; null = none
+  anti_active: boolean;
+  anti_threshold: number | null;
+  trials: number;
+  seed: number | null;
+}
+
+export interface SimulateRequest {
+  weapon_characteristics: Record<string, string>;
+  range_type: "Ranged Weapons" | "Melee Weapons";
+  defender_stats: Record<string, string>;
+  defender_model_count: number;
+  // How many copies of this weapon fire each trial (e.g. a 5-model squad all
+  // firing the same gun = 5). The weapon's own A is attacks PER copy.
+  weapon_count: number;
+  options: SimulateOptions;
+}
+
+export interface SimulateResponse {
+  trials: number;
+  weapon_count: number;
+  mean_damage: number;
+  median_damage: number;
+  damage_percentiles: Record<string, number>;
+  damage_histogram: Record<string, number>; // wounds dealt -> trial count
+  mean_models_slain: number;
+  models_slain_histogram: Record<string, number>;
+  p_at_least_one_kill: number;
+  p_wipe: number;
 }
 
 export interface Layout {

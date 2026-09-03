@@ -86,6 +86,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Epic Hero",
       "rules": [
         "Deadly Demise",
         "Deep Strike",
@@ -208,6 +209,7 @@
       ],
       "name": "Blood Slaughterer [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise"
       ],
@@ -352,6 +354,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Mounted",
       "rules": [
         "Deep Strike"
       ],
@@ -702,6 +705,7 @@
       ],
       "name": "Bloodcult Champion [Crucible]",
       "points": [],
+      "role": "Character",
       "rules": [
         "Blessings of Khorne",
         "Leader"
@@ -1042,6 +1046,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Battleline",
       "rules": [
         "Deep Strike"
       ],
@@ -1220,6 +1225,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Deadly Demise",
         "Deep Strike"
@@ -1633,6 +1639,7 @@
       ],
       "name": "Butcherlord [Crucible]",
       "points": [],
+      "role": "Character",
       "rules": [
         "Blessings of Khorne",
         "Leader"
@@ -2039,6 +2046,7 @@
       ],
       "name": "Cerberus [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -2276,6 +2284,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Blessings of Khorne"
@@ -2511,6 +2520,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Blessings of Khorne"
@@ -2758,6 +2768,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Blessings of Khorne"
@@ -2969,6 +2980,7 @@
           "range": "[4,)"
         }
       ],
+      "role": "Dedicated Transport",
       "rules": [
         "Deadly Demise",
         "Blessings of Khorne",
@@ -3093,6 +3105,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Beast",
       "rules": [
         "Feel No Pain",
         "Blessings of Khorne",
@@ -3289,6 +3302,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Deep Strike",
         "Blessings of Khorne"
@@ -3528,6 +3542,7 @@
       ],
       "name": "Chaos Thunderhawk [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Hover"
@@ -3713,6 +3728,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Deadly Demise",
         "Blessings of Khorne"
@@ -3857,6 +3873,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Deadly Demise",
         "Deep Strike",
@@ -4254,6 +4271,7 @@
       ],
       "name": "Daemonic Charioteer [Crucible]",
       "points": [],
+      "role": "Character",
       "rules": [
         "Deep Strike",
         "Leader",
@@ -4911,6 +4929,7 @@
       ],
       "name": "Daemonic Herald [Crucible]",
       "points": [],
+      "role": "Character",
       "rules": [
         "Deep Strike",
         "Leader",
@@ -5437,6 +5456,7 @@
           "range": "[2,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Blessings of Khorne"
@@ -5774,6 +5794,7 @@
       ],
       "name": "Deredeo Dreadnought [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -6241,6 +6262,7 @@
       ],
       "name": "Eight-blessed Lord [Crucible]",
       "points": [],
+      "role": "Character",
       "rules": [
         "Blessings of Khorne",
         "Leader"
@@ -6612,6 +6634,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Scouts",
         "Blessings of Khorne",
@@ -6720,6 +6743,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Deep Strike",
         "Blessings of Khorne"
@@ -6915,6 +6939,7 @@
       ],
       "name": "Falchion [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -7289,6 +7314,7 @@
       ],
       "name": "Fellblade [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -7612,6 +7638,7 @@
       ],
       "name": "Fire Raptor Gunship [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Hover",
@@ -7786,6 +7813,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Beast",
       "rules": [
         "Deep Strike"
       ],
@@ -7931,6 +7959,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Blessings of Khorne"
@@ -8095,6 +8124,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Infiltrators",
         "Blessings of Khorne"
@@ -8270,6 +8300,7 @@
       ],
       "name": "Greater Brass Scorpion [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Super-Heavy Walker"
@@ -8565,6 +8596,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Blessings of Khorne"
@@ -8833,6 +8865,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Blessings of Khorne",
@@ -8981,6 +9014,7 @@
       ],
       "name": "Hell Talon [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Blessings of Khorne"
@@ -9127,6 +9161,7 @@
       ],
       "name": "Hellblade [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Blessings of Khorne"
@@ -9523,6 +9558,7 @@
       ],
       "name": "Immortal Champion [Crucible]",
       "points": [],
+      "role": "Character",
       "rules": [
         "Deep Strike",
         "The Shadow of Chaos",
@@ -9950,6 +9986,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Infantry",
       "rules": [
         "Blessings of Khorne"
       ],
@@ -10120,16 +10157,17 @@
         {
           "label": "Your Unit Costs",
           "models": 10,
-          "points": 170,
+          "points": 160,
           "range": "[1,)"
         },
         {
           "label": "Your Unit Costs",
           "models": 20,
-          "points": 330,
+          "points": 320,
           "range": "[1,)"
         }
       ],
+      "role": "Battleline",
       "rules": [
         "Blessings of Khorne",
         "Deep Strike"
@@ -10358,6 +10396,7 @@
           "range": "[2,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Blessings of Khorne",
@@ -10564,6 +10603,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Epic Hero",
       "rules": [
         "Leader",
         "Blessings of Khorne"
@@ -10860,6 +10900,7 @@
       ],
       "name": "Kratos [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -11163,6 +11204,7 @@
       ],
       "name": "Kytan Ravager [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Super-Heavy Walker"
@@ -11390,6 +11432,7 @@
       ],
       "name": "Land Raider Achilles [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -11684,6 +11727,7 @@
       ],
       "name": "Land Raider Proteus [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -11971,6 +12015,7 @@
       ],
       "name": "Leviathan Dreadnought [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -12212,6 +12257,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Epic Hero",
       "rules": [
         "Leader",
         "Scouts",
@@ -12376,6 +12422,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Blessings of Khorne"
@@ -12524,6 +12571,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Blessings of Khorne"
@@ -12697,6 +12745,7 @@
       ],
       "name": "Mastodon [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -12899,6 +12948,7 @@
           "range": "[3,)"
         }
       ],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Blessings of Khorne"
@@ -13079,6 +13129,7 @@
       ],
       "name": "Rapier Carrier [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Oath of Moment",
         "Templar Vows"
@@ -13465,6 +13516,7 @@
       ],
       "name": "Relic Contemptor Dreadnought [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -13838,6 +13890,7 @@
       ],
       "name": "Sicaran Battle Tank [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -14043,6 +14096,7 @@
       ],
       "name": "Sicaran Punisher [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -14248,6 +14302,7 @@
       ],
       "name": "Sicaran Venator [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -14435,6 +14490,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Epic Hero",
       "rules": [
         "Deadly Demise",
         "Deep Strike"
@@ -14561,6 +14617,7 @@
           "range": "[1,)"
         }
       ],
+      "role": "Character",
       "rules": [
         "Leader",
         "Deadly Demise",
@@ -14688,6 +14745,7 @@
       ],
       "name": "Sokar-pattern Stormbird [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -14904,6 +14962,7 @@
       ],
       "name": "Spartan [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -15176,6 +15235,7 @@
       ],
       "name": "Storm Eagle Gunship [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Hover",
@@ -15398,6 +15458,7 @@
       ],
       "name": "Terrax-pattern Termite [Legends]",
       "points": [],
+      "role": "Dedicated Transport",
       "rules": [
         "Deadly Demise",
         "Deep Strike",
@@ -15606,6 +15667,7 @@
       ],
       "name": "Typhon [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -15799,6 +15861,7 @@
       ],
       "name": "Whirlwind Scorpius [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",
@@ -15942,6 +16005,7 @@
       ],
       "name": "Xiphon Interceptor [Legends]",
       "points": [],
+      "role": "Vehicle",
       "rules": [
         "Deadly Demise",
         "Oath of Moment",

@@ -37,6 +37,7 @@ def import_faction_file(path: Path, session: Session) -> int:
             name=unit["name"],
             points_cost=_points_cost(unit.get("points", [])),
             keywords=unit.get("keywords", []),
+            role=unit.get("role"),
             source_catalogue_id=unit["source_catalogue_id"],
             source_entry_id=unit["source_entry_id"],
             is_legends=unit.get("is_legends", False),
