@@ -35,6 +35,23 @@ _DEFENDER_HINTS = (
     "that target this unit",
 )
 
+# Keywords a "... that targets a MONSTER or VEHICLE unit"-style clause can name, so an effect can
+# be gated on the *defender's* keywords (the app knows those once a defender is picked).
+_TARGET_KEYWORDS = (
+    "monster",
+    "vehicle",
+    "infantry",
+    "character",
+    "psyker",
+    "mounted",
+    "beast",
+    "swarm",
+    "titanic",
+    "aircraft",
+    "fly",
+    "daemon",
+)
+
 
 @dataclass
 class DetectedEffect:
@@ -43,6 +60,9 @@ class DetectedEffect:
     condition: str  # verbatim condition clause ("While ..."), or "" if unconditional
     side: str  # "attacker" | "defender"
     option_patch: dict = field(default_factory=dict)  # partial SimulateOptions
+    # Target keywords this effect is gated on (any-of); empty = applies to any target. The UI
+    # enables the toggle only when the selected defender has one of these keywords.
+    requires_target_keywords: list[str] = field(default_factory=list)
 
 
 def _condition_of(text: str) -> str:
@@ -59,15 +79,25 @@ def _side_for_roll(lowered: str) -> str:
     return "defender" if any(h in lowered for h in _DEFENDER_HINTS) else "attacker"
 
 
-def _reroll_kind(lowered: str, roll_word: str) -> str | None:
-    """Classifies a re-roll: 'ones' (only results of 1), 'all' (any/all failed),
-    or None for a LIMITED single re-roll ("re-roll one Hit roll" / "a single")
-    -- the sim has no per-activation single-re-roll option and auto-applying
-    'all' would grossly overstate it, so we decline to model it (it still shows
-    to the player as an un-modelled ability)."""
+def _target_keywords(lowered: str) -> list[str]:
+    """Keywords named in a '... that targets a MONSTER or VEHICLE unit' clause,
+    Title-cased to match the datasheet keyword casing. Empty if the ability isn't
+    gated on the target's keywords."""
+
+    m = re.search(r"targets?\s+(?:a\s+|an\s+)?([a-z/ ]+?)\s+unit", lowered)
+    if not m:
+        return []
+    found = [kw.title() for kw in _TARGET_KEYWORDS if re.search(rf"\b{kw}\b", m.group(1))]
+    return found
+
+
+def _reroll_kind(lowered: str, roll_word: str) -> str:
+    """Classifies a re-roll: 'one' (a single failed die per activation, e.g.
+    "re-roll one Hit roll" / "a single"), 'ones' (only results of 1), or 'all'
+    (any/all failed)."""
 
     if re.search(rf"re-?roll (a single|one) [^.]*{roll_word} roll", lowered):
-        return None
+        return "one"
     # e.g. "re-roll a hit roll of 1" / "re-roll hit rolls of 1"
     if re.search(rf"{roll_word} rolls? of (a )?1\b", lowered) or f"{roll_word} roll of 1" in lowered:
         return "ones"
@@ -89,6 +119,7 @@ def extract_effects(abilities: list[dict]) -> list[DetectedEffect]:
             continue
         low = text.lower()
         condition = _condition_of(text)
+        start = len(effects)  # effects added below all share this ability's target-keyword gating
 
         # --- Hit roll modifier ---
         if re.search(r"add 1 to (the |your |their )?hit roll", low):
@@ -120,24 +151,41 @@ def extract_effects(abilities: list[dict]) -> list[DetectedEffect]:
                 DetectedEffect(name, "-1 to Wound (against this unit)" if side == "defender" else "-1 to Wound", condition, side, {"wound_modifier": -1})
             )
 
-        # --- Re-rolls (skip limited single-die re-rolls we can't model, see _reroll_kind) ---
+        # --- Re-rolls ('one' -> a single-die re-roll flag; 'ones'/'all' -> a policy) ---
         if re.search(r"re-?roll [^.]*hit roll", low):
             kind = _reroll_kind(low, "hit")
-            if kind is not None:
+            if kind == "one":
+                effects.append(DetectedEffect(name, "Re-roll one failed Hit", condition, "attacker", {"single_reroll_hit": True}))
+            else:
                 effects.append(
                     DetectedEffect(name, f"Re-roll {'1s to' if kind == 'ones' else 'all'} Hit", condition, "attacker", {"reroll_hits": kind})
                 )
         if re.search(r"re-?roll [^.]*wound roll", low):
             kind = _reroll_kind(low, "wound")
-            if kind is not None:
+            if kind == "one":
+                effects.append(DetectedEffect(name, "Re-roll one failed Wound", condition, "attacker", {"single_reroll_wound": True}))
+            else:
                 effects.append(
                     DetectedEffect(name, f"Re-roll {'1s to' if kind == 'ones' else 'all'} Wound", condition, "attacker", {"reroll_wounds": kind})
                 )
+
+        # --- Re-roll the Damage roll (variable-damage weapons) ---
+        if re.search(r"re-?roll [^.]*damage roll", low):
+            effects.append(DetectedEffect(name, "Re-roll Damage", condition, "attacker", {"reroll_damage": True}))
 
         # --- Feel No Pain (always a defender-side ability) ---
         m = re.search(r"feel no pain (\d)\+", low)
         if m:
             fnp = int(m.group(1))
             effects.append(DetectedEffect(name, f"Feel No Pain {fnp}+", condition, "defender", {"fnp": fnp}))
+
+        # Gate every effect from this ability on any target-keyword clause it carries
+        # ("... that targets a Monster or Vehicle unit"). Defender-side effects (FNP,
+        # -1 to be hit) are about *this* unit being the target, so they're never gated.
+        target_kws = _target_keywords(low)
+        if target_kws:
+            for e in effects[start:]:
+                if e.side == "attacker":
+                    e.requires_target_keywords = target_kws
 
     return effects

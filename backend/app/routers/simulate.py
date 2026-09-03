@@ -34,6 +34,9 @@ class SimulateOptions(BaseModel):
     wound_modifier: int = 0
     reroll_hits: RerollChoice = "none"
     reroll_wounds: RerollChoice = "none"
+    single_reroll_hit: bool = False
+    single_reroll_wound: bool = False
+    reroll_damage: bool = False
     fnp: Optional[int] = None
     anti_active: bool = False
     anti_threshold: Optional[int] = None
@@ -90,6 +93,7 @@ class DetectedEffectOut(BaseModel):
     condition: str
     side: Literal["attacker", "defender"]
     option_patch: dict
+    requires_target_keywords: list[str] = []
 
 
 class AnalyzeResponse(BaseModel):
@@ -120,6 +124,9 @@ def run_simulation(body: SimulateRequest) -> SimulateResponse:
         wound_modifier=body.options.wound_modifier,
         reroll_hits=body.options.reroll_hits,
         reroll_wounds=body.options.reroll_wounds,
+        single_reroll_hit=body.options.single_reroll_hit,
+        single_reroll_wound=body.options.single_reroll_wound,
+        reroll_damage=body.options.reroll_damage,
         fnp=body.options.fnp,
         anti_active=body.options.anti_active,
         anti_threshold=body.options.anti_threshold,

@@ -281,6 +281,9 @@ export interface SimulateOptions {
   wound_modifier: number;
   reroll_hits: "none" | "ones" | "all";
   reroll_wounds: "none" | "ones" | "all";
+  single_reroll_hit: boolean; // "re-roll one Hit roll" (e.g. Crystal Matrix) -- one failed die per volley
+  single_reroll_wound: boolean;
+  reroll_damage: boolean; // "re-roll the Damage roll" -- re-roll a below-average variable-damage result
   fnp: number | null; // the X in "Feel No Pain X+", e.g. 5 for 5+; null = none
   anti_active: boolean;
   anti_threshold: number | null;
@@ -305,6 +308,7 @@ export interface DetectedEffect {
   condition: string; // verbatim "While ..." clause, or "" if unconditional
   side: "attacker" | "defender";
   option_patch: Partial<SimulateOptions>; // merged into options when toggled on
+  requires_target_keywords: string[]; // any-of target keywords this effect is gated on; [] = any target
 }
 
 export interface AnalyzeResponse {

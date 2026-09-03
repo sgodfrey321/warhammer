@@ -255,6 +255,39 @@ def test_reroll_ones_ignores_non_one_modified_failures():
     assert rng.exhausted()
 
 
+def test_single_reroll_rerolls_exactly_one_failure():
+    # skill 4+, two attacks both miss (rolls 2,3). "Re-roll one Hit" re-rolls a
+    # single failed die -> the 5 hits; the other miss stays a miss.
+    attacker = _weapon(skill=4)
+    options = AttackOptions(single_reroll_hit=True)
+    rng = QueueRandom([2, 3, 5])  # two misses, then the single re-roll
+    events = _resolve_hits(attacker, options, num_attacks=2, rng=rng)
+    assert events == [False]  # exactly one recovered hit
+    assert rng.exhausted()
+
+
+def test_single_reroll_does_nothing_when_no_failures():
+    # Both attacks already hit -> the single re-roll has nothing to re-roll and
+    # rolls no extra die.
+    attacker = _weapon(skill=4)
+    options = AttackOptions(single_reroll_hit=True)
+    rng = QueueRandom([4, 5])
+    events = _resolve_hits(attacker, options, num_attacks=2, rng=rng)
+    assert events == [False, False]
+    assert rng.exhausted()
+
+
+def test_single_reroll_is_redundant_under_reroll_all():
+    # With re-roll-all every failure is already re-rolled once, so a die can't be
+    # re-rolled again -- the single re-roll must add nothing (roll no extra die).
+    attacker = _weapon(skill=4)
+    options = AttackOptions(reroll_hits="all", single_reroll_hit=True)
+    rng = QueueRandom([2, 3])  # one miss, its policy re-roll to 3 (still a miss); no further die
+    events = _resolve_hits(attacker, options, num_attacks=1, rng=rng)
+    assert events == []
+    assert rng.exhausted()
+
+
 def test_reroll_never_rerolls_a_success_or_crit():
     # An unmodified 6 is a crit success -- must never be re-rolled even under "all".
     attacker = _weapon(skill=4)
@@ -610,11 +643,11 @@ def test_extract_rerolls_ones_vs_all():
     assert allr[0].option_patch == {"reroll_wounds": "all"}
 
 
-def test_extract_single_reroll_is_not_modelled_as_reroll_all():
+def test_extract_single_reroll_maps_to_single_reroll_flags():
     from app.sim.abilities import extract_effects
 
-    # Fire Prism's Crystal Matrix: re-rolling ONE die is not "re-roll all" -- we can't model a
-    # single per-activation re-roll, so it must produce NO reroll effect (shown as un-modelled).
+    # Fire Prism's Crystal Matrix re-rolls ONE die each -- must map to the single-reroll flags,
+    # NOT the re-roll-all policy (which would grossly overstate it).
     effects = extract_effects(
         [
             {
@@ -623,7 +656,52 @@ def test_extract_single_reroll_is_not_modelled_as_reroll_all():
             }
         ]
     )
-    assert effects == []
+    patches = [e.option_patch for e in effects]
+    assert {"single_reroll_hit": True} in patches
+    assert {"single_reroll_wound": True} in patches
+    # And it must NOT have emitted a reroll-all/ones policy.
+    assert all("reroll_hits" not in p and "reroll_wounds" not in p for p in patches)
+
+
+def test_extract_target_conditional_rerolls_gate_on_keywords():
+    from app.sim.abilities import extract_effects
+
+    # Fire Dragons' Assured Destruction: full re-rolls of Hit/Wound/Damage, but only vs a
+    # Monster or Vehicle -- every effect must carry that target-keyword gate.
+    txt = (
+        "In your Shooting phase, each time a model in this unit makes a ranged attack that "
+        "targets a Monster or Vehicle unit, you can re-roll the Hit roll, you can re-roll the "
+        "Wound roll and you can re-roll the Damage roll."
+    )
+    effects = extract_effects([{"name": "Assured Destruction", "text": txt}])
+    summaries = {e.summary for e in effects}
+    assert {"Re-roll all Hit", "Re-roll all Wound", "Re-roll Damage"} <= summaries
+    for e in effects:
+        assert e.requires_target_keywords == ["Monster", "Vehicle"]
+
+
+def test_roll_damage_rerolls_below_average_only():
+    from app.sim.dice import DiceNotation
+    from app.sim.sequence import _roll_damage
+
+    d6 = DiceNotation(1, 6, 0)  # average 3.5
+    assert _roll_damage(d6, True, QueueRandom([2, 6])) == 6  # low roll re-rolled, new kept
+    assert _roll_damage(d6, True, QueueRandom([5])) == 5  # above average -> not re-rolled
+    assert _roll_damage(d6, False, QueueRandom([2])) == 2  # reroll off -> low roll kept
+    assert _roll_damage(DiceNotation(0, 0, 3), True, QueueRandom([])) == 3  # flat damage: nothing to re-roll
+
+
+def test_reroll_damage_raises_mean_damage():
+    weapon = {
+        "range_type": "Ranged Weapons",
+        "characteristics": {"A": "6", "BS": "2+", "S": "10", "AP": "-4", "D": "D6", "Keywords": ""},
+    }
+    attacker = AttackerProfile.from_characteristics(weapon)
+    defender = DefenderProfile.from_stats({"T": "5", "Sv": "6+", "W": "60"}, model_count=1)  # big soak, no kills
+
+    base = simulate(attacker, defender, AttackOptions(), trials=20000, seed=8).mean_damage
+    rr = simulate(attacker, defender, AttackOptions(reroll_damage=True), trials=20000, seed=8).mean_damage
+    assert rr > base + 0.5  # re-rolling low damage rolls meaningfully raises the mean
 
 
 def test_extract_ignores_plain_ability_text():

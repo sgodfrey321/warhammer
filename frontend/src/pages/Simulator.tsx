@@ -18,11 +18,23 @@ function mergeEffects(base: SimulateOptions, patches: Partial<SimulateOptions>[]
     if (p.wound_modifier) o.wound_modifier += p.wound_modifier;
     if (p.reroll_hits && REROLL_RANK[p.reroll_hits] > REROLL_RANK[o.reroll_hits]) o.reroll_hits = p.reroll_hits;
     if (p.reroll_wounds && REROLL_RANK[p.reroll_wounds] > REROLL_RANK[o.reroll_wounds]) o.reroll_wounds = p.reroll_wounds;
+    if (p.single_reroll_hit) o.single_reroll_hit = true;
+    if (p.single_reroll_wound) o.single_reroll_wound = true;
+    if (p.reroll_damage) o.reroll_damage = true;
     if (p.fnp != null) o.fnp = o.fnp == null ? p.fnp : Math.min(o.fnp, p.fnp);
   }
   o.hit_modifier = Math.max(-1, Math.min(1, o.hit_modifier));
   o.wound_modifier = Math.max(-1, Math.min(1, o.wound_modifier));
   return o;
+}
+
+// Whether a target-conditional effect applies to the chosen defender: an effect with
+// requires_target_keywords only applies if the defender has one of those keywords. Effects with
+// no requirement always apply.
+function effectApplies(e: DetectedEffect, defenderKeywords: string[]): boolean {
+  if (!e.requires_target_keywords || e.requires_target_keywords.length === 0) return true;
+  const have = defenderKeywords.map((k) => k.toLowerCase());
+  return e.requires_target_keywords.some((req) => have.includes(req.toLowerCase()));
 }
 
 // The detected ability toggles for one side, plus a muted list of that unit's other abilities
@@ -33,24 +45,41 @@ function AbilityToggles({
   checked,
   onToggle,
   abilities,
+  defenderKeywords = [],
 }: {
   effects: DetectedEffect[];
   checked: Set<number>;
   onToggle: (i: number) => void;
   abilities: Ability[];
+  defenderKeywords?: string[];
 }) {
   const detectedNames = new Set(effects.map((e) => e.ability_name));
   const others = abilities.filter((a) => !detectedNames.has(a.name));
   return (
     <div>
       {effects.length > 0 ? (
-        effects.map((e, i) => (
-          <label key={`${e.ability_name}-${e.summary}`} className="checkbox-label" style={{ display: "block" }}>
-            <input type="checkbox" checked={checked.has(i)} onChange={() => onToggle(i)} />
-            <strong>{e.summary}</strong> — {e.ability_name}
-            {e.condition && <span className="muted"> ({e.condition})</span>}
-          </label>
-        ))
+        effects.map((e, i) => {
+          // A target-conditional effect is disabled unless the chosen defender qualifies.
+          const applies = effectApplies(e, defenderKeywords);
+          return (
+            <label
+              key={`${e.ability_name}-${e.summary}`}
+              className="checkbox-label"
+              style={{ display: "block", opacity: applies ? 1 : 0.45 }}
+            >
+              <input type="checkbox" checked={applies && checked.has(i)} disabled={!applies} onChange={() => onToggle(i)} />
+              <strong>{e.summary}</strong> — {e.ability_name}
+              {e.condition && <span className="muted"> ({e.condition})</span>}
+              {e.requires_target_keywords.length > 0 && (
+                <span className="muted">
+                  {" "}
+                  [only vs {e.requires_target_keywords.join(" / ")}
+                  {applies ? "" : " — this defender doesn't qualify"}]
+                </span>
+              )}
+            </label>
+          );
+        })
       ) : (
         <p className="muted">No attack modifiers auto-detected from this unit's abilities.</p>
       )}
@@ -75,6 +104,9 @@ const DEFAULT_OPTIONS: SimulateOptions = {
   wound_modifier: 0,
   reroll_hits: "none",
   reroll_wounds: "none",
+  single_reroll_hit: false,
+  single_reroll_wound: false,
+  reroll_damage: false,
   fnp: null,
   anti_active: false,
   anti_threshold: null,
@@ -244,9 +276,14 @@ export function Simulator() {
 
   const canSimulate = !!weapon && !!defenderUnit && Object.keys(defenderUnit.stats).length > 0;
 
-  // The options actually sent: the manual controls plus every ability toggle the player ticked.
+  // The options actually sent: manual controls plus every ticked ability toggle -- but a
+  // target-conditional attacker buff is only applied if the chosen defender qualifies (so a
+  // buff ticked against a Monster silently drops when you switch to an Infantry target).
+  const defenderKeywords = defenderUnit?.keywords ?? [];
   const effectiveOptions = mergeEffects(options, [
-    ...attackerEffects.filter((_, i) => checkedAttacker.has(i)).map((e) => e.option_patch),
+    ...attackerEffects
+      .filter((e, i) => checkedAttacker.has(i) && effectApplies(e, defenderKeywords))
+      .map((e) => e.option_patch),
     ...defenderEffects.filter((_, i) => checkedDefender.has(i)).map((e) => e.option_patch),
   ]);
 
@@ -386,6 +423,7 @@ export function Simulator() {
               checked={checkedAttacker}
               onToggle={(i) => toggleIn(setCheckedAttacker, i)}
               abilities={attackerUnit.abilities}
+              defenderKeywords={defenderUnit?.keywords ?? []}
             />
           </>
         )}
@@ -485,6 +523,14 @@ export function Simulator() {
               onChange={(e) => setOptions((o) => ({ ...o, reroll_wounds: e.target.checked ? "all" : "none" }))}
             />
             Re-roll failed Wounds
+          </label>
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={options.reroll_damage}
+              onChange={(e) => setOptions((o) => ({ ...o, reroll_damage: e.target.checked }))}
+            />
+            Re-roll Damage (low rolls)
           </label>
         </div>
         <div className="inline-form">
