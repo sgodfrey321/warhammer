@@ -53,21 +53,27 @@ def _percentile(sorted_values: list[int], pct: int) -> float:
     return float(sorted_values[index])
 
 
-def _one_round(attacker, defender, options, state, weapon_count, rng) -> None:
-    """One shooting round = every firing weapon resolved into the persisting state."""
-    for _weapon in range(weapon_count):
-        if state.wiped:
-            return
-        resolve_into_state(attacker, defender, options, state, rng)
+# One firing line: a weapon profile and how many copies of it fire (e.g. 4 Fusion guns, plus a
+# separate line for the Exarch's different gun). All lines fire into one shared DefenderState.
+WeaponLine = tuple[AttackerProfile, int]
 
 
-def _rounds_to_destroy(attacker, defender, options, weapon_count, rng) -> int | None:
-    """Repeats the volley round after round against ONE persisting unit (damage
-    carries over -- wounds don't heal between rounds) until it's destroyed, and
-    returns the round number it died on, or None if still alive after the cap."""
+def _one_round(weapon_lines: list[WeaponLine], defender, options, state, rng) -> None:
+    """One shooting round = every copy of every weapon line resolved into the persisting state."""
+    for profile, count in weapon_lines:
+        for _weapon in range(count):
+            if state.wiped:
+                return
+            resolve_into_state(profile, defender, options, state, rng)
+
+
+def _rounds_to_destroy(weapon_lines: list[WeaponLine], defender, options, rng) -> int | None:
+    """Repeats the whole volley round after round against ONE persisting unit
+    (damage carries over -- wounds don't heal between rounds) until it's
+    destroyed, returning the round it died on, or None if alive after the cap."""
     state = DefenderState.fresh(defender)
     for r in range(1, BATTLE_ROUNDS + 1):
-        _one_round(attacker, defender, options, state, weapon_count, rng)
+        _one_round(weapon_lines, defender, options, state, rng)
         if state.wiped:
             return r
     return None
@@ -81,14 +87,28 @@ def simulate(
     seed: int | None = None,
     weapon_count: int = 1,
 ) -> SimulationResult:
-    """Runs `trials` independent volleys against a fresh copy of `defender`'s
-    unit each time, and returns the resulting distribution of wounds dealt /
-    models slain. `weapon_count` is how many copies of `attacker`'s weapon fire
-    at the unit each trial -- e.g. a 5-model squad all firing the same gun is
-    weapon_count=5. All those weapons share one DefenderState per trial, so
-    damage accumulates and allocation carries across the unit."""
+    """Single-weapon convenience wrapper: `weapon_count` copies of one weapon.
+    See `simulate_lines` for a mixed loadout (e.g. a squad's guns plus a
+    differently-armed Exarch)."""
 
-    weapon_count = max(1, weapon_count)
+    return simulate_lines([(attacker, max(1, weapon_count))], defender, options, trials=trials, seed=seed)
+
+
+def simulate_lines(
+    weapon_lines: list[WeaponLine],
+    defender: DefenderProfile,
+    options: AttackOptions,
+    trials: int = DEFAULT_TRIALS,
+    seed: int | None = None,
+) -> SimulationResult:
+    """Runs `trials` independent volleys of a whole (possibly mixed) loadout
+    against a fresh copy of `defender`'s unit each time, returning the resulting
+    distribution of wounds dealt / models slain. Every weapon line fires into
+    one shared DefenderState per trial, so damage accumulates and allocation
+    (with no spillover) carries across the unit's whole shooting."""
+
+    weapon_lines = [(p, max(1, c)) for p, c in weapon_lines] or []
+    total_weapons = sum(c for _, c in weapon_lines)
     rng = Random(seed)
     total_wounds = max(1, defender.wounds_per_model * defender.model_count)
 
@@ -97,7 +117,7 @@ def simulate(
     slain_counts: list[int] = []
     for _ in range(trials):
         state = DefenderState.fresh(defender)
-        _one_round(attacker, defender, options, state, weapon_count, rng)
+        _one_round(weapon_lines, defender, options, state, rng)
         damages.append(state.damage_dealt)
         slain_counts.append(state.models_slain)
 
@@ -122,7 +142,7 @@ def simulate(
 
     # --- Rounds-to-destroy (fresh RNG stream; damage persists across rounds) ---
     rounds_rng = Random(None if seed is None else seed + 1)
-    rounds_samples = [_rounds_to_destroy(attacker, defender, options, weapon_count, rounds_rng) for _ in range(trials)]
+    rounds_samples = [_rounds_to_destroy(weapon_lines, defender, options, rounds_rng) for _ in range(trials)]
     destroyed_by_round: dict[int, float] = {}
     if trials:
         for n in range(1, BATTLE_ROUNDS + 1):
@@ -131,7 +151,7 @@ def simulate(
 
     return SimulationResult(
         trials=trials,
-        weapon_count=weapon_count,
+        weapon_count=total_weapons,
         total_wounds=total_wounds,
         mean_damage=statistics.fmean(damages) if damages else 0.0,
         median_damage=statistics.median(damages) if damages else 0.0,

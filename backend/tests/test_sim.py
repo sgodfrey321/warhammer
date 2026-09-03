@@ -734,8 +734,13 @@ def test_analyze_endpoint(client):
 
 def test_simulate_endpoint(client):
     body = {
-        "weapon_characteristics": {"A": "5", "BS": "3+", "S": "5", "AP": "-1", "D": "1", "Keywords": "Sustained Hits 1"},
-        "range_type": "Ranged Weapons",
+        "weapons": [
+            {
+                "weapon_characteristics": {"A": "5", "BS": "3+", "S": "5", "AP": "-1", "D": "1", "Keywords": "Sustained Hits 1"},
+                "range_type": "Ranged Weapons",
+                "weapon_count": 1,
+            }
+        ],
         "defender_stats": {"T": "4", "Sv": "3+", "W": "2"},
         "defender_model_count": 5,
         "options": {"trials": 500, "seed": 1},
@@ -747,3 +752,23 @@ def test_simulate_endpoint(client):
     assert data["mean_damage"] >= 0
     assert 0.0 <= data["p_at_least_one_kill"] <= 1.0
     assert 0.0 <= data["p_wipe"] <= 1.0
+
+
+def test_simulate_endpoint_mixed_loadout():
+    # A mixed loadout (squad gun + a different Exarch gun) fires both lines into one target;
+    # its mean damage must exceed either line alone. simulate_lines directly, avoiding HTTP.
+    from app.sim.montecarlo import simulate_lines
+
+    squad = AttackerProfile.from_characteristics(
+        {"range_type": "Ranged Weapons", "characteristics": {"A": "1", "BS": "3+", "S": "9", "AP": "-4", "D": "D6"}}
+    )
+    exarch = AttackerProfile.from_characteristics(
+        {"range_type": "Ranged Weapons", "characteristics": {"A": "2", "BS": "3+", "S": "5", "AP": "-1", "D": "2"}}
+    )
+    defender = DefenderProfile.from_stats({"T": "9", "Sv": "3+", "W": "40"}, model_count=1)
+
+    squad_only = simulate_lines([(squad, 4)], defender, AttackOptions(), trials=8000, seed=1)
+    combined = simulate_lines([(squad, 4), (exarch, 1)], defender, AttackOptions(), trials=8000, seed=1)
+
+    assert combined.weapon_count == 5  # 4 + 1 copies
+    assert combined.mean_damage > squad_only.mean_damage

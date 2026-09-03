@@ -291,14 +291,20 @@ export interface SimulateOptions {
   seed: number | null;
 }
 
-export interface SimulateRequest {
+export interface SimulateWeaponLine {
   weapon_characteristics: Record<string, string>;
   range_type: "Ranged Weapons" | "Melee Weapons";
+  // How many copies of this weapon fire each trial (e.g. 4 Fusion guns = 4). The
+  // weapon's own A is attacks PER copy.
+  weapon_count: number;
+}
+
+export interface SimulateRequest {
+  // A (possibly mixed) loadout firing into one target -- e.g. a squad's guns plus a
+  // differently-armed Exarch.
+  weapons: SimulateWeaponLine[];
   defender_stats: Record<string, string>;
   defender_model_count: number;
-  // How many copies of this weapon fire each trial (e.g. a 5-model squad all
-  // firing the same gun = 5). The weapon's own A is attacks PER copy.
-  weapon_count: number;
   options: SimulateOptions;
 }
 

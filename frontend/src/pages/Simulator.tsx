@@ -205,8 +205,8 @@ export function Simulator() {
   const [attackerFaction, setAttackerFaction] = useState("");
   const [attackerUnitDefs, setAttackerUnitDefs] = useState<UnitDefinition[]>([]);
   const [attackerUnitId, setAttackerUnitId] = useState("");
-  const [weaponName, setWeaponName] = useState("");
-  const [weaponCount, setWeaponCount] = useState(1);
+  // A mixed loadout: one row per distinct weapon (e.g. 4 Fusion guns + 1 Exarch gun).
+  const [weaponLines, setWeaponLines] = useState<{ name: string; count: number }[]>([{ name: "", count: 1 }]);
 
   const [defenderFaction, setDefenderFaction] = useState("");
   const [defenderUnitDefs, setDefenderUnitDefs] = useState<UnitDefinition[]>([]);
@@ -231,7 +231,7 @@ export function Simulator() {
 
   useEffect(() => {
     setAttackerUnitId("");
-    setWeaponName("");
+    setWeaponLines([{ name: "", count: 1 }]);
     if (!attackerFaction) {
       setAttackerUnitDefs([]);
       return;
@@ -250,14 +250,17 @@ export function Simulator() {
 
   const attackerUnit = attackerUnitDefs.find((u) => u.id === attackerUnitId) ?? null;
   const defenderUnit = defenderUnitDefs.find((u) => u.id === defenderUnitId) ?? null;
-  const weapon = attackerUnit?.weapons.find((w) => w.name === weaponName) ?? null;
+  // Resolve each loadout row to its catalogue weapon profile; drop rows with nothing selected.
+  const validWeaponLines = weaponLines
+    .map((line) => ({ weapon: attackerUnit?.weapons.find((w) => w.name === line.name) ?? null, count: line.count }))
+    .filter((r): r is { weapon: Weapon; count: number } => r.weapon !== null);
 
   // What the dropdowns actually offer, filtered unless Legends/Crucible are opted in.
   const attackerOptions = includeNonStandard ? attackerUnitDefs : attackerUnitDefs.filter((u) => !isNonStandard(u));
   const defenderOptions = includeNonStandard ? defenderUnitDefs : defenderUnitDefs.filter((u) => !isNonStandard(u));
 
   useEffect(() => {
-    setWeaponName("");
+    setWeaponLines([{ name: "", count: 1 }]);
   }, [attackerUnitId]);
 
   // Pull attack modifiers out of the picked unit's abilities so they can be offered as toggles.
@@ -287,7 +290,18 @@ export function Simulator() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defenderUnitId]);
 
-  const canSimulate = !!weapon && !!defenderUnit && Object.keys(defenderUnit.stats).length > 0;
+  const canSimulate = validWeaponLines.length > 0 && !!defenderUnit && Object.keys(defenderUnit.stats).length > 0;
+
+  // Helpers to edit the loadout rows.
+  function setLine(i: number, patch: Partial<{ name: string; count: number }>) {
+    setWeaponLines((lines) => lines.map((l, j) => (j === i ? { ...l, ...patch } : l)));
+  }
+  function addLine() {
+    setWeaponLines((lines) => [...lines, { name: "", count: 1 }]);
+  }
+  function removeLine(i: number) {
+    setWeaponLines((lines) => (lines.length > 1 ? lines.filter((_, j) => j !== i) : lines));
+  }
 
   // The options actually sent. An effect is active when it's eligible for this matchup AND either
   // auto-applied (nothing for the player to decide) or ticked. Target-conditional attacker buffs
@@ -310,17 +324,19 @@ export function Simulator() {
   }
 
   async function handleSimulate() {
-    if (!weapon || !defenderUnit) return;
+    if (validWeaponLines.length === 0 || !defenderUnit) return;
     setLoading(true);
     setSimError(null);
     setResult(null);
     try {
       const res = await api.simulate({
-        weapon_characteristics: weapon.characteristics,
-        range_type: weapon.range_type,
+        weapons: validWeaponLines.map((r) => ({
+          weapon_characteristics: r.weapon.characteristics,
+          range_type: r.weapon.range_type,
+          weapon_count: r.count,
+        })),
         defender_stats: defenderUnit.stats,
         defender_model_count: defenderModelCount,
-        weapon_count: weaponCount,
         options: effectiveOptions,
       });
       setResult(res);
@@ -394,39 +410,54 @@ export function Simulator() {
           unitId={attackerUnitId}
           onUnit={setAttackerUnitId}
         />
-        {attackerUnit && (
+        {attackerUnit && attackerUnit.weapons.length === 0 && <p className="muted">This unit has no weapons.</p>}
+        {attackerUnit &&
+          attackerUnit.weapons.length > 0 &&
+          weaponLines.map((line, i) => (
+            <div className="inline-form" key={i}>
+              <label className="checkbox-label">
+                Weapon
+                <select value={line.name} onChange={(e) => setLine(i, { name: e.target.value })}>
+                  <option value="">Select weapon...</option>
+                  {groupWeaponsByRangeType(attackerUnit.weapons).map(([rangeType, ws]) => (
+                    <optgroup key={rangeType} label={rangeType}>
+                      {ws.map((w) => (
+                        <option key={w.name} value={w.name}>
+                          {w.name} — {weaponSummary(w)}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+              </label>
+              <label className="checkbox-label">
+                Firing
+                <input
+                  type="number"
+                  min={1}
+                  value={line.count}
+                  onChange={(e) => setLine(i, { count: Math.max(1, Number(e.target.value) || 1) })}
+                  style={{ width: "4rem" }}
+                />
+              </label>
+              {weaponLines.length > 1 && (
+                <button type="button" onClick={() => removeLine(i)}>
+                  Remove
+                </button>
+              )}
+            </div>
+          ))}
+        {attackerUnit && attackerUnit.weapons.length > 0 && (
           <div className="inline-form">
-            <label className="checkbox-label">
-              Weapon
-              <select value={weaponName} onChange={(e) => setWeaponName(e.target.value)} disabled={attackerUnit.weapons.length === 0}>
-                <option value="">Select weapon...</option>
-                {groupWeaponsByRangeType(attackerUnit.weapons).map(([rangeType, ws]) => (
-                  <optgroup key={rangeType} label={rangeType}>
-                    {ws.map((w) => (
-                      <option key={w.name} value={w.name}>
-                        {w.name} — {weaponSummary(w)}
-                      </option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
-            </label>
-            {attackerUnit.weapons.length === 0 && <span className="muted">This unit has no weapons.</span>}
-            <label className="checkbox-label">
-              Weapons firing
-              <input
-                type="number"
-                min={1}
-                value={weaponCount}
-                onChange={(e) => setWeaponCount(Math.max(1, Number(e.target.value) || 1))}
-                style={{ width: "4rem" }}
-              />
-            </label>
+            <button type="button" onClick={addLine}>
+              + Add weapon
+            </button>
           </div>
         )}
         <p className="muted">
-          "Weapons firing" is how many copies of this weapon shoot (e.g. a 5-model squad all with
-          this gun = 5). The weapon's own A is the attacks per model.
+          One row per distinct weapon — "Firing" is how many models carry that gun (e.g. 4 Fusion
+          guns + 1 Exarch weapon = two rows). Each weapon's own A is the attacks per model. All rows
+          fire at the same defender.
         </p>
         {attackerUnit && (
           <>

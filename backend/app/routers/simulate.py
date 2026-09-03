@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 from dataclasses import asdict
 
 from ..sim.abilities import extract_effects
-from ..sim.montecarlo import DEFAULT_TRIALS, simulate
+from ..sim.montecarlo import DEFAULT_TRIALS, simulate_lines
 from ..sim.profiles import AttackerProfile, DefenderProfile
 from ..sim.sequence import AttackOptions
 
@@ -44,18 +44,21 @@ class SimulateOptions(BaseModel):
     seed: Optional[int] = None
 
 
-class SimulateRequest(BaseModel):
-    # A weapon's `characteristics` dict (A/BS-or-WS/S/AP/D/Keywords/...), plus
-    # which range_type it is -- same shape as UnitDefinition.weapons[i].
+class WeaponLine(BaseModel):
+    # One firing line: a weapon's `characteristics` dict (A/BS-or-WS/S/AP/D/
+    # Keywords/...) + its range_type (same shape as UnitDefinition.weapons[i]),
+    # and how many copies fire (the A characteristic is attacks PER copy). A
+    # mixed loadout is several lines -- e.g. 4 Fusion guns + 1 Exarch weapon.
     weapon_characteristics: dict[str, str] = Field(default_factory=dict)
     range_type: Literal["Ranged Weapons", "Melee Weapons"] = "Ranged Weapons"
+    weapon_count: int = 1
+
+
+class SimulateRequest(BaseModel):
+    weapons: list[WeaponLine] = Field(default_factory=list)
     # A defender's `stats` dict (T/Sv/InSv/W/...) -- same shape as UnitDefinition.stats.
     defender_stats: dict[str, str] = Field(default_factory=dict)
     defender_model_count: int = 1
-    # How many copies of this weapon fire at the unit each trial -- e.g. a
-    # 5-model squad all firing the same gun is weapon_count=5. The weapon's own
-    # A characteristic is the attacks PER copy.
-    weapon_count: int = 1
     options: SimulateOptions = Field(default_factory=SimulateOptions)
 
 
@@ -112,9 +115,15 @@ def analyze_abilities(body: AnalyzeRequest) -> AnalyzeResponse:
 
 @router.post("", response_model=SimulateResponse)
 def run_simulation(body: SimulateRequest) -> SimulateResponse:
-    attacker = AttackerProfile.from_characteristics(
-        {"characteristics": body.weapon_characteristics, "range_type": body.range_type}
-    )
+    weapon_lines = [
+        (
+            AttackerProfile.from_characteristics(
+                {"characteristics": line.weapon_characteristics, "range_type": line.range_type}
+            ),
+            line.weapon_count,
+        )
+        for line in body.weapons
+    ]
     defender = DefenderProfile.from_stats(body.defender_stats, body.defender_model_count)
     options = AttackOptions(
         half_range=body.options.half_range,
@@ -133,10 +142,8 @@ def run_simulation(body: SimulateRequest) -> SimulateResponse:
     )
 
     logger.info(
-        "SIMULATE %s (%dx, %s) vs %s [T%s Sv%s InSv%s W%s x%d models] | opts=%s trials=%d",
-        body.weapon_characteristics.get("name", body.weapon_characteristics),
-        body.weapon_count,
-        body.range_type,
+        "SIMULATE %s vs %s [T%s Sv%s InSv%s W%s x%d models] | opts=%s trials=%d",
+        [f"{line.weapon_characteristics.get('name', '?')} x{line.weapon_count} ({line.range_type})" for line in body.weapons],
         body.defender_stats.get("name", ""),
         body.defender_stats.get("T"),
         body.defender_stats.get("Sv"),
@@ -147,13 +154,12 @@ def run_simulation(body: SimulateRequest) -> SimulateResponse:
         body.options.trials,
     )
 
-    result = simulate(
-        attacker,
+    result = simulate_lines(
+        weapon_lines,
         defender,
         options,
         trials=body.options.trials,
         seed=body.options.seed,
-        weapon_count=body.weapon_count,
     )
 
     logger.info(
