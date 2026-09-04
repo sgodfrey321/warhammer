@@ -16,7 +16,7 @@ import type {
   Weapon,
 } from "../types";
 import { auraAbilityReferences, groupUnitsByRole, leaderAbilityReferences, psychicAbilityReferences } from "../units";
-import { groupLoadoutByRangeType, weaponBaseName } from "../weapons";
+import { groupLoadoutByRangeType, matchLoadoutWeapons, weaponBaseName } from "../weapons";
 
 // A unit's stats rendered token-by-token (not one joined string) so a declared buff (see
 // RosterEditor's "Unit Buffs") can be pinned as a badge right next to the one characteristic
@@ -849,9 +849,7 @@ export function BattleTracker() {
                                   // A weapon with multiple firing modes (strike/sweep etc.) has
                                   // more than one catalogue profile for one loadout item -- show
                                   // every matching mode, not just the first.
-                                  const matches = u.unit_definition.weapons.filter(
-                                    (w) => weaponBaseName(w.name) === item.name,
-                                  );
+                                  const matches = matchLoadoutWeapons(item.name, u.unit_definition.weapons);
                                   return (
                                     <li key={item.name}>
                                       <strong>

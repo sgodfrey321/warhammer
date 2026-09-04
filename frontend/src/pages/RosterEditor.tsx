@@ -33,8 +33,8 @@ import {
   unitsBySave,
   unitsByToughness,
   unitsByWounds,
+  matchLoadoutWeapons,
   weaponAttacksByStrengthAndSkill,
-  weaponBaseName,
 } from "../weapons";
 import type {
   MovementBucket,
@@ -289,7 +289,7 @@ function UnitRow({
                 // A weapon with multiple firing modes (strike/sweep etc.) has more than one
                 // catalogue profile for one loadout item -- show every matching mode, not just
                 // the first (same convention as BattleTracker.tsx).
-                const matches = unit.unit_definition.weapons.filter((w) => weaponBaseName(w.name) === item.name);
+                const matches = matchLoadoutWeapons(item.name, unit.unit_definition.weapons);
                 return (
                   <li key={item.name}>
                     <strong>

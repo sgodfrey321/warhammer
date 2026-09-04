@@ -9,6 +9,32 @@ export function weaponBaseName(name: string): string {
   return dashIndex === -1 ? stripped : stripped.slice(0, dashIndex);
 }
 
+// Normalise for matching a loadout item name against a catalogue profile name: drop a leading
+// "The " and lower-case, since exports and the catalogue sometimes disagree there ("The Blade of
+// Destruction" vs the profile "Blade of Destruction").
+function normalizeWeaponName(name: string): string {
+  return weaponBaseName(name).replace(/^the\s+/i, "").trim().toLowerCase();
+}
+
+// Match one loadout item (from a BattleScribe/NewRecruit export) to its catalogue weapon
+// profile(s). Beyond the plain base-name match it tolerates a leading "The ", and -- when the
+// whole name matches nothing -- a combined selection like "Banshee Blade and Shuriken Pistol",
+// which it splits on "and"/"&" and matches each part. Returns every matching profile (a
+// multi-mode weapon has more than one), or [] if genuinely un-indexed.
+export function matchLoadoutWeapons(itemName: string, weapons: Weapon[]): Weapon[] {
+  const target = normalizeWeaponName(itemName);
+  const whole = weapons.filter((w) => normalizeWeaponName(w.name) === target);
+  if (whole.length > 0) return whole;
+  const parts = itemName
+    .split(/\s+(?:and|&)\s+/i)
+    .map((p) => p.replace(/^the\s+/i, "").trim().toLowerCase())
+    .filter(Boolean);
+  if (parts.length > 1) {
+    return weapons.filter((w) => parts.includes(normalizeWeaponName(w.name)));
+  }
+  return [];
+}
+
 // GW's own datasheet ordering: Ranged Weapons section before Melee Weapons.
 const WEAPON_SECTION_ORDER = ["Ranged Weapons", "Melee Weapons"];
 
@@ -32,8 +58,7 @@ export function groupWeaponsByRangeType(weapons: Weapon[]): [string, Weapon[]][]
 export function groupLoadoutByRangeType(loadout: LoadoutItem[], defWeapons: Weapon[]): [string, LoadoutItem[]][] {
   const groups = new Map<string, LoadoutItem[]>();
   for (const item of loadout) {
-    const match = defWeapons.find((w) => weaponBaseName(w.name) === item.name);
-    const rangeType = match?.range_type ?? "Other";
+    const rangeType = matchLoadoutWeapons(item.name, defWeapons)[0]?.range_type ?? "Other";
     const arr = groups.get(rangeType) ?? [];
     arr.push(item);
     groups.set(rangeType, arr);
