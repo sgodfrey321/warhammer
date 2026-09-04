@@ -106,6 +106,7 @@ export const api = {
   createBattle: (payload: {
     roster_id?: number | null;
     opponent_name?: string | null;
+    opponent_roster_id?: number | null;
     your_disposition?: Disposition | null;
     opponent_disposition?: Disposition | null;
     layout_number?: number | null;
@@ -117,6 +118,7 @@ export const api = {
     battleId: number,
     payload: Partial<{
       opponent_name: string | null;
+      opponent_roster_id: number | null;
       your_disposition: Disposition | null;
       opponent_disposition: Disposition | null;
       layout_number: number | null;

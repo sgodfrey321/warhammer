@@ -21,6 +21,7 @@ export function BattleSetup() {
   const [error, setError] = useState<string | null>(null);
 
   const [opponentName, setOpponentName] = useState("");
+  const [opponentRosterId, setOpponentRosterId] = useState<number | null>(null);
   const [yours, setYours] = useState<Disposition>(DISPOSITIONS[0]);
   const [theirs, setTheirs] = useState<Disposition>(DISPOSITIONS[0]);
   const [layoutNumber, setLayoutNumber] = useState(1);
@@ -39,6 +40,7 @@ export function BattleSetup() {
         .then((b) => {
           setCurrentRosterId(b.roster_id);
           setOpponentName(b.opponent_name ?? "");
+          setOpponentRosterId(b.opponent_roster_id ?? null);
           if (b.your_disposition) setYours(b.your_disposition);
           if (b.opponent_disposition) setTheirs(b.opponent_disposition);
           if (b.layout_number) setLayoutNumber(b.layout_number);
@@ -60,6 +62,7 @@ export function BattleSetup() {
   async function handleBegin() {
     const payload = {
       opponent_name: opponentName.trim() || null,
+      opponent_roster_id: opponentRosterId,
       your_disposition: yours,
       opponent_disposition: theirs,
       layout_number: layoutNumber,
@@ -107,19 +110,33 @@ export function BattleSetup() {
 
       <div className="inline-form">
         <label>
-          Opponent
+          Opponent roster
+          <select
+            value={opponentRosterId ?? ""}
+            onChange={(e) => {
+              const id = e.target.value ? Number(e.target.value) : null;
+              setOpponentRosterId(id);
+              // Auto-fill the label from the chosen roster (unless the player already typed one).
+              const picked = rosters.find((r) => r.id === id);
+              if (picked && !opponentName.trim()) setOpponentName(picked.name);
+            }}
+          >
+            <option value="">None (name only)</option>
+            {opponentRosterOptions.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.name} ({r.faction})
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Opponent name
           <input
             type="text"
-            list="opponent-roster-options"
             value={opponentName}
             onChange={(e) => setOpponentName(e.target.value)}
             placeholder="e.g. Steve's Orks"
           />
-          <datalist id="opponent-roster-options">
-            {opponentRosterOptions.map((r) => (
-              <option key={r.id} value={r.name} />
-            ))}
-          </datalist>
         </label>
         <label>
           Your disposition

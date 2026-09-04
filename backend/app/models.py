@@ -102,6 +102,9 @@ class BattleSession(SQLModel, table=True):
     roster_id: Optional[int] = Field(default=None, foreign_key="roster.id")
     global_step: int = 0
     opponent_name: Optional[str] = None
+    # Optional link to one of the player's saved rosters as the opponent army, so both armies
+    # can be shown/tracked. opponent_name stays for an opponent not built in the app.
+    opponent_roster_id: Optional[int] = Field(default=None, foreign_key="roster.id")
     your_disposition: Optional[str] = None
     opponent_disposition: Optional[str] = None
     # Which of the matchup's 1-3 layout images (per layouts.json) was picked for this battle.

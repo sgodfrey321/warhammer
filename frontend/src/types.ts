@@ -368,6 +368,7 @@ export interface BattleOut {
   id: number;
   started_at: string;
   roster_id: number | null;
+  opponent_roster_id: number | null;
   global_step: number;
   battle_round: number;
   active_player: number;

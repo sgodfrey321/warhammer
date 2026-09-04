@@ -29,6 +29,7 @@ router = APIRouter(prefix="/battles", tags=["battles"])
 class BattleCreate(BaseModel):
     roster_id: Optional[int] = None
     opponent_name: Optional[str] = None
+    opponent_roster_id: Optional[int] = None
     your_disposition: Optional[str] = None
     opponent_disposition: Optional[str] = None
     layout_number: Optional[int] = None
@@ -36,6 +37,7 @@ class BattleCreate(BaseModel):
 
 class BattleSetupUpdate(BaseModel):
     opponent_name: Optional[str] = None
+    opponent_roster_id: Optional[int] = None
     your_disposition: Optional[str] = None
     opponent_disposition: Optional[str] = None
     layout_number: Optional[int] = None
@@ -134,6 +136,7 @@ class BattleOut(BaseModel):
     id: int
     started_at: str
     roster_id: Optional[int]
+    opponent_roster_id: Optional[int]
     global_step: int
     battle_round: int
     active_player: int
@@ -333,6 +336,7 @@ def _to_out(battle: BattleSession, session: Session) -> BattleOut:
         id=battle.id,
         started_at=battle.started_at.isoformat(),
         roster_id=battle.roster_id,
+        opponent_roster_id=battle.opponent_roster_id,
         global_step=step,
         battle_round=round_,
         active_player=phases.active_player(step),
@@ -369,6 +373,7 @@ def create_battle(payload: BattleCreate, session: Session = Depends(get_session)
     battle = BattleSession(
         roster_id=payload.roster_id,
         opponent_name=payload.opponent_name,
+        opponent_roster_id=payload.opponent_roster_id,
         your_disposition=payload.your_disposition,
         opponent_disposition=payload.opponent_disposition,
         layout_number=payload.layout_number,
