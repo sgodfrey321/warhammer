@@ -1374,7 +1374,7 @@
         "rules": [
           {
             "name": "Holy Quest",
-            "text": "Friendly **CELESTIAN SACRESANTS** units’ attacks have +1 **BS** and **WS**. \n\nThis **detachment** has the **REVEREND** tag and cannot be taken with another **REVEREND detachment**."
+            "text": "Friendly **CELESTIAN** units’ attacks have +1 **BS** and **WS**. \n\nThis **detachment** has the **REVEREND** tag and cannot be taken with another **REVEREND detachment**."
           }
         ]
       },
@@ -2367,7 +2367,7 @@
         "rules": [
           {
             "name": "Old Greymanes",
-            "text": "When a friendly GREY HUNTER unit starts an action, that action does not prevent this unit from being eligible to shoot.\n\n\n▪ In the Declare Battle Formations step, you can split a friendly GREY HUNTERS unit into two units, each with a starting strength of 5.\n\n\nRestrictions: Your army can include SPACE WOLVES units, but it\ncannot include any ADEPTUS ASTARTES units drawn from any\nother Chapter."
+            "text": "When a friendly GREY HUNTER unit starts an action, that action does not prevent this unit from being eligible to shoot.\n\n\n▪ In the Declare Battle Formations step,  each containing as equal a number of models as possible (when splitting a unit in this way, make a note of which models form each of the two new units)\n\n\nRestrictions: Your army can include SPACE WOLVES units, but it\ncannot include any ADEPTUS ASTARTES units drawn from any\nother Chapter."
           }
         ]
       },

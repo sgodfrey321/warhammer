@@ -44,6 +44,44 @@ def test_resolve_faction_matches_known_points_and_keywords():
     assert wave_serpent.catalogue_points == 115
 
 
+def test_resolve_library_units_emits_datasheets_directly():
+    """The library-defined-faction path (Chaos Daemons/Knights): a Library's own unit/model
+    entries become units directly, resolving stats/weapons with the same helpers, without going
+    through a main catalogue's entryLinks."""
+    library_doc = load("aeldari_library.json")
+
+    resolved = catalogue.resolve_library_units(library_doc, library_index(), profile_index(), group_index())
+    by_name = {e.name: e for e in resolved}
+
+    # Every unit/model datasheet in the library is surfaced (config/upgrade entries excluded).
+    assert set(by_name) == {
+        "Wraithlord",
+        "Wave Serpent",
+        "Autarch Skyrunner",
+        "Dire Avengers",
+        "Guardian Defenders",
+        "Windriders",
+        "Warlock",
+        "Avatar of Khaine",
+    }
+    wraithlord = by_name["Wraithlord"]
+    assert wraithlord.resolved is True
+    assert wraithlord.target_id is not None
+    assert wraithlord.stats["T"] == "10"
+    assert wraithlord.abilities[0].name == "Fated Hero"
+    # Same weapon resolution as the entryLink path (incl. the group-in-group Wailing Doom).
+    assert "➤ The Wailing Doom - Strike" in {w.name for w in by_name["Avatar of Khaine"].weapons}
+
+
+def test_own_library_stem_only_for_library_defined_factions():
+    # Triggers for a faction whose "<name> Library" is a known library file...
+    assert catalogue.own_library_stem("Chaos - Chaos Daemons") == "Chaos - Chaos Daemons Library"
+    assert catalogue.own_library_stem("Chaos - Chaos Knights") == "Chaos - Chaos Knights Library"
+    # ...and stays None for a faction that resolves via its main catalogue's entryLinks.
+    assert catalogue.own_library_stem("Aeldari - Craftworlds") is None
+    assert catalogue.own_library_stem("Imperium - Space Marines") is None
+
+
 def test_resolve_faction_flags_unresolvable_target():
     faction_doc = load("craftworlds.json")
 

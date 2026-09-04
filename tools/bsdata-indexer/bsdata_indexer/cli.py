@@ -4,7 +4,7 @@ import argparse
 import logging
 from pathlib import Path
 
-from . import army_rules, detachments, faction_map
+from . import army_rules, catalogue, detachments, faction_map
 from .build import (
     BSDATA_ORG,
     CATALOGUE_REPO,
@@ -132,6 +132,7 @@ def main(argv: list[str] | None = None) -> int:
                 group_index,
                 mfm_cache,
                 available_mfm_slugs=available_slugs,
+                own_library_stem=catalogue.own_library_stem(stem),
             )
         except Exception as exc:  # noqa: BLE001 - per-faction isolation for a batch CLI run
             logger.error("%s: FAILED - %s", stem, exc)

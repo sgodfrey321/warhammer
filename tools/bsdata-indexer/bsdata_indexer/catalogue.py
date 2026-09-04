@@ -33,6 +33,22 @@ LIBRARY_FILENAMES = [
 ]
 
 
+def own_library_stem(faction_stem: str) -> str | None:
+    """The Library file a faction keeps its *own* datasheets in, or None.
+
+    Most factions (Aeldari - Craftworlds, etc.) resolve their units via the main catalogue's
+    entryLinks. A few -- Chaos Daemons, Chaos Knights -- instead keep every datasheet in a shared
+    "<faction> Library" file, and their main catalogue only entryLinks to *allied* units. Those
+    come out empty from resolve_faction alone, so build_faction also pulls their own library's
+    unit/model entries directly (see resolve_library_units). Keyed off the "<faction> Library"
+    naming convention against the known LIBRARY_FILENAMES -- so it triggers only for a faction
+    whose library actually exists, and stays None for everyone else. (Note: some libraries use an
+    irregular "<faction> - Library" name, e.g. Astra Militarum -- those armies define their units
+    in the main catalogue anyway, so the convention miss is harmless.)"""
+    candidate = f"{faction_stem} Library"
+    return candidate if candidate in LIBRARY_FILENAMES else None
+
+
 @dataclass
 class ResolvedEntry:
     entrylink_id: str
@@ -436,6 +452,49 @@ def resolve_faction(
                 ),
                 catalogue_points=_primary_points(target) if target else None,
                 resolved=target is not None,
+            )
+        )
+    return resolved
+
+
+def resolve_library_units(
+    library_doc: dict,
+    library_index: dict[str, dict],
+    profile_index: dict[str, dict],
+    group_index: dict[str, dict],
+) -> list[ResolvedEntry]:
+    """Emit a ResolvedEntry for every unit/model datasheet defined directly in a faction's own
+    Library file -- for the library-defined factions (Chaos Daemons, Chaos Knights) whose main
+    catalogue entryLinks only reach allies, so resolve_faction alone returns ~nothing.
+
+    The library's own entries are already merged into `library_index` (build_global_library_index
+    walks every LIBRARY_FILENAMES file), so the same weapon/profile/group resolution helpers apply
+    unchanged. Only `type in ("unit", "model")` entries become units -- upgrades/config wrappers
+    are skipped, matching resolve_faction's guard. entrylink_id/target_id are the entry's own id
+    (there is no entryLink here); build_faction dedupes on target_id so a unit also reachable via
+    the main catalogue's entryLinks isn't emitted twice."""
+    resolved: list[ResolvedEntry] = []
+    for entry_id, entry in index_library_entries(library_doc).items():
+        if entry.get("type") not in ("unit", "model"):
+            continue
+        resolved.append(
+            ResolvedEntry(
+                entrylink_id=entry_id,
+                name=entry.get("name", ""),
+                target_id=entry_id,
+                keywords=_keywords(entry),
+                role=_battlefield_role(entry),
+                stats=(
+                    _stats(entry)
+                    or _info_link_stats(entry, profile_index)
+                    or _nested_unit_stats(entry, profile_index)
+                ),
+                abilities=_abilities(entry),
+                rules=_unit_rules(entry),
+                weapons=_weapon_profiles(entry, library_index, profile_index, group_index),
+                model_profiles=_model_profiles(entry, library_index, profile_index, group_index),
+                catalogue_points=_primary_points(entry),
+                resolved=True,
             )
         )
     return resolved

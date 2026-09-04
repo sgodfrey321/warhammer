@@ -120,6 +120,42 @@ def test_build_faction_joins_catalogue_and_mfm(monkeypatch):
     assert skyrunner.mfm_matched is True
 
 
+def test_build_faction_own_library_adds_units_without_doubling(monkeypatch):
+    """A library-defined faction pulls units from its own Library. Here the main catalogue
+    already entryLinks the same library, so passing own_library_stem must NOT double-count them
+    -- build_faction dedupes on target_id, keeping the entryLink version (with its name override)."""
+    catalogue_cache, mfm_cache = make_caches()
+    library_index = make_library_index(monkeypatch, catalogue_cache)
+    profile_index = make_profile_index(monkeypatch, catalogue_cache)
+    group_index = make_group_index(monkeypatch, catalogue_cache)
+    report = build.build_faction(
+        "Aeldari - Craftworlds",
+        catalogue_cache,
+        library_index,
+        profile_index,
+        group_index,
+        mfm_cache,
+        available_mfm_slugs={"aeldari"},
+        own_library_stem="Aeldari - Aeldari Library",
+    )
+
+    names = [u.name for u in report.units]
+    assert len(names) == len(set(names))  # no duplicates
+    # Same 8 units as without own_library -- the entryLink name override wins on the dedupe.
+    assert set(names) == {
+        "Wraithlord",
+        "Wave Serpent",
+        "Autarch Skyrunner [Legends]",
+        "Dire Avengers",
+        "Guardian Defenders",
+        "Windriders",
+        "Warlock",
+        "Avatar of Khaine",
+    }
+    # Points still resolve for the deduped survivors.
+    assert {u.name: u for u in report.units}["Wraithlord"].points[0].points == 125
+
+
 def test_build_faction_unmapped_slug_flags_every_unit_unmatched(monkeypatch):
     catalogue_cache, mfm_cache = make_caches()
     library_index = make_library_index(monkeypatch, catalogue_cache)

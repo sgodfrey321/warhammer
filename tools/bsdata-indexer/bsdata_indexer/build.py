@@ -48,6 +48,35 @@ def build_group_index(catalogue_cache: RepoCache) -> dict[str, dict]:
     )
 
 
+def _entry_to_unit(
+    entry: catalogue.ResolvedEntry, faction_stem: str, mfm_index: dict[str, mfm.MfmUnit]
+) -> UnitDefinition:
+    # The catalogue marks Legends units with a "[Legends]" name suffix; MFM instead has a
+    # structured `legends` flag on the un-suffixed name, so strip it before the MFM lookup.
+    base_name = entry.name
+    if base_name.rstrip().endswith("[Legends]"):
+        base_name = base_name.rsplit("[Legends]", 1)[0].strip()
+    mfm_unit = mfm_index.get(normalize_name(base_name)) or mfm_index.get(normalize_name(entry.name))
+    is_legends = (mfm_unit.is_legends if mfm_unit else False) or base_name != entry.name
+    return UnitDefinition(
+        id=f"{slugify(faction_stem)}/{slugify(entry.name)}",
+        faction=faction_stem,
+        name=entry.name,
+        keywords=entry.keywords,
+        role=entry.role,
+        is_legends=is_legends,
+        stats=entry.stats,
+        abilities=entry.abilities,
+        rules=entry.rules,
+        weapons=entry.weapons,
+        model_profiles=entry.model_profiles,
+        points=list(mfm_unit.points) if mfm_unit else [],
+        mfm_matched=mfm_unit is not None,
+        source_catalogue_id=entry.entrylink_id,
+        source_entry_id=entry.target_id,
+    )
+
+
 def build_faction(
     faction_stem: str,
     catalogue_cache: RepoCache,
@@ -57,9 +86,18 @@ def build_faction(
     mfm_cache: RepoCache,
     *,
     available_mfm_slugs: set[str],
+    own_library_stem: str | None = None,
 ) -> BuildReport:
     faction_doc = catalogue.load_json(catalogue_cache.get(f"{faction_stem}.json"))
     resolved_entries = catalogue.resolve_faction(faction_doc, library_index, profile_index, group_index)
+
+    # Library-defined factions (Chaos Daemons/Knights) keep their datasheets in their own Library,
+    # not behind the main catalogue's entryLinks -- pull those directly. See catalogue helpers.
+    if own_library_stem:
+        library_doc = catalogue.load_json(catalogue_cache.get(f"{own_library_stem}.json"))
+        resolved_entries = resolved_entries + catalogue.resolve_library_units(
+            library_doc, library_index, profile_index, group_index
+        )
 
     report = BuildReport(faction=faction_stem)
     slug, guessed = faction_map.resolve(faction_stem, available_mfm_slugs)
@@ -71,36 +109,17 @@ def build_faction(
         mfm_doc = mfm.load_yaml(mfm_cache.get(f"data/{slug}.yaml"))
         mfm_index = mfm.index_units(mfm_doc)
 
+    seen_ids: set[str | None] = set()
     for entry in resolved_entries:
         if not entry.resolved:
             report.unresolved_entrylinks.append(entry.name)
             continue
-        # The catalogue marks Legends units with a "[Legends]" name suffix; MFM instead has a
-        # structured `legends` flag on the un-suffixed name, so strip it before the MFM lookup.
-        base_name = entry.name
-        if base_name.rstrip().endswith("[Legends]"):
-            base_name = base_name.rsplit("[Legends]", 1)[0].strip()
-        mfm_unit = mfm_index.get(normalize_name(base_name)) or mfm_index.get(normalize_name(entry.name))
-        is_legends = (mfm_unit.is_legends if mfm_unit else False) or base_name != entry.name
-        report.units.append(
-            UnitDefinition(
-                id=f"{slugify(faction_stem)}/{slugify(entry.name)}",
-                faction=faction_stem,
-                name=entry.name,
-                keywords=entry.keywords,
-                role=entry.role,
-                is_legends=is_legends,
-                stats=entry.stats,
-                abilities=entry.abilities,
-                rules=entry.rules,
-                weapons=entry.weapons,
-                model_profiles=entry.model_profiles,
-                points=list(mfm_unit.points) if mfm_unit else [],
-                mfm_matched=mfm_unit is not None,
-                source_catalogue_id=entry.entrylink_id,
-                source_entry_id=entry.target_id,
-            )
-        )
+        # Dedupe on the source (target) id: a unit reachable both via a main-catalogue entryLink
+        # and its own library is emitted once, entryLink first (it carries name overrides).
+        if entry.target_id in seen_ids:
+            continue
+        seen_ids.add(entry.target_id)
+        report.units.append(_entry_to_unit(entry, faction_stem, mfm_index))
     return report
 
 
