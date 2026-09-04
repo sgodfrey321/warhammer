@@ -429,15 +429,6 @@ section {
 
 /* RosterEditor's standalone "Available Units" section -- a browse-and-add catalogue, separate
    from the roster's own "Units" section below it (adding a unit here populates that list). */
-.available-units-panel {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 0.75rem 1rem;
-  /* Let the list flow with the page instead of a nested scrollbar inside the card -- the
-     Available Units accordion can be collapsed when it's not needed. */
-}
-
 /* Wider Roster Editor so the unit cards and analysis charts have room. */
 .roster-editor-page {
   max-width: 1040px;

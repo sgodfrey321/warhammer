@@ -333,6 +333,7 @@ export function RosterEditor() {
   const [detachmentDetailsOpen, setDetachmentDetailsOpen] = useState(false);
   const [showLegends, setShowLegends] = useState(false);
   const [showCrucible, setShowCrucible] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
   const [synergies, setSynergies] = useState<UnitSynergy[]>([]);
   const [pools, setPools] = useState<DeclaredStatePool[]>([]);
   const [attachments, setAttachments] = useState<UnitAttachment[]>([]);
@@ -730,91 +731,12 @@ export function RosterEditor() {
       )}
 
       <details className="accordion" open>
-        <summary>Available Units</summary>
-        <div className="available-units-panel">
-          <div className="inline-form">
-            <label className="checkbox-label">
-              <input type="checkbox" checked={showLegends} onChange={(e) => setShowLegends(e.target.checked)} />
-              Legends
-            </label>
-            <label className="checkbox-label">
-              <input type="checkbox" checked={showCrucible} onChange={(e) => setShowCrucible(e.target.checked)} />
-              Crucible
-            </label>
-          </div>
-          {groupDefsByRole(filteredAvailableUnits).map(([role, defs]) => (
-            <details key={role} className="unit-role-group" open>
-              <summary className="unit-role-heading">
-                {role} <span className="muted">({defs.length})</span>
-              </summary>
-              <ul className="available-unit-list">
-                {defs.map((u) => (
-                  <li key={u.id} className="available-unit-row">
-                    <details className="unit-card">
-                      <summary className="unit-def-summary">
-                        <span className="unit-def-name">{u.name}</span>
-                        <span className="muted"> ({u.points_cost}pts)</span>
-                        {u.is_legends && <span className="tag">Legends</span>}
-                        {isCrucible(u) && <span className="tag">Crucible</span>}
-                        {statPairs(u.stats).length > 0 && (
-                          <div className="stat-line">
-                            <StatBoxes pairs={statPairs(u.stats)} />
-                          </div>
-                        )}
-                        {u.rules.length > 0 && (
-                          <div className="rule-tags">
-                            {u.rules.map((r) => (
-                              <span key={r} className="tag">
-                                <Keyword name={r} />
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </summary>
-                      <div className="unit-def-details">
-                        {groupWeaponsByRangeType(u.weapons).map(([rangeType, ws]) => (
-                          <div key={rangeType}>
-                            <h4 className="weapon-section-heading">{rangeType}</h4>
-                            <ul className="ability-list">
-                              {ws.map((w) => (
-                                <li key={w.name}>
-                                  <strong>{w.name}</strong>
-                                  <div className="stat-line">
-                                    <StatBoxes pairs={weaponPairs(w)} />
-                                  </div>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        ))}
-                        {u.abilities.length > 0 && (
-                          <ul className="ability-list">
-                            {u.abilities.map((a) => (
-                              <li key={a.name}>
-                                <strong>{a.name}:</strong> {renderAbilityText(a.text, `${u.id}-${a.name}`)}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    </details>
-                    <button type="button" className="link-button" onClick={() => handleAddUnit(u)}>
-                      add
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </details>
-          ))}
-          {availableUnits.length === 0 && <p className="muted">No units indexed for this faction yet.</p>}
-          {availableUnits.length > 0 && filteredAvailableUnits.length === 0 && (
-            <p className="muted">No units match — try enabling Legends or Crucible above.</p>
-          )}
-        </div>
-      </details>
-
-      <details className="accordion" open>
         <summary>Units</summary>
+        <div className="inline-form">
+          <button type="button" className="primary" onClick={() => setAddOpen(true)}>
+            + Add units
+          </button>
+        </div>
         {roleGroups.map((group) => (
           <details key={group.role} className="role-group" open>
             <summary className="role-group-header">
@@ -854,7 +776,7 @@ export function RosterEditor() {
               })}
           </details>
         ))}
-        {units.length === 0 && <p className="muted">No units yet — add some from Available Units above.</p>}
+        {units.length === 0 && <p className="muted">No units yet — click “+ Add units”.</p>}
       </details>
 
       <details className="accordion">
@@ -1321,6 +1243,97 @@ export function RosterEditor() {
           {pools.length === 0 && <li className="muted">No pools yet.</li>}
         </ul>
       </details>
+
+      {addOpen && (
+        <div className="modal-overlay" onClick={() => setAddOpen(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Add units</h2>
+              <button type="button" className="link-button" onClick={() => setAddOpen(false)}>
+                close
+              </button>
+            </div>
+            <div className="inline-form">
+              <label className="checkbox-label">
+                <input type="checkbox" checked={showLegends} onChange={(e) => setShowLegends(e.target.checked)} />
+                Legends
+              </label>
+              <label className="checkbox-label">
+                <input type="checkbox" checked={showCrucible} onChange={(e) => setShowCrucible(e.target.checked)} />
+                Crucible
+              </label>
+            </div>
+            {groupDefsByRole(filteredAvailableUnits).map(([role, defs]) => (
+              <details key={role} className="unit-role-group" open>
+                <summary className="unit-role-heading">
+                  {role} <span className="muted">({defs.length})</span>
+                </summary>
+                <ul className="available-unit-list">
+                  {defs.map((u) => (
+                    <li key={u.id} className="available-unit-row">
+                      <details className="unit-card">
+                        <summary className="unit-def-summary">
+                          <span className="unit-def-name">{u.name}</span>
+                          <span className="muted"> ({u.points_cost}pts)</span>
+                          {u.is_legends && <span className="tag">Legends</span>}
+                          {isCrucible(u) && <span className="tag">Crucible</span>}
+                          {statPairs(u.stats).length > 0 && (
+                            <div className="stat-line">
+                              <StatBoxes pairs={statPairs(u.stats)} />
+                            </div>
+                          )}
+                          {u.rules.length > 0 && (
+                            <div className="rule-tags">
+                              {u.rules.map((r) => (
+                                <span key={r} className="tag">
+                                  <Keyword name={r} />
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </summary>
+                        <div className="unit-def-details">
+                          {groupWeaponsByRangeType(u.weapons).map(([rangeType, ws]) => (
+                            <div key={rangeType}>
+                              <h4 className="weapon-section-heading">{rangeType}</h4>
+                              <ul className="ability-list">
+                                {ws.map((w) => (
+                                  <li key={w.name}>
+                                    <strong>{w.name}</strong>
+                                    <div className="stat-line">
+                                      <StatBoxes pairs={weaponPairs(w)} />
+                                    </div>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          ))}
+                          {u.abilities.length > 0 && (
+                            <ul className="ability-list">
+                              {u.abilities.map((a) => (
+                                <li key={a.name}>
+                                  <strong>{a.name}:</strong> {renderAbilityText(a.text, `${u.id}-${a.name}`)}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      </details>
+                      <button type="button" className="link-button" onClick={() => handleAddUnit(u)}>
+                        add
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            ))}
+            {availableUnits.length === 0 && <p className="muted">No units indexed for this faction yet.</p>}
+            {availableUnits.length > 0 && filteredAvailableUnits.length === 0 && (
+              <p className="muted">No units match — try enabling Legends or Crucible above.</p>
+            )}
+          </div>
+        </div>
+      )}
 
       {detailsGroup && (
         <UnitDetailsModal
