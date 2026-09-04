@@ -1,3 +1,4 @@
+import json
 import sys
 from pathlib import Path
 
@@ -53,6 +54,28 @@ def test_parse_mission_page_handles_end_of_battle_sections_with_no_trigger():
     assert eob_section.trigger is None
     assert eob_section.header_kind == "eob"
     assert eob_section.tiers[0].kind == "eob"
+
+
+def test_parse_mission_page_captures_reverse_rule_and_normalizes_undefined():
+    """The card's "reverse" text lives in a `rule` field alongside `sections`. Capture it when
+    present, and normalize the RSC "$undefined" placeholder (used on most cards) to None."""
+
+    def page(rule_json_value: str) -> str:
+        payload = (
+            '{"name":"Consecrate","deck":"purge-the-foe","vs":"purge-the-foe",'
+            f'"rule":{rule_json_value},'
+            '"sections":[{"when":"ANY BATTLE ROUND","trigger":"End of your turn",'
+            '"tiers":[{"text":"Score.","vp":2}]}]}'
+        )
+        return f"<script>self.__next_f.push({json.dumps([1, payload])})</script>"
+
+    populated = parse_mission_page(page('"See the **objective** rules on the reverse."'))
+    assert populated is not None
+    assert populated.rule == "See the **objective** rules on the reverse."
+
+    undefined = parse_mission_page(page('"$undefined"'))
+    assert undefined is not None
+    assert undefined.rule is None
 
 
 def test_parse_mission_page_returns_none_for_a_non_mission_page():

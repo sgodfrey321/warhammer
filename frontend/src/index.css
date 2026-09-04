@@ -884,6 +884,18 @@ section {
   margin-bottom: 0.3rem;
 }
 
+/* The card's "reverse" -- set off from the front-face scoring sections above it. */
+.mission-reverse {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--border);
+}
+
+.mission-reverse p {
+  margin: 0;
+  font-size: 0.9em;
+}
+
 .layout-carousel {
   margin: 0.75rem auto 0;
   max-width: 420px;

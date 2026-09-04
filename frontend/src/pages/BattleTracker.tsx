@@ -471,6 +471,12 @@ export function BattleTracker() {
                           );
                         }),
                       )}
+                      {mission.rule && (
+                        <div className="mission-reverse">
+                          <div className="mission-section-header">Reverse</div>
+                          <p>{renderAbilityText(mission.rule, `${playerNumber}-reverse`)}</p>
+                        </div>
+                      )}
                       <label className="vp-adjustment">
                         VP adjustment
                         <input

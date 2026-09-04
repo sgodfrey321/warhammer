@@ -242,6 +242,9 @@ export interface MissionSection {
 
 export interface Mission {
   name: string;
+  // The card's "reverse" rules text (what a "(see reverse)" tier refers to); null when the
+  // upstream source doesn't carry it for that card.
+  rule?: string | null;
   deck: Disposition;
   vs: Disposition;
   sections: MissionSection[];

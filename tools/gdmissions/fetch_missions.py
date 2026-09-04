@@ -51,6 +51,10 @@ class Mission:
     name: str
     deck: str
     vs: str
+    # The card's "reverse" text -- the extra rules a front-face tier defers to with
+    # "(see reverse)". Present on only some cards; the site marks the rest "$undefined"
+    # (an RSC placeholder, normalized to None here), so this is None more often than not.
+    rule: str | None = None
     sections: list[MissionSection] = field(default_factory=list)
 
 
@@ -80,7 +84,10 @@ def parse_mission_page(html: str) -> Mission | None:
             )
             for section in obj.get("sections", [])
         ]
-        return Mission(name=obj["name"], deck=obj["deck"], vs=obj["vs"], sections=sections)
+        rule = obj.get("rule")
+        # The RSC payload uses the string "$undefined" for a missing value, not JSON null.
+        rule = rule if isinstance(rule, str) and rule != "$undefined" else None
+        return Mission(name=obj["name"], deck=obj["deck"], vs=obj["vs"], rule=rule, sections=sections)
     return None
 
 

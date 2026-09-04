@@ -33,6 +33,9 @@ class MissionOut(BaseModel):
     name: str
     deck: str
     vs: str
+    # The card's "reverse" rules text, where a "(see reverse)" tier defers to it. None on the
+    # many cards the upstream source doesn't carry it for.
+    rule: Optional[str] = None
     sections: list[MissionSectionOut]
 
 

@@ -10,6 +10,7 @@ def _sample_mission() -> dict:
         "name": "Battlefield Dominance",
         "deck": "take-and-hold",
         "vs": "take-and-hold",
+        "rule": None,  # most cards have no "reverse" text; serialized as null
         "sections": [
             {
                 "when": "FIRST & SECOND BATTLE ROUND",
@@ -32,6 +33,18 @@ def test_list_primary_missions_reads_the_fetcher_output(client, monkeypatch, tmp
     resp = client.get("/primary-missions")
     assert resp.status_code == 200
     assert resp.json() == payload
+
+
+def test_list_primary_missions_passes_through_a_reverse_rule(client, monkeypatch, tmp_path):
+    mission = _sample_mission()
+    mission["rule"] = "For each of your **operation markers**, do X."
+    out_path = tmp_path / "primary-missions.json"
+    out_path.write_text(json.dumps([mission]), encoding="utf-8")
+    monkeypatch.setattr(primary_missions, "OUTPUT_PATH", out_path)
+
+    resp = client.get("/primary-missions")
+    assert resp.status_code == 200
+    assert resp.json()[0]["rule"] == "For each of your **operation markers**, do X."
 
 
 def test_list_primary_missions_returns_empty_when_output_missing(client, monkeypatch, tmp_path):

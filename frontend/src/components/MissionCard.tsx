@@ -35,6 +35,12 @@ export function MissionCard({ title, mission }: { title: string; mission: Missio
           </ul>
         </div>
       ))}
+      {mission.rule && (
+        <div className="mission-section mission-reverse">
+          <div className="mission-section-header">Reverse</div>
+          <p>{renderAbilityText(mission.rule, `${mission.name}-reverse`)}</p>
+        </div>
+      )}
     </div>
   );
 }
