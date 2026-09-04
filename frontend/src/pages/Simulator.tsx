@@ -1,5 +1,5 @@
 import { type Dispatch, type SetStateAction, useEffect, useRef, useState } from "react";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { api } from "../api";
 import { StatBoxes } from "../components/StatBoxes";
 import type { Ability, DetectedEffect, ModelProfile, SimulateOptions, SimulateResponse, UnitDefinition, Weapon } from "../types";
@@ -517,6 +517,14 @@ export function Simulator() {
         .sort((a, b) => a.wounds - b.wounds)
     : [];
 
+  // Per-unit mean wounds, for the contribution bar chart.
+  const perUnitData = result
+    ? result.per_unit.map((u, i) => ({
+        unit: resultLabels[i] ?? `Unit ${i + 1}`,
+        wounds: Math.round(u.mean_damage * 100) / 100,
+      }))
+    : [];
+
   // Cumulative "destroyed by end of round N", for the rounds-to-kill chart.
   const roundsToKill = result
     ? Object.entries(result.destroyed_by_round)
@@ -779,13 +787,21 @@ export function Simulator() {
           {(result.per_unit?.length ?? 0) > 1 && (
             <>
               <h4 className="weapon-section-heading">Per-unit contribution (mean wounds this round)</h4>
-              <div className="stat-line">
-                <StatBoxes
-                  pairs={result.per_unit.map((u, i) => ({
-                    label: resultLabels[i] ?? `Unit ${i + 1}`,
-                    value: u.mean_damage.toFixed(2),
-                  }))}
-                />
+              <div className="chart-container">
+                <ResponsiveContainer width="100%" height={60 + perUnitData.length * 42}>
+                  <BarChart data={perUnitData} layout="vertical" margin={{ left: 10, right: 40 }}>
+                    <CartesianGrid strokeDasharray="" stroke="#333747" horizontal={false} />
+                    <XAxis type="number" stroke="#8b8f9e" />
+                    <YAxis type="category" dataKey="unit" width={140} stroke="#8b8f9e" />
+                    <Tooltip
+                      contentStyle={{ background: "#1e212b", border: "1px solid #333747" }}
+                      formatter={(value) => [`${value} wounds`, "Mean"]}
+                    />
+                    <Bar dataKey="wounds" name="Mean wounds" fill={CHART_COLOR} radius={[0, 4, 4, 0]} maxBarSize={28}>
+                      <LabelList dataKey="wounds" position="right" fill="#c8ccd6" />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
               <p className="muted">
                 How much of the combined damage each unit actually deals, in firing order (so they
