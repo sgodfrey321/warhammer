@@ -201,7 +201,7 @@ export function CompareRosters() {
   }
 
   return (
-    <div className="page">
+    <div className="page compare-page">
       <h1>Compare Rosters</h1>
       <p className="muted">
         Overlay two of your rosters' distributions on the same axis — Army A's weapon output

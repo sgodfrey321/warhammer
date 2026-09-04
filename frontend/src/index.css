@@ -977,6 +977,15 @@ section {
   max-width: none;
 }
 
+/* Widen the Compare page (like the simulator) and let its overlay charts fill it. */
+.compare-page {
+  max-width: 1100px;
+}
+
+.compare-page .chart-container {
+  max-width: none;
+}
+
 /* Compare Rosters -> Simulate handoff: two columns of selectable units. */
 .sim-select-grid {
   display: grid;
