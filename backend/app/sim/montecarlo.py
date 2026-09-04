@@ -46,6 +46,9 @@ class SimulationResult:
     # firing order, so the parts sum to the total). Empty for the single-group wrappers.
     per_group_damage: list[float]
     per_group_slain: list[float]
+    # total wounds dealt -> summed per-group contribution across trials at that total (for the
+    # stacked-by-unit Wounds Dealt chart).
+    damage_stack: dict[int, list[int]]
 
 
 def _percentile(sorted_values: list[int], pct: int) -> float:
@@ -141,15 +144,25 @@ def simulate_groups(
     slain_counts: list[int] = []
     group_damage_totals = [0] * len(groups)  # summed wounds each group actually removed, in firing order
     group_slain_totals = [0] * len(groups)
+    # For the stacked histogram: per total-wounds outcome, the summed per-group contribution across
+    # the trials that landed on that total (so a bar can be split by each unit's average share).
+    stack_sums: dict[int, list[int]] = {}
     for _ in range(trials):
         state = DefenderState.fresh(defender)
+        deltas = []
         for gi, (weapon_lines, options) in enumerate(groups):
             d0, s0 = state.damage_dealt, state.models_slain
             _fire_group(weapon_lines, options, defender, state, rng)
-            group_damage_totals[gi] += state.damage_dealt - d0
+            dd = state.damage_dealt - d0
+            deltas.append(dd)
+            group_damage_totals[gi] += dd
             group_slain_totals[gi] += state.models_slain - s0
-        damages.append(state.damage_dealt)
+        total = state.damage_dealt
+        damages.append(total)
         slain_counts.append(state.models_slain)
+        bucket = stack_sums.setdefault(total, [0] * len(groups))
+        for gi, dd in enumerate(deltas):
+            bucket[gi] += dd
 
     sorted_damages = sorted(damages)
 
@@ -196,4 +209,5 @@ def simulate_groups(
         median_rounds_to_destroy=median_rounds,
         per_group_damage=[t / trials if trials else 0.0 for t in group_damage_totals],
         per_group_slain=[t / trials if trials else 0.0 for t in group_slain_totals],
+        damage_stack=dict(sorted(stack_sums.items())),
     )

@@ -90,6 +90,7 @@ class SimulateResponse(BaseModel):
     destroyed_by_round: dict[int, float]  # round N -> cumulative P(destroyed by end of N)
     median_rounds_to_destroy: Optional[int]
     per_unit: list[PerUnitOut]  # per attacking unit, in the order sent
+    damage_stack: dict[int, list[int]]  # total wounds -> summed per-unit contribution (for the stacked chart)
 
 
 class AnalyzeAbility(BaseModel):
@@ -217,4 +218,5 @@ def run_simulation(body: SimulateRequest) -> SimulateResponse:
             PerUnitOut(mean_damage=d, mean_models_slain=s)
             for d, s in zip(result.per_group_damage, result.per_group_slain)
         ],
+        damage_stack=result.damage_stack,
     )

@@ -1,5 +1,5 @@
 import { type Dispatch, type SetStateAction, useEffect, useRef, useState } from "react";
-import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { api } from "../api";
 import { StatBoxes } from "../components/StatBoxes";
 import type { Ability, DetectedEffect, ModelProfile, SimulateOptions, SimulateResponse, UnitDefinition, Weapon } from "../types";
@@ -148,6 +148,8 @@ function AbilityToggles({
 }
 
 const CHART_COLOR = "#e0574a";
+// Distinct colours for stacking each attacking unit in the Wounds Dealt chart.
+const SIM_UNIT_COLORS = ["#e0574a", "#5b9bd5", "#70ad47", "#ffc000", "#9b5bd5", "#43c6b8", "#e88b3a"];
 const BAR_SIZE = 24;
 const BAR_RADIUS: [number, number, number, number] = [4, 4, 0, 0];
 
@@ -517,13 +519,26 @@ export function Simulator() {
         .sort((a, b) => a.wounds - b.wounds)
     : [];
 
-  // Per-unit mean wounds, for the contribution bar chart.
-  const perUnitData = result
-    ? result.per_unit.map((u, i) => ({
-        unit: resultLabels[i] ?? `Unit ${i + 1}`,
-        wounds: Math.round(u.mean_damage * 100) / 100,
-      }))
-    : [];
+  // When more than one unit fired, split each Wounds Dealt bar by unit. Each bar's height stays a
+  // trial count; a bucket's height is divided by each unit's average share of that outcome
+  // (contribution / total wounds), so the coloured segments still sum to the trial count. The
+  // zero-wounds bar can't be attributed to anyone, so it goes in a neutral "No damage" segment.
+  const multiUnit = (result?.per_unit?.length ?? 0) > 1;
+  const stackedDamageData =
+    result && multiUnit
+      ? Object.entries(result.damage_stack)
+          .map(([w, sums]) => {
+            const wounds = Number(w);
+            const count = result.damage_histogram[w] ?? 0;
+            const row: Record<string, number> = { wounds };
+            sums.forEach((s, i) => {
+              row[`u${i}`] = wounds > 0 ? Math.round((s / wounds) * 100) / 100 : 0;
+            });
+            row.__none = wounds > 0 ? 0 : count;
+            return row;
+          })
+          .sort((a, b) => a.wounds - b.wounds)
+      : [];
 
   // Cumulative "destroyed by end of round N", for the rounds-to-kill chart.
   const roundsToKill = result
@@ -785,30 +800,14 @@ export function Simulator() {
           )}
 
           {(result.per_unit?.length ?? 0) > 1 && (
-            <>
-              <h4 className="weapon-section-heading">Per-unit contribution (mean wounds this round)</h4>
-              <div className="chart-container">
-                <ResponsiveContainer width="100%" height={60 + perUnitData.length * 42}>
-                  <BarChart data={perUnitData} layout="vertical" margin={{ left: 10, right: 40 }}>
-                    <CartesianGrid strokeDasharray="" stroke="#333747" horizontal={false} />
-                    <XAxis type="number" stroke="#8b8f9e" />
-                    <YAxis type="category" dataKey="unit" width={140} stroke="#8b8f9e" />
-                    <Tooltip
-                      contentStyle={{ background: "#1e212b", border: "1px solid #333747" }}
-                      formatter={(value) => [`${value} wounds`, "Mean"]}
-                    />
-                    <Bar dataKey="wounds" name="Mean wounds" fill={CHART_COLOR} radius={[0, 4, 4, 0]} maxBarSize={28}>
-                      <LabelList dataKey="wounds" position="right" fill="#c8ccd6" />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-              <p className="muted">
-                How much of the combined damage each unit actually deals, in firing order (so they
-                sum to the mean total). A later unit gets less credit when an earlier one has already
-                over-killed the target.
-              </p>
-            </>
+            <div className="stat-line">
+              <StatBoxes
+                pairs={result.per_unit.map((u, i) => ({
+                  label: resultLabels[i] ?? `Unit ${i + 1}`,
+                  value: `${u.mean_damage.toFixed(2)} w`,
+                }))}
+              />
+            </div>
           )}
 
           <h4 className="weapon-section-heading">Kill summary — {result.total_wounds} wounds to destroy</h4>
@@ -836,7 +835,34 @@ export function Simulator() {
           </div>
 
           <h4 className="weapon-section-heading">Wounds Dealt Distribution</h4>
-          {damageHistogram.length > 0 ? (
+          {multiUnit ? (
+            <>
+              <div className="chart-container">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={stackedDamageData}>
+                    <CartesianGrid strokeDasharray="" stroke="#333747" vertical={false} />
+                    <XAxis dataKey="wounds" stroke="#8b8f9e" label={{ value: "Wounds dealt", position: "insideBottom", offset: -2 }} />
+                    <YAxis allowDecimals={false} stroke="#8b8f9e" />
+                    <Tooltip
+                      contentStyle={{ background: "#1e212b", border: "1px solid #333747" }}
+                      labelFormatter={(v) => `${v} wounds`}
+                      formatter={(value, name) => [`${value} trials`, name]}
+                    />
+                    <Legend />
+                    {resultLabels.map((lbl, i) => (
+                      <Bar key={i} dataKey={`u${i}`} name={lbl} stackId="w" fill={SIM_UNIT_COLORS[i % SIM_UNIT_COLORS.length]} maxBarSize={BAR_SIZE} />
+                    ))}
+                    <Bar dataKey="__none" name="No damage" stackId="w" fill="#3a3f4b" maxBarSize={BAR_SIZE} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <p className="muted">
+                Each bar's height is still the number of trials dealing that many wounds; the colours
+                split it by each unit's average share of that outcome. The grey "No damage" bar is
+                trials where nothing got through.
+              </p>
+            </>
+          ) : damageHistogram.length > 0 ? (
             <div className="chart-container">
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={damageHistogram}>
