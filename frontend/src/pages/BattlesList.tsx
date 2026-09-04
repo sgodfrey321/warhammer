@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api";
 import type { BattleOut, Roster } from "../types";
 
@@ -11,6 +11,7 @@ export function BattlesList() {
   const [rosters, setRosters] = useState<Roster[]>([]);
   const [battles, setBattles] = useState<BattleOut[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     api.listRosters().then(setRosters).catch((e) => setError(String(e)));
@@ -28,6 +29,11 @@ export function BattlesList() {
     <div className="page">
       <h1>Battles</h1>
       {error && <p className="error">{error}</p>}
+      <div className="inline-form">
+        <button type="button" className="primary" onClick={() => navigate("/battles/setup")}>
+          + New battle
+        </button>
+      </div>
       <ul className="roster-list">
         {battles.map((b) => {
           const you = b.players.find((p) => p.player_number === 1)?.vp ?? 0;

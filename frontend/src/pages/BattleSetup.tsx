@@ -68,8 +68,8 @@ export function BattleSetup() {
       layout_number: layoutNumber,
     };
     try {
-      if (mode === "roster" && rosterId !== null) {
-        const created = await api.createBattle({ roster_id: rosterId, ...payload });
+      if (mode === "roster" && currentRosterId !== null) {
+        const created = await api.createBattle({ roster_id: currentRosterId, ...payload });
         navigate(`/battles/${created.id}`);
       } else if (battleId !== null) {
         await api.updateBattleSetup(battleId, payload);
@@ -81,9 +81,9 @@ export function BattleSetup() {
   }
 
   async function handleSkip() {
-    if (rosterId === null) return;
+    if (currentRosterId === null) return;
     try {
-      const created = await api.createBattle({ roster_id: rosterId });
+      const created = await api.createBattle({ roster_id: currentRosterId });
       navigate(`/battles/${created.id}`);
     } catch (e) {
       setError(String(e));
@@ -109,6 +109,22 @@ export function BattleSetup() {
       {error && <p className="error">{error}</p>}
 
       <div className="inline-form">
+        {mode === "roster" && rosterId === null && (
+          <label>
+            Your roster
+            <select
+              value={currentRosterId ?? ""}
+              onChange={(e) => setCurrentRosterId(e.target.value ? Number(e.target.value) : null)}
+            >
+              <option value="">Select your roster...</option>
+              {rosters.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.name} ({r.faction})
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <label>
           Opponent roster
           <select
@@ -199,11 +215,16 @@ export function BattleSetup() {
       )}
 
       <div className="battle-setup-actions">
-        <button type="button" className="primary" onClick={handleBegin}>
+        <button
+          type="button"
+          className="primary"
+          onClick={handleBegin}
+          disabled={mode === "roster" && currentRosterId === null}
+        >
           {mode === "roster" ? "Begin Battle" : "Save Setup"}
         </button>
         {mode === "roster" && (
-          <button type="button" onClick={handleSkip}>
+          <button type="button" onClick={handleSkip} disabled={currentRosterId === null}>
             Start without a mission
           </button>
         )}
