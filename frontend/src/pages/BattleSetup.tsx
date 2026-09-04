@@ -49,6 +49,19 @@ export function BattleSetup() {
     }
   }, [mode, rosterId, battleId]);
 
+  // For a new battle, pre-fill each side's disposition from the chosen roster's preferred one.
+  useEffect(() => {
+    if (mode !== "roster") return;
+    const r = rosters.find((x) => x.id === currentRosterId);
+    if (r?.disposition) setYours(r.disposition);
+  }, [mode, currentRosterId, rosters]);
+
+  useEffect(() => {
+    if (mode !== "roster") return;
+    const r = rosters.find((x) => x.id === opponentRosterId);
+    if (r?.disposition) setTheirs(r.disposition);
+  }, [mode, opponentRosterId, rosters]);
+
   function handleYoursChange(value: Disposition) {
     setYours(value);
     setLayoutNumber(1);

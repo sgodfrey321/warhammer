@@ -8,10 +8,11 @@ import { UnitDetailsModal } from "../components/UnitDetailsModal";
 import { UnitListModal } from "../components/UnitListModal";
 import { WeaponContributionsModal } from "../components/WeaponContributionsModal";
 import { renderAbilityText } from "../markup";
-import { PHASES, POOL_SCOPES, STAT_ORDER } from "../types";
+import { DISPOSITIONS, DISPOSITION_LABELS, PHASES, POOL_SCOPES, STAT_ORDER } from "../types";
 import type {
   BattleOut,
   DeclaredStatePool,
+  Disposition,
   FactionDetachments,
   Roster,
   UnitAttachment,
@@ -397,6 +398,15 @@ export function RosterEditor() {
     }
   }
 
+  async function handleSelectDisposition(value: string) {
+    try {
+      const updated = await api.updateRoster(rosterId, { disposition: (value || null) as Disposition | null });
+      setRoster(updated);
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
   async function handleAddUnit(unit: { id: string }) {
     try {
       await api.addUnit(rosterId, { unit_definition_id: unit.id, quantity: 1 });
@@ -653,6 +663,17 @@ export function RosterEditor() {
             {detachmentDetailsOpen ? "hide details" : "details"}
           </button>
         )}
+        <label className="checkbox-label">
+          Force Disposition
+          <select value={roster.disposition ?? ""} onChange={(e) => handleSelectDisposition(e.target.value)}>
+            <option value="">None chosen</option>
+            {DISPOSITIONS.map((d) => (
+              <option key={d} value={d}>
+                {DISPOSITION_LABELS[d]}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
       {selectedDetachment && detachmentDetailsOpen && (
         <ul className="ability-list">

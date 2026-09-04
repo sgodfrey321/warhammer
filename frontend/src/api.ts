@@ -47,7 +47,10 @@ export const api = {
   getRoster: (id: number) => request<Roster>(`/rosters/${id}`),
   createRoster: (payload: { name: string; faction: string; points_limit?: number | null }) =>
     request<Roster>("/rosters", { method: "POST", body: JSON.stringify(payload) }),
-  updateRoster: (id: number, payload: Partial<Pick<Roster, "name" | "faction" | "points_limit" | "detachments">>) =>
+  updateRoster: (
+    id: number,
+    payload: Partial<Pick<Roster, "name" | "faction" | "points_limit" | "detachments" | "disposition">>,
+  ) =>
     request<Roster>(`/rosters/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
   deleteRoster: (id: number) => request<void>(`/rosters/${id}`, { method: "DELETE" }),
   importRoster: (data: unknown) =>

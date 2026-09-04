@@ -48,6 +48,7 @@ class RosterCreate(BaseModel):
     battle_size: Optional[str] = None
     points_limit: Optional[int] = None
     detachments: list[dict] = []
+    disposition: Optional[str] = None
 
 
 class RosterUpdate(BaseModel):
@@ -56,6 +57,7 @@ class RosterUpdate(BaseModel):
     battle_size: Optional[str] = None
     points_limit: Optional[int] = None
     detachments: Optional[list[dict]] = None
+    disposition: Optional[str] = None
 
 
 class UnitCreate(BaseModel):

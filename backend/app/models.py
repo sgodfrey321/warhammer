@@ -50,6 +50,9 @@ class Roster(SQLModel, table=True):
     battle_size: Optional[str] = None
     points_limit: Optional[int] = None
     detachments: list[dict] = Field(default_factory=list, sa_column=Column(JSON))
+    # Preferred Force Disposition for this army -- a per-game mission pick in the rules, but many
+    # players have a go-to, so it's stored here to pre-fill Battle Setup. Not a rules constraint.
+    disposition: Optional[str] = None
     created_at: datetime = Field(default_factory=_utcnow)
     updated_at: datetime = Field(default_factory=_utcnow)
 

@@ -48,6 +48,7 @@ export interface Roster {
   battle_size: string | null;
   points_limit: number | null;
   detachments: { name: string; dp: number }[];
+  disposition: Disposition | null; // preferred Force Disposition; pre-fills Battle Setup
   created_at: string;
   updated_at: string;
 }
