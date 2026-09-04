@@ -538,6 +538,44 @@ section {
   margin: 1.25rem 0 0.4rem;
 }
 
+.modal-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.model-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.model-edit-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.model-edit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 22rem;
+}
+
+.model-edit-row input {
+  width: 5rem;
+}
+
+.model-edit-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
 .table-scroll {
   overflow-x: auto;
 }

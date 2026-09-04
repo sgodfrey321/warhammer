@@ -59,7 +59,7 @@ export const api = {
   listUnits: (rosterId: number) => request<UnitOut[]>(`/rosters/${rosterId}/units`),
   addUnit: (rosterId: number, payload: { unit_definition_id: string; quantity: number }) =>
     request<UnitOut>(`/rosters/${rosterId}/units`, { method: "POST", body: JSON.stringify(payload) }),
-  updateUnit: (rosterId: number, unitId: number, payload: Partial<Pick<Unit, "notes" | "quantity" | "buffs">>) =>
+  updateUnit: (rosterId: number, unitId: number, payload: Partial<Pick<Unit, "notes" | "quantity" | "buffs" | "model_groups">>) =>
     request<UnitOut>(`/rosters/${rosterId}/units/${unitId}`, { method: "PATCH", body: JSON.stringify(payload) }),
   deleteUnit: (rosterId: number, unitId: number) =>
     request<void>(`/rosters/${rosterId}/units/${unitId}`, { method: "DELETE" }),

@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { KeywordList } from "./Keyword";
 import { renderAbilityText } from "../markup";
 import { STAT_ORDER, WEAPON_STAT_ORDER } from "../types";
-import type { ModelProfile, UnitOut, Weapon } from "../types";
+import type { ModelGroup, ModelProfile, UnitOut, Weapon } from "../types";
+import { api } from "../api";
 import { weaponBaseName } from "../weapons";
 
 interface CombinedUnit {
@@ -105,17 +107,25 @@ export function UnitDetailsModal({
   primary,
   leaders,
   onClose,
+  onSaved,
 }: {
   primary: UnitOut;
   leaders: UnitOut[];
   onClose: () => void;
+  // Called after model counts are saved, so the parent can refresh its own unit list.
+  onSaved?: () => void;
 }) {
-  // Leaders first, primary (led) unit last -- mirrors the card ordering in RosterEditor's
-  // Units section (leader rows stacked above the unit they lead).
-  const combined: CombinedUnit[] = [
-    ...leaders.map((unit) => ({ unit, label: unit.unit_definition.name })),
-    { unit: primary, label: primary.unit_definition.name },
-  ];
+  // Local copies (leaders first, primary/led unit last -- mirrors the card ordering in
+  // RosterEditor's Units section) so declaring model counts re-renders the tables here
+  // immediately, without depending on the parent re-passing fresh props.
+  const [units, setUnits] = useState<UnitOut[]>([...leaders, primary]);
+  const [editing, setEditing] = useState(false);
+  // draft[unitId][profileName] = count while editing.
+  const [draft, setDraft] = useState<Record<number, Record<string, number>>>({});
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const combined: CombinedUnit[] = units.map((unit) => ({ unit, label: unit.unit_definition.name }));
 
   const models = modelRows(combined);
   const ranged = weaponRows(combined, "ranged");
@@ -123,6 +133,55 @@ export function UnitDetailsModal({
   const abilities = combined.flatMap(({ unit, label }) =>
     unit.unit_definition.abilities.map((a) => ({ ...a, label })),
   );
+
+  // Only units with per-model-type profiles can have counts declared (a purely manual unit
+  // with no reference profiles has nothing to enumerate).
+  const editableUnits = units.filter((u) => u.unit_definition.model_profiles.length > 0);
+
+  function startEditing() {
+    const seed: Record<number, Record<string, number>> = {};
+    for (const u of editableUnits) {
+      const counts: Record<string, number> = {};
+      const profiles = u.unit_definition.model_profiles;
+      for (const p of profiles) {
+        const existing = u.model_groups.find((g) => g.name === p.name);
+        // Default a single-profile unit to its minimum legal size; a multi-type squad starts
+        // blank, since the reference data doesn't record how the models split across types.
+        const fallback = profiles.length === 1 ? u.unit_definition.min_models : 0;
+        counts[p.name] = existing ? existing.count : fallback;
+      }
+      seed[u.id] = counts;
+    }
+    setDraft(seed);
+    setError(null);
+    setEditing(true);
+  }
+
+  function setCount(unitId: number, name: string, value: number) {
+    setDraft((d) => ({ ...d, [unitId]: { ...d[unitId], [name]: Math.max(0, value) } }));
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    setError(null);
+    try {
+      const saved: UnitOut[] = [];
+      for (const u of editableUnits) {
+        const counts = draft[u.id] ?? {};
+        const model_groups: ModelGroup[] = Object.entries(counts)
+          .filter(([, count]) => count > 0)
+          .map(([name, count]) => ({ name, count }));
+        saved.push(await api.updateUnit(u.roster_id, u.id, { model_groups }));
+      }
+      setUnits((prev) => prev.map((u) => saved.find((n) => n.id === u.id) ?? u));
+      setEditing(false);
+      onSaved?.();
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -134,9 +193,45 @@ export function UnitDetailsModal({
           </button>
         </div>
 
-        {models.length > 0 ? (
-          <section>
-            <h3>Models ({models.reduce((sum, m) => sum + m.count, 0)})</h3>
+        <section>
+          <div className="modal-section-head">
+            <h3>Models{models.length > 0 ? ` (${models.reduce((sum, m) => sum + m.count, 0)})` : ""}</h3>
+            {!editing && editableUnits.length > 0 && (
+              <button type="button" className="link-button" onClick={startEditing}>
+                {models.length > 0 ? "Edit models" : "Declare models"}
+              </button>
+            )}
+          </div>
+
+          {editing ? (
+            <div className="model-edit">
+              {editableUnits.map((u) => (
+                <div key={u.id} className="model-edit-group">
+                  {editableUnits.length > 1 && <p className="muted">{u.unit_definition.name}</p>}
+                  {u.unit_definition.model_profiles.map((p) => (
+                    <label key={p.name} className="model-edit-row">
+                      <span>{p.name}</span>
+                      <input
+                        type="number"
+                        min={0}
+                        value={draft[u.id]?.[p.name] ?? 0}
+                        onChange={(e) => setCount(u.id, p.name, Math.floor(Number(e.target.value) || 0))}
+                      />
+                    </label>
+                  ))}
+                </div>
+              ))}
+              {error && <p className="error">{error}</p>}
+              <div className="model-edit-actions">
+                <button type="button" onClick={handleSave} disabled={saving}>
+                  {saving ? "Saving…" : "Save"}
+                </button>
+                <button type="button" className="link-button" onClick={() => setEditing(false)} disabled={saving}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : models.length > 0 ? (
             <div className="table-scroll">
               <table className="details-table">
                 <thead>
@@ -161,12 +256,15 @@ export function UnitDetailsModal({
                 </tbody>
               </table>
             </div>
-          </section>
-        ) : (
-          <p className="muted">
-            No per-model-type data indexed yet for this unit — re-run the bsdata-indexer to pick it up.
-          </p>
-        )}
+          ) : (
+            <p className="muted">
+              No model breakdown yet — per-model counts come from a BattleScribe/NewRecruit import.
+              {editableUnits.length > 0
+                ? " For this hand-added unit, use Declare models above to set per-type counts."
+                : ""}
+            </p>
+          )}
+        </section>
 
         <WeaponTable title="Ranged Weapons" rows={ranged} omit="WS" />
         <WeaponTable title="Melee Weapons" rows={melee} omit="BS" />

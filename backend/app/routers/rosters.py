@@ -70,6 +70,9 @@ class UnitUpdate(BaseModel):
     quantity: Optional[int] = None
     notes: Optional[str] = None
     buffs: Optional[list[dict]] = None
+    # Lets a hand-added unit declare its per-model-type counts (roster import is the only other
+    # source). Each entry is {"name", "count"}; the update handler persists it like any field.
+    model_groups: Optional[list[dict]] = None
 
 
 class SynergyCreate(BaseModel):

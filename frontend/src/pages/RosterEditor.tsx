@@ -1335,6 +1335,7 @@ export function RosterEditor() {
           primary={detailsGroup.primary}
           leaders={detailsGroup.leaders}
           onClose={() => setDetailsGroup(null)}
+          onSaved={refresh}
         />
       )}
 

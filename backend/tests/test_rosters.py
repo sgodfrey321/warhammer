@@ -67,6 +67,42 @@ def test_add_and_remove_unit(client, session):
     assert resp.status_code == 204
 
 
+def test_declare_model_groups_on_a_hand_added_unit(client, session):
+    """A manually-added unit starts with model_groups == [] (only roster import populates them);
+    PATCHing model_groups lets the details view build its per-model-type table."""
+    from app.models import UnitDefinition
+
+    session.add(
+        UnitDefinition(
+            id="aeldari-craftworlds/guardians",
+            faction="Aeldari - Craftworlds",
+            name="Guardian Defenders",
+            points_cost=100,
+            min_models=10,
+            keywords=["Battleline", "Infantry"],
+            source_catalogue_id="cat",
+            source_entry_id="aeldari-craftworlds/guardians",
+        )
+    )
+    session.commit()
+
+    roster = client.post("/rosters", json={"name": "Test", "faction": "Aeldari - Craftworlds"}).json()
+    unit = client.post(
+        f"/rosters/{roster['id']}/units",
+        json={"unit_definition_id": "aeldari-craftworlds/guardians", "quantity": 1},
+    ).json()
+    assert unit["model_groups"] == []  # only BattleScribe import populates model_groups
+
+    groups = [{"name": "Guardian Defenders", "count": 10}]
+    resp = client.patch(f"/rosters/{roster['id']}/units/{unit['id']}", json={"model_groups": groups})
+    assert resp.status_code == 200
+    assert resp.json()["model_groups"] == groups
+
+    # Persisted, not just echoed back.
+    units = client.get(f"/rosters/{roster['id']}/units").json()
+    assert units[0]["model_groups"] == groups
+
+
 def _seed_two_units(client, session):
     from app.models import UnitDefinition
 

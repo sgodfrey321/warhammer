@@ -35,15 +35,13 @@ Add to this list as more turn up; don't let it silently grow stale.
 
 ## Unit Details modal
 
-- **No per-model-type breakdown for manually-added units.** `UnitDetailsModal` matches
-  `unit_definition.model_profiles` against that specific `Unit.model_groups` (roster
-  instance) by name to build its Models table — both only ever get populated by
-  `POST /rosters/import` (`model_profiles` from the bsdata-indexer, `model_groups` from
-  `battlescribe_import.py`'s `_model_groups()`). A unit added by hand via
-  `POST /rosters/{id}/units` has `model_groups: []`, so the modal shows nothing there
-  even if the catalogue has real per-model-type data for it. Same shape of gap as the
-  loadout-editing one below — would need a small form to let you declare which model
-  types (and how many of each) a hand-built unit actually has.
+- ~~**No per-model-type breakdown for manually-added units.**~~ Fixed: `UnitDetailsModal`
+  now has a **Declare models** form. It lists each `unit_definition.model_profiles` entry and
+  lets you set a count per type, defaulting a single-profile unit to `min_models` (a multi-type
+  squad starts blank, since the reference data doesn't record the split). Save PATCHes
+  `model_groups` onto the `Unit` (via the existing `PATCH /rosters/{id}/units/{unit_id}`, which
+  gained a `model_groups` field), so the Models table then fills in. Weapon loadout for
+  hand-added units is still the analogous open gap below.
 
 ## Battle Tracker
 
