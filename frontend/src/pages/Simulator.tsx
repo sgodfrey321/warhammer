@@ -776,7 +776,7 @@ export function Simulator() {
             </div>
           )}
 
-          {result.per_unit.length > 1 && (
+          {(result.per_unit?.length ?? 0) > 1 && (
             <>
               <h4 className="weapon-section-heading">Per-unit contribution (mean wounds this round)</h4>
               <div className="stat-line">
