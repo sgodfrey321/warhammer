@@ -1,4 +1,5 @@
 import { type Dispatch, type SetStateAction, useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { api } from "../api";
 import { StatBoxes } from "../components/StatBoxes";
@@ -219,6 +220,12 @@ interface AttackerContribution {
   effectPatches: Partial<SimulateOptions>[];
 }
 
+// Navigation-state shape handed over from Compare Rosters: which unit definitions to preload.
+interface SimSeed {
+  attackers?: { faction: string; unitDefId: string }[];
+  defender?: { faction: string; unitDefId: string } | null;
+}
+
 // One attacking unit: faction/unit picker, auto-populated loadout, and its ability buffs. Self-
 // contained state; reports its contribution up so several units can fire into one defender.
 function AttackerUnit({
@@ -230,6 +237,8 @@ function AttackerUnit({
   onRemove,
   canRemove,
   onError,
+  initialFaction = "",
+  initialUnitId = "",
 }: {
   index: number;
   factions: string[];
@@ -239,13 +248,16 @@ function AttackerUnit({
   onRemove: () => void;
   canRemove: boolean;
   onError: (msg: string) => void;
+  initialFaction?: string; // seed from Compare Rosters
+  initialUnitId?: string;
 }) {
-  const [faction, setFaction] = useState("");
+  const [faction, setFaction] = useState(initialFaction);
   const [unitDefs, setUnitDefs] = useState<UnitDefinition[]>([]);
   const [unitId, setUnitId] = useState("");
   const [weaponLines, setWeaponLines] = useState<WeaponLineInput[]>([{ name: "", count: 1 }]);
   const [effects, setEffects] = useState<DetectedEffect[]>([]);
   const [checked, setChecked] = useState<Set<number>>(new Set());
+  const seededRef = useRef(false);
 
   useEffect(() => {
     setUnitId("");
@@ -256,6 +268,20 @@ function AttackerUnit({
     api.listUnitDefinitionsByFaction(faction).then(setUnitDefs).catch((e) => onError(String(e)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [faction]);
+
+  // One-time seed of the unit once its faction's defs have loaded (from a Compare handoff).
+  useEffect(() => {
+    if (seededRef.current) return;
+    if (!initialUnitId) {
+      seededRef.current = true;
+      return;
+    }
+    if (unitDefs.some((u) => u.id === initialUnitId)) {
+      setUnitId(initialUnitId);
+      seededRef.current = true;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unitDefs]);
 
   const unit = unitDefs.find((u) => u.id === unitId) ?? null;
   const unitOptions = includeNonStandard ? unitDefs : unitDefs.filter((u) => !isNonStandard(u));
@@ -399,15 +425,27 @@ export function Simulator() {
   const [error, setError] = useState<string | null>(null);
   const [includeNonStandard, setIncludeNonStandard] = useState(false);
 
+  // A handoff from Compare Rosters: which units to preload as attackers and (optionally) defender.
+  const seed = useLocation().state as SimSeed | null;
+  const initialAttackers = seed?.attackers ?? [];
+  const initialDefender = seed?.defender ?? null;
+
   // --- Attacking units: one or more, each firing into the same defender ---
-  const [attackerIds, setAttackerIds] = useState<number[]>([0]);
-  const nextIdRef = useRef(1);
+  const [attackerIds, setAttackerIds] = useState<number[]>(() =>
+    initialAttackers.length > 0 ? initialAttackers.map((_, i) => i) : [0],
+  );
+  const nextIdRef = useRef(initialAttackers.length || 1);
+  // Per-block seed (faction + unit) for a Compare handoff; keyed by the initial block id (its index).
+  const attackerSeeds = useRef<Record<number, { faction: string; unitId: string }>>(
+    Object.fromEntries(initialAttackers.map((a, i) => [i, { faction: a.faction, unitId: a.unitDefId }])),
+  );
   const [contributions, setContributions] = useState<Record<number, AttackerContribution>>({});
 
-  const [defenderFaction, setDefenderFaction] = useState("");
+  const [defenderFaction, setDefenderFaction] = useState(initialDefender?.faction ?? "");
   const [defenderUnitDefs, setDefenderUnitDefs] = useState<UnitDefinition[]>([]);
   const [defenderUnitId, setDefenderUnitId] = useState("");
   const [defenderModelCount, setDefenderModelCount] = useState(1);
+  const pendingDefenderRef = useRef<string | null>(initialDefender?.unitDefId ?? null);
 
   const [options, setOptions] = useState<SimulateOptions>(DEFAULT_OPTIONS);
 
@@ -435,6 +473,14 @@ export function Simulator() {
   const defenderUnit = defenderUnitDefs.find((u) => u.id === defenderUnitId) ?? null;
   const defenderOptions = includeNonStandard ? defenderUnitDefs : defenderUnitDefs.filter((u) => !isNonStandard(u));
   const defenderKeywords = defenderUnit?.keywords ?? [];
+
+  // One-time seed of the defender from a Compare handoff, once its faction's defs have loaded.
+  useEffect(() => {
+    if (pendingDefenderRef.current && defenderUnitDefs.some((u) => u.id === pendingDefenderRef.current)) {
+      setDefenderUnitId(pendingDefenderRef.current);
+      pendingDefenderRef.current = null;
+    }
+  }, [defenderUnitDefs]);
 
   useEffect(() => {
     setCheckedDefender(new Set());
@@ -593,6 +639,8 @@ export function Simulator() {
             onRemove={() => removeUnit(id)}
             canRemove={attackerIds.length > 1}
             onError={setError}
+            initialFaction={attackerSeeds.current[id]?.faction ?? ""}
+            initialUnitId={attackerSeeds.current[id]?.unitId ?? ""}
           />
         ))}
       </div>

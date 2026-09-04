@@ -305,13 +305,17 @@ export interface SimulateWeaponLine {
   weapon_count: number;
 }
 
-export interface SimulateRequest {
-  // A (possibly mixed) loadout firing into one target -- e.g. a squad's guns plus a
-  // differently-armed Exarch.
+export interface SimulateAttackerGroup {
+  // One attacking unit's (possibly mixed) loadout plus its own options.
   weapons: SimulateWeaponLine[];
+  options: SimulateOptions;
+}
+
+export interface SimulateRequest {
+  // One or more attacking units firing into the same defender.
+  attackers: SimulateAttackerGroup[];
   defender_stats: Record<string, string>;
   defender_model_count: number;
-  options: SimulateOptions;
 }
 
 export interface DetectedEffect {

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { api } from "../api";
 import { CharacteristicContributionsModal } from "../components/CharacteristicContributionsModal";
@@ -92,6 +93,10 @@ export function CompareRosters() {
     contributions: CharacteristicContribution[];
   } | null>(null);
   const [unitListModal, setUnitListModal] = useState<{ title: string; units: UnitOut[] } | null>(null);
+  // Selection for the "simulate this matchup" handoff -- keyed by roster-unit id (unique across both).
+  const [attackerSel, setAttackerSel] = useState<Set<number>>(new Set());
+  const [defenderSel, setDefenderSel] = useState<number | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     api.listRosters().then(setRosters).catch((e) => setError(String(e)));
@@ -157,6 +162,43 @@ export function CompareRosters() {
   const ready = rosterAId !== null && rosterBId !== null;
   const stResult = ready ? strengthVsToughness(filteredUnitsA, filteredUnitsB, rangeType) : null;
   const dwResult = ready ? damageVsWounds(filteredUnitsA, filteredUnitsB, rangeType) : null;
+
+  // Roster-unit lookup across both armies, for the simulate handoff.
+  const unitById = new Map<number, UnitOut>([...unitsA, ...unitsB].map((u) => [u.id, u]));
+
+  function toggleAttacker(id: number) {
+    setAttackerSel((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function handleSimulateSelected() {
+    const attackers = [...attackerSel]
+      .map((id) => unitById.get(id))
+      .filter((u): u is UnitOut => !!u)
+      .map((u) => ({ faction: u.unit_definition.faction, unitDefId: u.unit_definition.id }));
+    const def = defenderSel != null ? unitById.get(defenderSel) : null;
+    const defender = def ? { faction: def.unit_definition.faction, unitDefId: def.unit_definition.id } : null;
+    navigate("/simulator", { state: { attackers, defender } });
+  }
+
+  // One selectable unit row: an attacker checkbox + a shared defender radio.
+  function unitSelectRow(u: UnitOut) {
+    return (
+      <div key={u.id} className="sim-select-row">
+        <label className="checkbox-label">
+          <input type="checkbox" checked={attackerSel.has(u.id)} onChange={() => toggleAttacker(u.id)} /> Atk
+        </label>
+        <label className="checkbox-label">
+          <input type="radio" name="sim-defender" checked={defenderSel === u.id} onChange={() => setDefenderSel(u.id)} /> Def
+        </label>
+        <span>{u.unit_definition.name}</span>
+      </div>
+    );
+  }
 
   return (
     <div className="page">
@@ -278,6 +320,39 @@ export function CompareRosters() {
           ) : (
             <p className="muted">No data to chart yet.</p>
           )}
+        </details>
+      )}
+
+      {ready && (
+        <details className="role-group" open>
+          <summary className="role-group-header">
+            <span>Simulate a matchup</span>
+          </summary>
+          <p className="muted">
+            Tick attacking units (from either army) and pick one target, then run the dice
+            simulator on exactly that matchup — each unit arrives with its loadout auto-filled.
+          </p>
+          <div className="sim-select-grid">
+            <div>
+              <h4 className="weapon-section-heading">{rosterAName}</h4>
+              {unitsA.length > 0 ? unitsA.map(unitSelectRow) : <p className="muted">No units.</p>}
+            </div>
+            <div>
+              <h4 className="weapon-section-heading">{rosterBName}</h4>
+              {unitsB.length > 0 ? unitsB.map(unitSelectRow) : <p className="muted">No units.</p>}
+            </div>
+          </div>
+          <div className="inline-form">
+            <button type="button" className="primary" onClick={handleSimulateSelected} disabled={attackerSel.size === 0}>
+              Simulate selected ({attackerSel.size} attacker{attackerSel.size === 1 ? "" : "s"}
+              {defenderSel != null ? " → 1 target" : ", no target"})
+            </button>
+            {defenderSel != null && (
+              <button type="button" onClick={() => setDefenderSel(null)}>
+                Clear target
+              </button>
+            )}
+          </div>
         </details>
       )}
 
