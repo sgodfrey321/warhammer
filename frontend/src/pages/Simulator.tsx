@@ -496,9 +496,10 @@ export function Simulator() {
     }
   }
 
+  const trials = result?.trials || 1;
   const damageHistogram = result
     ? Object.entries(result.damage_histogram)
-        .map(([wounds, count]) => ({ wounds: Number(wounds), count }))
+        .map(([wounds, count]) => ({ wounds: Number(wounds), pct: Math.round((count / trials) * 1000) / 10 }))
         .sort((a, b) => a.wounds - b.wounds)
     : [];
 
@@ -531,10 +532,11 @@ export function Simulator() {
             const wounds = Number(w);
             const count = result.damage_histogram[w] ?? 0;
             const row: Record<string, number> = { wounds };
+            // Each unit's share of this outcome as a % of all trials (segments sum to the bar's %).
             sums.forEach((s, i) => {
-              row[`u${i}`] = wounds > 0 ? Math.round((s / wounds) * 100) / 100 : 0;
+              row[`u${i}`] = wounds > 0 ? Math.round((s / wounds / trials) * 1000) / 10 : 0;
             });
-            row.__none = wounds > 0 ? 0 : count;
+            row.__none = wounds > 0 ? 0 : Math.round((count / trials) * 1000) / 10;
             return row;
           })
           .sort((a, b) => a.wounds - b.wounds)
@@ -842,11 +844,11 @@ export function Simulator() {
                   <BarChart data={stackedDamageData}>
                     <CartesianGrid strokeDasharray="" stroke="#333747" vertical={false} />
                     <XAxis dataKey="wounds" stroke="#8b8f9e" label={{ value: "Wounds dealt", position: "insideBottom", offset: -2 }} />
-                    <YAxis allowDecimals={false} stroke="#8b8f9e" />
+                    <YAxis stroke="#8b8f9e" unit="%" />
                     <Tooltip
                       contentStyle={{ background: "#1e212b", border: "1px solid #333747" }}
                       labelFormatter={(v) => `${v} wounds`}
-                      formatter={(value, name) => [`${value} trials`, name]}
+                      formatter={(value, name) => [`${value}%`, name]}
                     />
                     <Legend />
                     {resultLabels.map((lbl, i) => (
@@ -857,9 +859,9 @@ export function Simulator() {
                 </ResponsiveContainer>
               </div>
               <p className="muted">
-                Each bar's height is still the number of trials dealing that many wounds; the colours
-                split it by each unit's average share of that outcome. The grey "No damage" bar is
-                trials where nothing got through.
+                Each bar is the % of trials dealing that many wounds; the colours split it by each
+                unit's average share of that outcome. The grey "No damage" bar is trials where
+                nothing got through.
               </p>
             </>
           ) : damageHistogram.length > 0 ? (
@@ -868,13 +870,13 @@ export function Simulator() {
                 <BarChart data={damageHistogram}>
                   <CartesianGrid strokeDasharray="" stroke="#333747" vertical={false} />
                   <XAxis dataKey="wounds" stroke="#8b8f9e" label={{ value: "Wounds dealt", position: "insideBottom", offset: -2 }} />
-                  <YAxis allowDecimals={false} stroke="#8b8f9e" />
+                  <YAxis stroke="#8b8f9e" unit="%" />
                   <Tooltip
                     contentStyle={{ background: "#1e212b", border: "1px solid #333747" }}
                     labelFormatter={(v) => `${v} wounds`}
-                    formatter={(value) => [`${value} trials`, "Count"]}
+                    formatter={(value) => [`${value}%`, "Of trials"]}
                   />
-                  <Bar dataKey="count" name="Trials" fill={CHART_COLOR} radius={BAR_RADIUS} maxBarSize={BAR_SIZE} />
+                  <Bar dataKey="pct" name="% of trials" fill={CHART_COLOR} radius={BAR_RADIUS} maxBarSize={BAR_SIZE} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
