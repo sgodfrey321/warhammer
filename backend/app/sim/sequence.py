@@ -32,6 +32,11 @@ class AttackOptions:
     single_reroll_hit: bool = False
     single_reroll_wound: bool = False
     reroll_damage: bool = False  # "re-roll the Damage roll" -- re-roll a below-average variable-damage result
+    # Keywords granted to the whole unit's attacks by an ability (e.g. Bladestorm -> Sustained
+    # Hits 1), on top of whatever the weapon profile already has.
+    grant_sustained_hits: int = 0
+    grant_lethal_hits: bool = False
+    grant_devastating_wounds: bool = False
     fnp: int | None = None  # the X in "Feel No Pain X+"
     anti_active: bool = False
     anti_threshold: int | None = None  # the Y in "Anti-X Y+"; only matters if anti_active
@@ -162,6 +167,12 @@ def _resolve_hits(attacker: AttackerProfile, options: AttackOptions, num_attacks
     skill = attacker.skill if attacker.skill is not None else 7  # no BS/WS -> can never hit
     hit_mod = _clamp_modifier(options.hit_modifier)
 
+    # Effective crit-triggered keywords = the weapon's own plus any granted by an ability
+    # (e.g. Bladestorm grants [Sustained Hits 1]).
+    sustained = (kw.sustained_hits or 0) + options.grant_sustained_hits
+    lethal = kw.lethal_hits or options.grant_lethal_hits
+    devastating = kw.devastating_wounds or options.grant_devastating_wounds
+
     def record_hit(crit: bool) -> None:
         # Lethal + Devastating interaction: if a weapon has BOTH keywords,
         # auto-wounding a Lethal crit would skip the wound roll entirely and so
@@ -169,11 +180,11 @@ def _resolve_hits(attacker: AttackerProfile, options: AttackOptions, num_attacks
         # could never trigger. Since rolling to wound is strictly better then,
         # we only take the Lethal auto-wound shortcut when Devastating Wounds is
         # NOT also present; otherwise the crit hit rolls to wound like any hit.
-        events.append(crit and kw.lethal_hits and not kw.devastating_wounds)
-        if crit and kw.sustained_hits:
+        events.append(crit and lethal and not devastating)
+        if crit and sustained:
             # Sustained extra hits are themselves normal hits (not crits) -- they
             # proceed to the wound roll but can't re-trigger Lethal/Sustained.
-            events.extend([False] * kw.sustained_hits)
+            events.extend([False] * sustained)
 
     events: list[bool] = []
     eligible_failures = 0  # failed dice NOT already re-rolled by policy -- candidates for the single re-roll
@@ -222,6 +233,7 @@ def _resolve_wounds(
     # weaker/absent reroll_wounds choice but never conflicts with "all".
     reroll_policy: RerollPolicy = "all" if kw.twin_linked else options.reroll_wounds
     anti_threshold = options.anti_threshold if options.anti_threshold is not None else kw.anti_threshold
+    devastating = kw.devastating_wounds or options.grant_devastating_wounds  # incl. an ability-granted keyword
 
     events: list[_WoundEvent] = []
     eligible_failures = 0  # failed dice NOT already re-rolled by policy -- candidates for the single re-roll
@@ -242,7 +254,7 @@ def _resolve_wounds(
             success, crit = _wound_outcome(raw, target, wound_mod, options.anti_active, anti_threshold)
             rerolled = True
         if success:
-            events.append(_WoundEvent(devastating=crit and kw.devastating_wounds))
+            events.append(_WoundEvent(devastating=crit and devastating))
         elif not rerolled:
             eligible_failures += 1
 
@@ -252,7 +264,7 @@ def _resolve_wounds(
         raw = rng.randint(1, 6)
         success, crit = _wound_outcome(raw, target, wound_mod, options.anti_active, anti_threshold)
         if success:
-            events.append(_WoundEvent(devastating=crit and kw.devastating_wounds))
+            events.append(_WoundEvent(devastating=crit and devastating))
 
     return events
 

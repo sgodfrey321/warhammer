@@ -625,6 +625,38 @@ def test_extract_defender_minus_one_to_hit_is_defender_side():
     assert effects[0].option_patch == {"hit_modifier": -1}
 
 
+def test_extract_ability_granted_sustained_hits():
+    from app.sim.abilities import extract_effects
+
+    # Dire Avengers' Bladestorm grants [Sustained Hits 1] (conditional on half range).
+    effects = extract_effects(
+        [
+            {
+                "name": "Bladestorm",
+                "text": "Ranged weapons equipped by models in this unit have the [Sustained Hits 1] ability while targeting an enemy unit within half range.",
+            }
+        ]
+    )
+    assert len(effects) == 1
+    assert effects[0].option_patch == {"grant_sustained_hits": 1}
+    assert "half range" in effects[0].condition  # positional -> stays a manual toggle
+
+
+def test_granted_sustained_hits_raises_damage():
+    weapon = {
+        "range_type": "Ranged Weapons",
+        "characteristics": {"A": "3", "BS": "3+", "S": "4", "AP": "0", "D": "1", "Keywords": ""},
+    }
+    attacker = AttackerProfile.from_characteristics(weapon)
+    defender = DefenderProfile.from_stats({"T": "3", "Sv": "6+", "W": "60"}, model_count=1)
+
+    base = simulate(attacker, defender, AttackOptions(), trials=20000, seed=3, weapon_count=5).mean_damage
+    sus = simulate(
+        attacker, defender, AttackOptions(grant_sustained_hits=1), trials=20000, seed=3, weapon_count=5
+    ).mean_damage
+    assert sus > base + 0.3  # extra hits on crits meaningfully raise output
+
+
 def test_extract_feel_no_pain_is_defender_side():
     from app.sim.abilities import extract_effects
 

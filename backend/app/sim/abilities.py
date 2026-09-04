@@ -69,7 +69,7 @@ def _condition_of(text: str) -> str:
     """Pulls a leading 'While ...,' condition clause out of the ability text, so
     the toggle can be labelled with the circumstance the player must confirm."""
 
-    m = re.search(r"\bwhile\b(.+?),", text, flags=re.IGNORECASE)
+    m = re.search(r"\bwhile\b(.+?)[.,]", text, flags=re.IGNORECASE)
     if m:
         return ("While" + m.group(1)).strip()
     return ""
@@ -172,6 +172,16 @@ def extract_effects(abilities: list[dict]) -> list[DetectedEffect]:
         # --- Re-roll the Damage roll (variable-damage weapons) ---
         if re.search(r"re-?roll [^.]*damage roll", low):
             effects.append(DetectedEffect(name, "Re-roll Damage", condition, "attacker", {"reroll_damage": True}))
+
+        # --- Keywords an ability GRANTS to the unit's weapons (e.g. Bladestorm -> Sustained Hits 1) ---
+        m_sus = re.search(r"sustained hits (\d+)", low)
+        if m_sus:
+            n = int(m_sus.group(1))
+            effects.append(DetectedEffect(name, f"Sustained Hits {n}", condition, "attacker", {"grant_sustained_hits": n}))
+        if "lethal hits" in low:
+            effects.append(DetectedEffect(name, "Lethal Hits", condition, "attacker", {"grant_lethal_hits": True}))
+        if "devastating wounds" in low:
+            effects.append(DetectedEffect(name, "Devastating Wounds", condition, "attacker", {"grant_devastating_wounds": True}))
 
         # --- Feel No Pain (always a defender-side ability) ---
         m = re.search(r"feel no pain (\d)\+", low)

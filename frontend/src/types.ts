@@ -287,6 +287,9 @@ export interface SimulateOptions {
   single_reroll_hit: boolean; // "re-roll one Hit roll" (e.g. Crystal Matrix) -- one failed die per volley
   single_reroll_wound: boolean;
   reroll_damage: boolean; // "re-roll the Damage roll" -- re-roll a below-average variable-damage result
+  grant_sustained_hits: number; // keyword granted by an ability (e.g. Bladestorm), on top of the weapon's own
+  grant_lethal_hits: boolean;
+  grant_devastating_wounds: boolean;
   fnp: number | null; // the X in "Feel No Pain X+", e.g. 5 for 5+; null = none
   anti_active: boolean;
   anti_threshold: number | null;

@@ -63,6 +63,9 @@ function mergeEffects(base: SimulateOptions, patches: Partial<SimulateOptions>[]
     if (p.single_reroll_hit) o.single_reroll_hit = true;
     if (p.single_reroll_wound) o.single_reroll_wound = true;
     if (p.reroll_damage) o.reroll_damage = true;
+    if (p.grant_sustained_hits) o.grant_sustained_hits += p.grant_sustained_hits;
+    if (p.grant_lethal_hits) o.grant_lethal_hits = true;
+    if (p.grant_devastating_wounds) o.grant_devastating_wounds = true;
     if (p.fnp != null) o.fnp = o.fnp == null ? p.fnp : Math.min(o.fnp, p.fnp);
   }
   o.hit_modifier = Math.max(-1, Math.min(1, o.hit_modifier));
@@ -164,6 +167,9 @@ const DEFAULT_OPTIONS: SimulateOptions = {
   single_reroll_hit: false,
   single_reroll_wound: false,
   reroll_damage: false,
+  grant_sustained_hits: 0,
+  grant_lethal_hits: false,
+  grant_devastating_wounds: false,
   fnp: null,
   anti_active: false,
   anti_threshold: null,

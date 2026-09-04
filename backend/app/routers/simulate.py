@@ -37,6 +37,9 @@ class SimulateOptions(BaseModel):
     single_reroll_hit: bool = False
     single_reroll_wound: bool = False
     reroll_damage: bool = False
+    grant_sustained_hits: int = 0
+    grant_lethal_hits: bool = False
+    grant_devastating_wounds: bool = False
     fnp: Optional[int] = None
     anti_active: bool = False
     anti_threshold: Optional[int] = None
@@ -139,6 +142,9 @@ def _attack_options(o: SimulateOptions) -> AttackOptions:
         single_reroll_hit=o.single_reroll_hit,
         single_reroll_wound=o.single_reroll_wound,
         reroll_damage=o.reroll_damage,
+        grant_sustained_hits=o.grant_sustained_hits,
+        grant_lethal_hits=o.grant_lethal_hits,
+        grant_devastating_wounds=o.grant_devastating_wounds,
         fnp=o.fnp,
         anti_active=o.anti_active,
         anti_threshold=o.anti_threshold,
