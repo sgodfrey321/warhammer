@@ -563,7 +563,7 @@ export function RosterEditor() {
     return u ? u.unit_definition.name : `#${unitId}`;
   }
 
-  if (!roster) return <div className="page">Loading...</div>;
+  if (!roster) return <div className="page roster-editor-page">Loading...</div>;
 
   const rangedResult = weaponAttacksByStrengthAndSkill(units, "Ranged Weapons");
   const meleeResult = weaponAttacksByStrengthAndSkill(units, "Melee Weapons");
@@ -617,7 +617,7 @@ export function RosterEditor() {
   const selectedDetachment = factionDetachments?.detachments.find((d) => d.name === selectedDetachmentName);
 
   return (
-    <div className="page">
+    <div className="page roster-editor-page">
       {renaming ? (
         <form className="inline-form" onSubmit={handleRename}>
           <input

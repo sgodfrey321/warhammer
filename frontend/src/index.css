@@ -434,8 +434,17 @@ section {
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 0.75rem 1rem;
-  max-height: 70vh;
-  overflow-y: auto;
+  /* Let the list flow with the page instead of a nested scrollbar inside the card -- the
+     Available Units accordion can be collapsed when it's not needed. */
+}
+
+/* Wider Roster Editor so the unit cards and analysis charts have room. */
+.roster-editor-page {
+  max-width: 1040px;
+}
+
+.roster-editor-page .chart-container {
+  max-width: none;
 }
 
 .available-unit-list {
