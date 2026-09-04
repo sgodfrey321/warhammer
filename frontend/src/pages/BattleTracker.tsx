@@ -122,6 +122,9 @@ export function BattleTracker() {
   const [roster, setRoster] = useState<Roster | null>(null);
   const [units, setUnits] = useState<UnitOut[]>([]);
   const [attachments, setAttachments] = useState<UnitAttachment[]>([]);
+  const [opponentUnits, setOpponentUnits] = useState<UnitOut[]>([]);
+  const [opponentAttachments, setOpponentAttachments] = useState<UnitAttachment[]>([]);
+  const [opponentRoster, setOpponentRoster] = useState<Roster | null>(null);
   const [pools, setPools] = useState<DeclaredStatePool[]>([]);
   const [missions, setMissions] = useState<Mission[]>([]);
   const [armyRules, setArmyRules] = useState<FactionArmyRules[]>([]);
@@ -156,6 +159,15 @@ export function BattleTracker() {
         api.listUnits(b.roster_id).then(setUnits).catch((e) => setError(String(e)));
         api.listAttachments(b.roster_id).then(setAttachments).catch((e) => setError(String(e)));
         api.listPools(b.roster_id).then(setPools).catch((e) => setError(String(e)));
+      }
+      if (b.opponent_roster_id) {
+        api.getRoster(b.opponent_roster_id).then(setOpponentRoster).catch((e) => setError(String(e)));
+        api.listUnits(b.opponent_roster_id).then(setOpponentUnits).catch((e) => setError(String(e)));
+        api.listAttachments(b.opponent_roster_id).then(setOpponentAttachments).catch((e) => setError(String(e)));
+      } else {
+        setOpponentUnits([]);
+        setOpponentAttachments([]);
+        setOpponentRoster(null);
       }
     }).catch((e) => setError(String(e)));
   }
@@ -299,7 +311,13 @@ export function BattleTracker() {
 
   if (!battle) return <div className="page">Loading...</div>;
 
-  const nestedLeaderIds = new Set(attachments.map((a) => a.leader_unit_id));
+  // Each army whose turn states are rendered: your roster, plus the opponent roster if one is linked.
+  const armies = [
+    { key: "you", heading: opponentUnits.length > 0 ? "Your army" : "Unit Turn States", units, attachments },
+    ...(opponentUnits.length > 0
+      ? [{ key: "opp", heading: `Opponent — ${opponentRoster?.name ?? "army"}`, units: opponentUnits, attachments: opponentAttachments }]
+      : []),
+  ];
   const leaderReferences = leaderAbilityReferences(units);
   const auraReferences = auraAbilityReferences(units);
   const psychicReferences = psychicAbilityReferences(units);
@@ -726,9 +744,15 @@ export function BattleTracker() {
           </div>
 
           <div className={`battle-tab-panel${activeTab !== "units" ? " mobile-hidden" : ""}`}>
-          {units.length > 0 && (
-            <section>
-              <h2>Unit Turn States</h2>
+          {armies.map((army) => {
+            // Alias to the army being rendered so the block below (your army + opponent) is shared.
+            const units = army.units;
+            const attachments = army.attachments;
+            const nestedLeaderIds = new Set(attachments.map((a) => a.leader_unit_id));
+            if (units.length === 0) return null;
+            return (
+            <section key={army.key}>
+              <h2>{army.heading}</h2>
               {groupUnitsByRole(units, attachments).map((roleGroup) => (
                 <details key={roleGroup.role} className="role-group" open>
                   <summary className="role-group-header">
@@ -957,7 +981,8 @@ export function BattleTracker() {
                 </details>
               ))}
             </section>
-          )}
+            );
+          })}
           </div>
         </div>
       </div>

@@ -402,3 +402,34 @@ def test_synergy_surfaces_only_during_its_trigger_phase(client, session):
 
     b = _advance(client, battle_id, 1)  # step 3: charge phase
     assert b["active_synergies"] == []
+
+
+def test_dual_army_turn_states_track_owner_by_roster(client, session):
+    session.add(
+        UnitDefinition(
+            id="da_du",
+            faction="Aeldari - Craftworlds",
+            name="Dire Avengers",
+            points_cost=90,
+            keywords=["Infantry"],
+            source_catalogue_id="cat",
+            source_entry_id="da_du",
+        )
+    )
+    session.commit()
+
+    yours = client.post("/rosters", json={"name": "You", "faction": "Aeldari - Craftworlds"}).json()
+    theirs = client.post("/rosters", json={"name": "Them", "faction": "Aeldari - Craftworlds"}).json()
+    my_unit = client.post(f"/rosters/{yours['id']}/units", json={"unit_definition_id": "da_du"}).json()
+    their_unit = client.post(f"/rosters/{theirs['id']}/units", json={"unit_definition_id": "da_du"}).json()
+
+    battle = client.post(
+        "/battles", json={"roster_id": yours["id"], "opponent_roster_id": theirs["id"]}
+    ).json()
+    assert battle["opponent_roster_id"] == theirs["id"]
+
+    mine = client.patch(f"/battles/{battle['id']}/units/{my_unit['id']}/turn-state", json={"has_shot": True}).json()
+    opp = client.patch(f"/battles/{battle['id']}/units/{their_unit['id']}/turn-state", json={"has_shot": True}).json()
+
+    assert mine["turn_owner"] == 1  # your roster
+    assert opp["turn_owner"] == 2  # opponent roster

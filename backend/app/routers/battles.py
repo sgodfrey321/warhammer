@@ -660,11 +660,14 @@ def update_turn_state(
         )
     ).first()
     if state is None:
+        # Owner is the unit's side (1 = your roster, 2 = opponent roster), not whoever's active --
+        # so both armies' units track correctly regardless of whose turn marks them.
+        turn_owner = 1 if unit.roster_id == battle.roster_id else 2
         state = UnitTurnState(
             battle_session_id=battle_id,
             unit_id=unit_id,
             battle_round=round_,
-            turn_owner=phases.active_player(battle.global_step),
+            turn_owner=turn_owner,
         )
 
     for field, value in payload.model_dump(exclude_unset=True).items():
