@@ -222,39 +222,24 @@ function SkillStrengthChart({
 
 // One row renderer shared by a plain unit and a leader nested into the unit it leads (see
 // RosterEditor's Units section) -- avoids duplicating this JSX for both cases.
+// Header line for one unit in a (possibly combined) card: name, points, its rules and buffs, and
+// its own remove. The weapons/abilities live in UnitDetailsBody so a leader + its bodyguard share
+// one details view for the whole block.
 function UnitRow({
   unit,
   isLeader,
-  expanded,
-  onToggleDetails,
   onRemove,
   onRemoveBuff,
-  onShowDetails,
 }: {
   unit: UnitOut;
   isLeader?: boolean;
-  expanded: boolean;
-  onToggleDetails: () => void;
   onRemove: (unitId: number) => void;
   onRemoveBuff: (unit: UnitOut, index: number) => void;
-  onShowDetails?: () => void;
 }) {
-  const abilities = unit.unit_definition.abilities;
-  const weaponsCount = unit.loadout.length;
   return (
     <div className={`unit-row${isLeader ? " leader" : ""}`}>
       <span className="unit-name">{unit.unit_definition.name}</span>
       <span className="muted"> ({unit.unit_definition.points_cost}pts)</span>
-      {(abilities.length > 0 || weaponsCount > 0) && (
-        <button type="button" className="link-button" onClick={onToggleDetails}>
-          {expanded ? "hide details" : "details"}
-        </button>
-      )}
-      {onShowDetails && (
-        <button type="button" className="link-button" onClick={onShowDetails}>
-          full details
-        </button>
-      )}
       <button type="button" className="link-button" onClick={() => onRemove(unit.id)}>
         remove
       </button>
@@ -279,16 +264,24 @@ function UnitRow({
           ))}
         </div>
       )}
-      {expanded &&
-        unit.loadout.length > 0 &&
+    </div>
+  );
+}
+
+// One unit's weapons + abilities, rendered inside a block's shared details view. When a block has a
+// leader attached, several of these stack under one "details" toggle so the whole block reads as
+// one item.
+function UnitDetailsBody({ unit }: { unit: UnitOut }) {
+  const abilities = unit.unit_definition.abilities;
+  return (
+    <div className="unit-details-body">
+      <h4 className="weapon-section-heading">{unit.unit_definition.name}</h4>
+      {unit.loadout.length > 0 &&
         groupLoadoutByRangeType(unit.loadout, unit.unit_definition.weapons).map(([rangeType, items]) => (
           <div key={rangeType}>
-            <h4 className="weapon-section-heading">{rangeType}</h4>
+            <h5 className="weapon-section-heading">{rangeType}</h5>
             <ul className="ability-list">
               {items.map((item) => {
-                // A weapon with multiple firing modes (strike/sweep etc.) has more than one
-                // catalogue profile for one loadout item -- show every matching mode, not just
-                // the first (same convention as BattleTracker.tsx).
                 const matches = matchLoadoutWeapons(item.name, unit.unit_definition.weapons);
                 return (
                   <li key={item.name}>
@@ -308,7 +301,7 @@ function UnitRow({
             </ul>
           </div>
         ))}
-      {expanded && abilities.length > 0 && (
+      {abilities.length > 0 && (
         <ul className="ability-list">
           {abilities.map((a) => (
             <li key={a.name}>
@@ -750,27 +743,29 @@ export function RosterEditor() {
                   .filter((a) => a.led_unit_id === u.id)
                   .map((a) => units.find((x) => x.id === a.leader_unit_id))
                   .filter((x): x is UnitOut => !!x);
+                // Leader + bodyguard read as one block: one details toggle for all its units.
+                const blockUnits = [...leaders, u];
+                const blockExpanded = expandedDetails.has(u.id);
+                const hasDetails = blockUnits.some(
+                  (bu) => bu.unit_definition.abilities.length > 0 || bu.loadout.length > 0,
+                );
                 return (
                   <div key={u.id} className="unit-card">
                     {leaders.map((leader) => (
-                      <UnitRow
-                        key={leader.id}
-                        unit={leader}
-                        isLeader
-                        expanded={expandedDetails.has(leader.id)}
-                        onToggleDetails={() => toggleDetails(leader.id)}
-                        onRemove={handleRemoveUnit}
-                        onRemoveBuff={handleRemoveBuff}
-                      />
+                      <UnitRow key={leader.id} unit={leader} isLeader onRemove={handleRemoveUnit} onRemoveBuff={handleRemoveBuff} />
                     ))}
-                    <UnitRow
-                      unit={u}
-                      expanded={expandedDetails.has(u.id)}
-                      onToggleDetails={() => toggleDetails(u.id)}
-                      onRemove={handleRemoveUnit}
-                      onRemoveBuff={handleRemoveBuff}
-                      onShowDetails={() => setDetailsGroup({ primary: u, leaders })}
-                    />
+                    <UnitRow unit={u} onRemove={handleRemoveUnit} onRemoveBuff={handleRemoveBuff} />
+                    <div className="unit-row unit-block-actions">
+                      {hasDetails && (
+                        <button type="button" className="link-button" onClick={() => toggleDetails(u.id)}>
+                          {blockExpanded ? "hide details" : "details"}
+                        </button>
+                      )}
+                      <button type="button" className="link-button" onClick={() => setDetailsGroup({ primary: u, leaders })}>
+                        full details
+                      </button>
+                    </div>
+                    {blockExpanded && blockUnits.map((bu) => <UnitDetailsBody key={bu.id} unit={bu} />)}
                   </div>
                 );
               })}

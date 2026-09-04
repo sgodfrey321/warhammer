@@ -429,6 +429,17 @@ section {
 
 /* RosterEditor's standalone "Available Units" section -- a browse-and-add catalogue, separate
    from the roster's own "Units" section below it (adding a unit here populates that list). */
+/* One unit's weapons/abilities inside a block's shared details view. */
+.unit-details-body {
+  margin-top: 0.5rem;
+  padding-left: 0.6rem;
+  border-left: 2px solid var(--border);
+}
+
+.unit-block-actions {
+  margin-top: 0.3rem;
+}
+
 /* Wider Roster Editor so the unit cards and analysis charts have room. */
 .roster-editor-page {
   max-width: 1040px;
