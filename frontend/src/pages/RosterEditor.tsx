@@ -13,6 +13,7 @@ import type {
   BattleOut,
   DeclaredStatePool,
   Disposition,
+  FactionArmyRules,
   FactionDetachments,
   Roster,
   UnitAttachment,
@@ -47,14 +48,15 @@ import type {
   WoundsBucket,
 } from "../weapons";
 
-// detachments.json's faction keys use a different category-prefix convention than a roster's own
-// faction string for some factions -- confirmed against real data: "Aeldari - Craftworlds"'s
-// detachments live under "Xenos - Aeldari", "Imperium - Space Marines"'s under "Imperium -
-// Adeptus Astartes - Space Marines". Exact match first; otherwise try each of the roster
-// faction's own " - "-separated segments, most specific (last) first, against every candidate
-// faction key -- "Space Marines" alone is specific enough to land correctly, whereas trying the
-// generic "Imperium" segment first would match the wrong (alphabetically first) Imperium entry.
-function matchDetachments(all: FactionDetachments[], faction: string): FactionDetachments | undefined {
+// detachments.json / army-rules.json faction keys use a different category-prefix convention than
+// a roster's own faction string for some factions -- confirmed against real data: "Aeldari -
+// Craftworlds"'s detachments live under "Xenos - Aeldari", its army rules under "Aeldari - Aeldari
+// Library"; "Imperium - Space Marines"'s detachments under "Imperium - Adeptus Astartes - Space
+// Marines". Exact match first; otherwise try each of the roster faction's own " - "-separated
+// segments, most specific (last) first, against every candidate faction key -- "Space Marines"
+// alone is specific enough to land correctly, whereas trying the generic "Imperium" segment first
+// would match the wrong (alphabetically first) Imperium entry.
+function matchByFaction<T extends { faction: string }>(all: T[], faction: string): T | undefined {
   const exact = all.find((f) => f.faction === faction);
   if (exact) return exact;
   const segments = faction.split(" - ").reverse();
@@ -236,13 +238,23 @@ function UnitRow({
   onRemove: (unitId: number) => void;
   onRemoveBuff: (unit: UnitOut, index: number) => void;
 }) {
+  const stats = statPairs(unit.unit_definition.stats);
   return (
     <div className={`unit-row${isLeader ? " leader" : ""}`}>
-      <span className="unit-name">{unit.unit_definition.name}</span>
-      <span className="muted"> ({unit.unit_definition.points_cost}pts)</span>
-      <button type="button" className="link-button" onClick={() => onRemove(unit.id)}>
-        remove
-      </button>
+      <div className="unit-row-head">
+        <span className="unit-row-identity">
+          <span className="unit-name">{unit.unit_definition.name}</span>
+          <span className="muted"> ({unit.unit_definition.points_cost}pts)</span>
+          <button type="button" className="link-button" onClick={() => onRemove(unit.id)}>
+            remove
+          </button>
+        </span>
+        {stats.length > 0 && (
+          <div className="unit-row-stats stat-line">
+            <StatBoxes pairs={stats} />
+          </div>
+        )}
+      </div>
       {unit.unit_definition.rules.length > 0 && (
         <div className="rule-tags">
           {unit.unit_definition.rules.map((r) => (
@@ -273,43 +285,51 @@ function UnitRow({
 // one item.
 function UnitDetailsBody({ unit }: { unit: UnitOut }) {
   const abilities = unit.unit_definition.abilities;
+  const hasLoadout = unit.loadout.length > 0;
   return (
     <div className="unit-details-body">
       <h4 className="weapon-section-heading">{unit.unit_definition.name}</h4>
-      {unit.loadout.length > 0 &&
-        groupLoadoutByRangeType(unit.loadout, unit.unit_definition.weapons).map(([rangeType, items]) => (
-          <div key={rangeType}>
-            <h5 className="weapon-section-heading">{rangeType}</h5>
-            <ul className="ability-list">
-              {items.map((item) => {
-                const matches = matchLoadoutWeapons(item.name, unit.unit_definition.weapons);
-                return (
-                  <li key={item.name}>
-                    <strong>
-                      {item.count}x {item.name}
-                    </strong>
-                    {matches.length === 0 && <span className="muted"> profile not indexed</span>}
-                    {matches.map((w) => (
-                      <div key={w.name} className="stat-line">
-                        {matches.length > 1 && `${w.name.replace(/^➤\s*/, "")}: `}
-                        <StatBoxes pairs={weaponPairs(w)} />
-                      </div>
-                    ))}
-                  </li>
-                );
-              })}
-            </ul>
+      {/* Weapons and abilities each only fill ~half the width on their own, so run them as two
+          columns side by side (collapsing to one on narrow screens via CSS). */}
+      <div className="unit-details-cols">
+        {hasLoadout && (
+          <div className="unit-details-weapons">
+            {groupLoadoutByRangeType(unit.loadout, unit.unit_definition.weapons).map(([rangeType, items]) => (
+              <div key={rangeType}>
+                <h5 className="weapon-section-heading">{rangeType}</h5>
+                <ul className="ability-list">
+                  {items.map((item) => {
+                    const matches = matchLoadoutWeapons(item.name, unit.unit_definition.weapons);
+                    return (
+                      <li key={item.name}>
+                        <strong>
+                          {item.count}x {item.name}
+                        </strong>
+                        {matches.length === 0 && <span className="muted"> profile not indexed</span>}
+                        {matches.map((w) => (
+                          <div key={w.name} className="stat-line">
+                            {matches.length > 1 && `${w.name.replace(/^➤\s*/, "")}: `}
+                            <StatBoxes pairs={weaponPairs(w)} />
+                          </div>
+                        ))}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
           </div>
-        ))}
-      {abilities.length > 0 && (
-        <ul className="ability-list">
-          {abilities.map((a) => (
-            <li key={a.name}>
-              <strong>{a.name}:</strong> {renderAbilityText(a.text, `${unit.id}-${a.name}`)}
-            </li>
-          ))}
-        </ul>
-      )}
+        )}
+        {abilities.length > 0 && (
+          <ul className="ability-list unit-details-abilities">
+            {abilities.map((a) => (
+              <li key={a.name}>
+                <strong>{a.name}:</strong> {renderAbilityText(a.text, `${unit.id}-${a.name}`)}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }
@@ -323,7 +343,7 @@ export function RosterEditor() {
   const [units, setUnits] = useState<UnitOut[]>([]);
   const [availableUnits, setAvailableUnits] = useState<UnitDefinition[]>([]);
   const [allDetachments, setAllDetachments] = useState<FactionDetachments[]>([]);
-  const [detachmentDetailsOpen, setDetachmentDetailsOpen] = useState(false);
+  const [allArmyRules, setAllArmyRules] = useState<FactionArmyRules[]>([]);
   const [showLegends, setShowLegends] = useState(false);
   const [showCrucible, setShowCrucible] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
@@ -381,6 +401,7 @@ export function RosterEditor() {
 
   useEffect(() => {
     api.listDetachments().then(setAllDetachments).catch((e) => setError(String(e)));
+    api.listArmyRules().then(setAllArmyRules).catch((e) => setError(String(e)));
   }, []);
 
   async function handleSelectDetachment(name: string) {
@@ -606,12 +627,15 @@ export function RosterEditor() {
   const leaderReferences = leaderAbilityReferences(units);
   const auraReferences = auraAbilityReferences(units);
   const psychicReferences = psychicAbilityReferences(units);
-  const factionDetachments = matchDetachments(allDetachments, roster.faction);
+  const factionDetachments = matchByFaction(allDetachments, roster.faction);
   const selectedDetachmentName = roster.detachments[0]?.name ?? "";
   const selectedDetachment = factionDetachments?.detachments.find((d) => d.name === selectedDetachmentName);
+  const factionArmyRules = matchByFaction(allArmyRules, roster.faction);
 
   return (
     <div className="page roster-editor-page">
+      <div className="roster-editor-layout">
+      <div className="roster-editor-main">
       {renaming ? (
         <form className="inline-form" onSubmit={handleRename}>
           <input
@@ -652,11 +676,6 @@ export function RosterEditor() {
           </select>
         </label>
         {!factionDetachments && <span className="muted">No detachments indexed for this faction yet.</span>}
-        {selectedDetachment && (
-          <button type="button" className="link-button" onClick={() => setDetachmentDetailsOpen((v) => !v)}>
-            {detachmentDetailsOpen ? "hide details" : "details"}
-          </button>
-        )}
         <label className="checkbox-label">
           Force Disposition
           <select value={roster.disposition ?? ""} onChange={(e) => handleSelectDisposition(e.target.value)}>
@@ -669,15 +688,6 @@ export function RosterEditor() {
           </select>
         </label>
       </div>
-      {selectedDetachment && detachmentDetailsOpen && (
-        <ul className="ability-list">
-          {selectedDetachment.rules.map((r) => (
-            <li key={r.name}>
-              <strong>{r.name}:</strong> {renderAbilityText(r.text, `detachment-${r.name}`)}
-            </li>
-          ))}
-        </ul>
-      )}
       {selectedDetachment && (
         <p className="muted">
           <Link to={`/battles/setup?rosterId=${rosterId}`}>Next: choose your battle disposition →</Link>
@@ -1238,6 +1248,53 @@ export function RosterEditor() {
           {pools.length === 0 && <li className="muted">No pools yet.</li>}
         </ul>
       </details>
+      </div>
+
+      <aside className="roster-rail">
+        <h2 className="rail-heading">Army Context</h2>
+
+        <section className="rail-section">
+          <h3 className="rail-section-head">Army Rule</h3>
+          {factionArmyRules ? (
+            <>
+              <p className="muted rail-note">
+                Library-level — some rules apply only to specific sub-factions.
+              </p>
+              {factionArmyRules.rules.map((r) => (
+                <details key={r.name} className="rail-rule">
+                  <summary>{r.name}</summary>
+                  <div className="rail-rule-body">{renderAbilityText(r.text, `army-${r.name}`)}</div>
+                </details>
+              ))}
+            </>
+          ) : (
+            <p className="muted">No army rule indexed for this faction yet.</p>
+          )}
+        </section>
+
+        <section className="rail-section">
+          <h3 className="rail-section-head">
+            Detachment{selectedDetachment ? `: ${selectedDetachment.name}` : ""}
+          </h3>
+          {selectedDetachment ? (
+            selectedDetachment.rules.length > 0 ? (
+              <ul className="ability-list rail-detachment-rules">
+                {selectedDetachment.rules.map((r) => (
+                  <li key={r.name}>
+                    <strong>{r.name}:</strong> {renderAbilityText(r.text, `detachment-${r.name}`)}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="muted">No rule text indexed for this detachment.</p>
+            )
+          ) : (
+            <p className="muted">Choose a detachment above to see its rule here.</p>
+          )}
+          <p className="muted rail-note">Stratagems and enhancements aren't indexed yet.</p>
+        </section>
+      </aside>
+      </div>
 
       {addOpen && (
         <div className="modal-overlay" onClick={() => setAddOpen(false)}>

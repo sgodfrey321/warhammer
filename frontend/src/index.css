@@ -37,6 +37,53 @@ body {
   white-space: nowrap;
 }
 
+.nav-user {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 400;
+}
+
+/* Login / register screen (shown when signed out) */
+.auth-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.auth-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 320px;
+  padding: 2rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.auth-card h1 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9em;
+}
+
+.auth-switch {
+  text-align: center;
+  margin: 0.25rem 0 0;
+  font-size: 0.9em;
+}
+
 .page {
   max-width: 720px;
   margin: 0 auto;
@@ -440,13 +487,130 @@ section {
   margin-top: 0.3rem;
 }
 
-/* Wider Roster Editor so the unit cards and analysis charts have room. */
+/* Wider Roster Editor so the unit cards/charts have room AND a persistent Army Context rail
+   fits beside them. */
 .roster-editor-page {
-  max-width: 1040px;
+  max-width: 1360px;
 }
 
 .roster-editor-page .chart-container {
   max-width: none;
+}
+
+/* Two-column page: roster + analysis on the left, army/detachment rule reference pinned right. */
+.roster-editor-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+}
+
+.roster-editor-main {
+  flex: 1;
+  min-width: 0; /* let charts/tables shrink instead of forcing the whole row wider */
+}
+
+.roster-rail {
+  flex: 0 0 300px;
+  position: sticky;
+  top: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.75rem 1rem 1rem;
+  background: var(--panel);
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+}
+
+.rail-heading {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.rail-section + .rail-section {
+  margin-top: 1.25rem;
+}
+
+.rail-section-head {
+  margin: 0 0 0.5rem;
+  font-size: 0.8em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.25rem;
+}
+
+.rail-note {
+  font-size: 0.8em;
+  margin: 0 0 0.5rem;
+}
+
+.rail-rule {
+  border-bottom: 1px solid var(--border);
+  padding: 0.35rem 0;
+}
+
+.rail-rule > summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9em;
+}
+
+.rail-rule-body {
+  margin-top: 0.35rem;
+  font-size: 0.85em;
+  color: var(--muted);
+}
+
+.rail-detachment-rules {
+  font-size: 0.9em;
+}
+
+/* Collapsed unit-card header: identity on the left, statline pushed right into what was empty
+   space; rules/buffs still wrap onto their own full-width rows beneath. */
+.unit-row-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.unit-row-stats {
+  flex-shrink: 0;
+}
+
+/* Expanded details body: weapons and abilities side by side (each only fills ~half alone). */
+.unit-details-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.unit-details-cols > .unit-details-abilities {
+  margin-top: 0;
+}
+
+/* Stack the rail under the main column, and the details columns, once there's no room. */
+@media (max-width: 1040px) {
+  .roster-editor-layout {
+    flex-direction: column;
+  }
+  .roster-rail {
+    position: static;
+    flex-basis: auto;
+    align-self: stretch;
+    width: 100%;
+    max-height: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .unit-details-cols {
+    grid-template-columns: 1fr;
+  }
 }
 
 .available-unit-list {
