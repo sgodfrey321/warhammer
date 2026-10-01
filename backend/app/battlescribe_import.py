@@ -4,9 +4,9 @@ Pure parsing, no DB access -- keeps this testable without a database and reusabl
 from both the API endpoint and any future standalone script.
 
 Join strategy: each unit/model selection's `entryId` is `<linkId>::<targetId>`, and
-`targetId` is exactly the catalogue entry id the bsdata-indexer already uses as
-`UnitDefinition.id` (confirmed directly against a real NewRecruit export). So matching
-is an exact id lookup, not fuzzy name matching -- `rsplit("::", 1)[-1]` on a bare id
+`targetId` is exactly the catalogue entry id the bsdata-indexer emits as
+`UnitDefinition.source_entry_id` (confirmed directly against a real NewRecruit export). So
+matching is an exact id lookup, not fuzzy name matching -- `rsplit("::", 1)[-1]` on a bare id
 with no separator just returns it unchanged, so this also tolerates exports that don't
 use the linkId::targetId form.
 """
@@ -21,12 +21,13 @@ _POINTS_LIMIT_RE = re.compile(r"\((\d+)\s*Point limit\)", re.IGNORECASE)
 
 @dataclass
 class ParsedEntry:
-    unit_definition_id: str
+    unit_definition_id: str  # actually the catalogue source_entry_id; the caller resolves it to a UnitDefinition
     name: str
     roster_selection_id: str  # this export's own ephemeral selection id, e.g. "b8wohrl" --
     # only meaningful within one parse_roster() call, used to resolve `attachments` below.
     loadout: list[dict] = field(default_factory=list)  # [{"name": str, "count": int}]
     model_groups: list[dict] = field(default_factory=list)  # [{"name": str, "count": int}]
+    points: int | None = None  # real cost: this selection's own pts plus every nested selection's
 
 
 @dataclass
@@ -78,6 +79,22 @@ def _loadout(sel: dict) -> list[dict]:
     return [{"name": name, "count": count} for name, count in counts.items()]
 
 
+def _selection_points(sel: dict) -> int | None:
+    """Sum of every "pts" cost on the selection and all nested selections -- the unit's real
+    price including upsized squads and paid upgrades. None when no pts cost appears at all."""
+    found = False
+    total = 0
+    stack = [sel]
+    while stack:
+        node = stack.pop()
+        for cost in node.get("costs") or []:
+            if cost.get("name") == "pts":
+                found = True
+                total += int(cost.get("value") or 0)
+        stack.extend(node.get("selections") or [])
+    return total if found else None
+
+
 def _model_groups(sel: dict) -> list[dict]:
     """Which model types make up this unit, and how many of each -- e.g. a real Guardian
     Defenders export has two `type: "model"` children: "Guardian Defender" (number=10) and
@@ -106,6 +123,7 @@ def _walk_selections(selections: list[dict], out: list[ParsedEntry], attachments
                     roster_selection_id=sel.get("id", ""),
                     loadout=_loadout(sel),
                     model_groups=_model_groups(sel),
+                    points=_selection_points(sel),
                 )
             )
             # A Character attached to this unit shows up as an incoming "group" association

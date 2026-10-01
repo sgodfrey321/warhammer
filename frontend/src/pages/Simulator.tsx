@@ -2,6 +2,8 @@ import { type Dispatch, type SetStateAction, useEffect, useRef, useState } from 
 import { useLocation } from "react-router-dom";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { api } from "../api";
+import { isNonStandard } from "../catalog";
+import { BAR_RADIUS, BAR_SIZE, CHART_COLOR, SIM_UNIT_COLORS } from "../charts";
 import { StatBoxes } from "../components/StatBoxes";
 import type { Ability, DetectedEffect, ModelProfile, SimulateOptions, SimulateResponse, UnitDefinition, Weapon } from "../types";
 import { STAT_ORDER } from "../types";
@@ -49,6 +51,8 @@ function autoPopulateLines(unit: UnitDefinition): WeaponLineInput[] {
   return lines.length > 0 ? lines : [{ name: "", count: 1 }];
 }
 
+const MAX_TRIALS = 100000;
+
 const REROLL_RANK: Record<string, number> = { none: 0, ones: 1, all: 2 };
 
 // Folds each toggled-on ability effect's option_patch into the base options: hit/wound
@@ -67,6 +71,8 @@ function mergeEffects(base: SimulateOptions, patches: Partial<SimulateOptions>[]
     if (p.grant_sustained_hits) o.grant_sustained_hits += p.grant_sustained_hits;
     if (p.grant_lethal_hits) o.grant_lethal_hits = true;
     if (p.grant_devastating_wounds) o.grant_devastating_wounds = true;
+    if (p.damage_reduction) o.damage_reduction = Math.max(o.damage_reduction, p.damage_reduction);
+    if (p.halve_damage) o.halve_damage = true;
     if (p.fnp != null) o.fnp = o.fnp == null ? p.fnp : Math.min(o.fnp, p.fnp);
   }
   o.hit_modifier = Math.max(-1, Math.min(1, o.hit_modifier));
@@ -151,11 +157,8 @@ function AbilityToggles({
   );
 }
 
-const CHART_COLOR = "#e0574a";
-// Distinct colours for stacking each attacking unit in the Wounds Dealt chart.
-const SIM_UNIT_COLORS = ["#e0574a", "#5b9bd5", "#70ad47", "#ffc000", "#9b5bd5", "#43c6b8", "#e88b3a"];
-const BAR_SIZE = 24;
-const BAR_RADIUS: [number, number, number, number] = [4, 4, 0, 0];
+// Stable empty array: a fresh [] each render would re-fire AttackerUnit's contribution effect forever.
+const NO_KEYWORDS: string[] = [];
 
 const DEFAULT_OPTIONS: SimulateOptions = {
   half_range: false,
@@ -174,6 +177,10 @@ const DEFAULT_OPTIONS: SimulateOptions = {
   fnp: null,
   anti_active: false,
   anti_threshold: null,
+  stationary: false,
+  not_visible: false,
+  damage_reduction: 0,
+  halve_damage: false,
   trials: 10000,
   seed: null,
 };
@@ -190,17 +197,6 @@ function weaponSummary(w: Weapon): string {
   if (c.AP) parts.push(`AP${c.AP}`);
   if (c.D) parts.push(`D${c.D}`);
   return parts.join(" ");
-}
-
-// Legends and Crucible (custom-character) units aren't part of a standard matched-play list, so
-// they're hidden from the pickers unless explicitly included. Crucible units carry a "Crucible"
-// keyword and a "[Crucible]" name suffix; Legends units carry the is_legends flag.
-function isNonStandard(u: UnitDefinition): boolean {
-  return (
-    u.is_legends ||
-    u.name.includes("[Crucible]") ||
-    u.keywords.some((k) => k.toLowerCase() === "crucible")
-  );
 }
 
 function toggleSet(setter: Dispatch<SetStateAction<Set<number>>>, i: number) {
@@ -472,7 +468,7 @@ export function Simulator() {
 
   const defenderUnit = defenderUnitDefs.find((u) => u.id === defenderUnitId) ?? null;
   const defenderOptions = includeNonStandard ? defenderUnitDefs : defenderUnitDefs.filter((u) => !isNonStandard(u));
-  const defenderKeywords = defenderUnit?.keywords ?? [];
+  const defenderKeywords = defenderUnit?.keywords ?? NO_KEYWORDS;
 
   // One-time seed of the defender from a Compare handoff, once its faction's defs have loaded.
   useEffect(() => {
@@ -484,6 +480,7 @@ export function Simulator() {
 
   useEffect(() => {
     setCheckedDefender(new Set());
+    setDefenderModelCount(defenderUnit?.min_models || 1);
     if (!defenderUnit) {
       setDefenderEffects([]);
       return;
@@ -538,6 +535,7 @@ export function Simulator() {
         attackers: attackerGroups,
         defender_stats: defenderUnit.stats,
         defender_model_count: defenderModelCount,
+        defender_keywords: defenderKeywords,
       });
       setResultLabels(attackerContribs.map((c) => c.label));
       setResult(res);
@@ -744,6 +742,30 @@ export function Simulator() {
             />
             Charged this turn (Lance)
           </label>
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={options.stationary}
+              onChange={(e) => setOptions((o) => ({ ...o, stationary: e.target.checked }))}
+            />
+            Remained stationary (Heavy)
+          </label>
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={options.not_visible}
+              onChange={(e) => setOptions((o) => ({ ...o, not_visible: e.target.checked }))}
+            />
+            Target not visible (Indirect Fire)
+          </label>
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={options.halve_damage}
+              onChange={(e) => setOptions((o) => ({ ...o, halve_damage: e.target.checked }))}
+            />
+            Defender halves Damage
+          </label>
         </div>
         <div className="inline-form">
           <label className="checkbox-label">
@@ -808,13 +830,32 @@ export function Simulator() {
             </select>
           </label>
           <label className="checkbox-label">
+            Defender -X Damage
+            <select
+              value={options.damage_reduction}
+              onChange={(e) => setOptions((o) => ({ ...o, damage_reduction: Number(e.target.value) }))}
+            >
+              {[0, 1, 2, 3].map((n) => (
+                <option key={n} value={n}>
+                  {n === 0 ? "None" : `-${n} Damage`}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="checkbox-label">
             Trials
             <input
               type="number"
-              min={100}
+              min={1}
+              max={MAX_TRIALS}
               step={100}
               value={options.trials}
-              onChange={(e) => setOptions((o) => ({ ...o, trials: Number(e.target.value) || DEFAULT_OPTIONS.trials }))}
+              onChange={(e) =>
+                setOptions((o) => ({
+                  ...o,
+                  trials: Math.min(MAX_TRIALS, Math.max(1, Math.floor(Number(e.target.value)) || DEFAULT_OPTIONS.trials)),
+                }))
+              }
               style={{ width: "5.5rem" }}
             />
           </label>

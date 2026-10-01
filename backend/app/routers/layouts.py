@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-import json
-from pathlib import Path
-
 from fastapi import APIRouter
 from pydantic import BaseModel
+
+from ..reference_data import REPO_ROOT, load_reference_json
 
 router = APIRouter(prefix="/layouts", tags=["layouts"])
 
 # Static reference data -- same pattern as army_rules.py/primary_missions.py.
 # Regenerate with: python tools/gdmissions/fetch_layouts.py
-OUTPUT_PATH = Path(__file__).resolve().parent.parent.parent.parent / "tools" / "gdmissions" / "output" / "layouts.json"
+OUTPUT_PATH = REPO_ROOT / "tools/gdmissions/output/layouts.json"
 
 
 class LayoutOut(BaseModel):
@@ -29,6 +28,4 @@ class LayoutMatchupOut(BaseModel):
 
 @router.get("", response_model=list[LayoutMatchupOut])
 def list_layouts() -> list[dict]:
-    if not OUTPUT_PATH.exists():
-        return []
-    return json.loads(OUTPUT_PATH.read_text(encoding="utf-8"))
+    return load_reference_json(OUTPUT_PATH)

@@ -34,12 +34,22 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Warhammer Manager API", lifespan=lifespan)
 
 # Dev-only: allows the Vite dev server (a different origin) to call this API directly --
-# from this machine (localhost) and from any other machine on the home LAN (192.168.x.x),
-# since the frontend is now exposed there too (see frontend/vite.config.ts).
+# from this machine (localhost) and from any other machine on a private LAN (192.168/16,
+# 10/8, 172.16/12), since the frontend is exposed there too (see frontend/vite.config.ts).
+# Port 80 / no port covers the Docker frontend.
+_OCTET = r"(?:25[0-5]|2[0-4]\d|1?\d?\d)"
+_ORIGIN_REGEX = (
+    r"^http://(?:localhost|127\.0\.0\.1"
+    rf"|192\.168\.{_OCTET}\.{_OCTET}"
+    rf"|10\.{_OCTET}\.{_OCTET}\.{_OCTET}"
+    rf"|172\.(?:1[6-9]|2\d|3[01])\.{_OCTET}\.{_OCTET})"
+    r"(?::(?:517[34]|80))?$"
+)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://localhost:5174"],
-    allow_origin_regex=r"http://192\.168\.\d{1,3}\.\d{1,3}:517[34]",
+    allow_origin_regex=_ORIGIN_REGEX,
     allow_methods=["*"],
     allow_headers=["*"],
 )

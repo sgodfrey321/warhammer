@@ -35,6 +35,20 @@ export function matchLoadoutWeapons(itemName: string, weapons: Weapon[]): Weapon
   return [];
 }
 
+// Matches a loadout item to its catalogue profiles for charting: one profile per distinct weapon
+// base name (first match), so a multi-mode weapon isn't double-counted, while a combined "A and B"
+// item yields each of its distinct weapons once.
+function loadoutProfiles(itemName: string, weapons: Weapon[], rangeType?: "Ranged Weapons" | "Melee Weapons"): Weapon[] {
+  const matched = matchLoadoutWeapons(itemName, rangeType ? weapons.filter((w) => w.range_type === rangeType) : weapons);
+  const seen = new Set<string>();
+  return matched.filter((w) => {
+    const key = normalizeWeaponName(w.name);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 // GW's own datasheet ordering: Ranged Weapons section before Melee Weapons.
 const WEAPON_SECTION_ORDER = ["Ranged Weapons", "Melee Weapons"];
 
@@ -165,32 +179,30 @@ export function weaponAttacksByStrengthAndSkill(
       continue;
     }
     for (const item of u.loadout) {
-      const profile = u.unit_definition.weapons.find(
-        (w) => w.range_type === rangeType && weaponBaseName(w.name) === item.name,
-      );
-      if (!profile) continue;
-      const strength = Number(profile.characteristics.S);
-      if (!Number.isFinite(strength)) continue;
-      const skill = profile.characteristics[skillField]?.trim() || "N/A";
-      const attacksPerModel = parseAttacks(profile.characteristics.A ?? "");
-      const totalAttacks = attacksPerModel * item.count;
+      for (const profile of loadoutProfiles(item.name, u.unit_definition.weapons, rangeType)) {
+        const strength = Number(profile.characteristics.S);
+        if (!Number.isFinite(strength)) continue;
+        const skill = profile.characteristics[skillField]?.trim() || "N/A";
+        const attacksPerModel = parseAttacks(profile.characteristics.A ?? "");
+        const totalAttacks = attacksPerModel * item.count;
 
-      const key = bucketKey(strength, skill);
-      totals.set(key, (totals.get(key) ?? 0) + totalAttacks);
-      skillKeysSet.add(skill);
-      strengthsSet.add(strength);
+        const key = bucketKey(strength, skill);
+        totals.set(key, (totals.get(key) ?? 0) + totalAttacks);
+        skillKeysSet.add(skill);
+        strengthsSet.add(strength);
 
-      const list = contributions.get(key) ?? [];
-      list.push({
-        unitId: u.id,
-        unitLabel: u.unit_definition.name,
-        weaponName: profile.name,
-        skill,
-        count: item.count,
-        attacksPerModel: Math.round(attacksPerModel * 10) / 10,
-        totalAttacks: Math.round(totalAttacks * 10) / 10,
-      });
-      contributions.set(key, list);
+        const list = contributions.get(key) ?? [];
+        list.push({
+          unitId: u.id,
+          unitLabel: u.unit_definition.name,
+          weaponName: profile.name,
+          skill,
+          count: item.count,
+          attacksPerModel: Math.round(attacksPerModel * 10) / 10,
+          totalAttacks: Math.round(totalAttacks * 10) / 10,
+        });
+        contributions.set(key, list);
+      }
     }
   }
 
@@ -255,15 +267,9 @@ export function weaponAttacksByStrengthAndSkill(
   };
 }
 
-export interface MovementBucket {
-  movement: number;
-  units: number;
-}
-
-// "M" comes as inconsistent free text across the indexed data ('6"', '10', '20+"', '-' for no
-// movement value at all) -- pull out the leading number and ignore the rest. Returns null for
-// "-" (nothing to bucket).
-export function parseMovement(raw: string): number | null {
+// Stats come as inconsistent free text across the indexed data ('6"', '10', '20+"', '-' for no
+// value at all) -- pull out the leading number and ignore the rest. Returns null for "-".
+export function parseLeadingInt(raw: string): number | null {
   const trimmed = raw.trim();
   if (trimmed === "-") return null;
   const match = trimmed.match(/(\d+)/);
@@ -274,18 +280,23 @@ export function parseMovement(raw: string): number | null {
 // this data (loadout counts are weapon totals, not a model census, and quantity is always 1
 // on an imported unit), so a 10-model squad and a lone Character both count as one bar
 // contribution. Caveat surfaced in the chart's own caption, not hidden.
-export function unitsByMovement(units: UnitOut[]): MovementBucket[] {
+function countUnitsByStat(units: UnitOut[], stat: "M" | "T" | "W"): [number, number][] {
   const totals = new Map<number, number>();
   for (const u of units) {
-    const raw = u.unit_definition.stats.M;
-    if (!raw) continue;
-    const movement = parseMovement(raw);
-    if (movement === null) continue;
-    totals.set(movement, (totals.get(movement) ?? 0) + 1);
+    const value = parseLeadingInt(u.unit_definition.stats[stat] ?? "");
+    if (value === null) continue;
+    totals.set(value, (totals.get(value) ?? 0) + 1);
   }
-  return Array.from(totals, ([movement, count]) => ({ movement, units: count })).sort(
-    (a, b) => a.movement - b.movement,
-  );
+  return Array.from(totals).sort((a, b) => a[0] - b[0]);
+}
+
+export interface MovementBucket {
+  movement: number;
+  units: number;
+}
+
+export function unitsByMovement(units: UnitOut[]): MovementBucket[] {
+  return countUnitsByStat(units, "M").map(([movement, count]) => ({ movement, units: count }));
 }
 
 export interface ToughnessBucket {
@@ -293,29 +304,8 @@ export interface ToughnessBucket {
   units: number;
 }
 
-// "T" is a clean integer in every real entry seen so far ("10", "3", "-" for a unit with no
-// independent Toughness) -- same leading-number extraction as parseMovement in case a footnote
-// ever sneaks in.
-export function parseToughness(raw: string): number | null {
-  const trimmed = raw.trim();
-  if (trimmed === "-") return null;
-  const match = trimmed.match(/(\d+)/);
-  return match ? Number(match[1]) : null;
-}
-
-// Same "one bar contribution per unit entry, not per model" caveat as unitsByMovement.
 export function unitsByToughness(units: UnitOut[]): ToughnessBucket[] {
-  const totals = new Map<number, number>();
-  for (const u of units) {
-    const raw = u.unit_definition.stats.T;
-    if (!raw) continue;
-    const toughness = parseToughness(raw);
-    if (toughness === null) continue;
-    totals.set(toughness, (totals.get(toughness) ?? 0) + 1);
-  }
-  return Array.from(totals, ([toughness, count]) => ({ toughness, units: count })).sort(
-    (a, b) => a.toughness - b.toughness,
-  );
+  return countUnitsByStat(units, "T").map(([toughness, count]) => ({ toughness, units: count }));
 }
 
 export interface WoundsBucket {
@@ -323,28 +313,8 @@ export interface WoundsBucket {
   units: number;
 }
 
-// "W" is a clean integer in every real entry seen so far -- same leading-number extraction as
-// parseMovement/parseToughness.
-export function parseWounds(raw: string): number | null {
-  const trimmed = raw.trim();
-  if (trimmed === "-") return null;
-  const match = trimmed.match(/(\d+)/);
-  return match ? Number(match[1]) : null;
-}
-
-// Same "one bar contribution per unit entry, not per model" caveat as unitsByMovement -- a
-// 10-model Wounds:1 squad and a lone Wounds:16 Monster both count as one bar contribution, not
-// weighted by squad size.
 export function unitsByWounds(units: UnitOut[]): WoundsBucket[] {
-  const totals = new Map<number, number>();
-  for (const u of units) {
-    const raw = u.unit_definition.stats.W;
-    if (!raw) continue;
-    const wounds = parseWounds(raw);
-    if (wounds === null) continue;
-    totals.set(wounds, (totals.get(wounds) ?? 0) + 1);
-  }
-  return Array.from(totals, ([wounds, count]) => ({ wounds, units: count })).sort((a, b) => a.wounds - b.wounds);
+  return countUnitsByStat(units, "W").map(([wounds, count]) => ({ wounds, units: count }));
 }
 
 // One contributing unit+weapon pair behind a single Strength/Damage bar on the Army Comparison
@@ -388,32 +358,30 @@ function attacksByCharacteristic(
       continue;
     }
     for (const item of u.loadout) {
-      const profile = u.unit_definition.weapons.find(
-        (w) => (!rangeType || w.range_type === rangeType) && weaponBaseName(w.name) === item.name,
-      );
-      if (!profile) continue;
-      const raw = profile.characteristics[characteristic];
-      if (!raw) continue;
-      // S is always a clean integer; D can be dice notation ("D6+2") like Attacks -- parseAttacks
-      // averages either shape (a clean integer passes through its fallback unchanged), rounded to
-      // the nearest whole value so it buckets onto the same integer axis as Wounds.
-      const value = Math.round(parseAttacks(raw));
-      const attacksPerModel = parseAttacks(profile.characteristics.A ?? "");
-      const totalAttacks = attacksPerModel * item.count;
+      for (const profile of loadoutProfiles(item.name, u.unit_definition.weapons, rangeType)) {
+        const raw = profile.characteristics[characteristic];
+        if (!raw) continue;
+        // S is always a clean integer; D can be dice notation ("D6+2") like Attacks -- parseAttacks
+        // averages either shape (a clean integer passes through its fallback unchanged), rounded to
+        // the nearest whole value so it buckets onto the same integer axis as Wounds.
+        const value = Math.round(parseAttacks(raw));
+        const attacksPerModel = parseAttacks(profile.characteristics.A ?? "");
+        const totalAttacks = attacksPerModel * item.count;
 
-      totals.set(value, (totals.get(value) ?? 0) + totalAttacks);
-      total += totalAttacks;
+        totals.set(value, (totals.get(value) ?? 0) + totalAttacks);
+        total += totalAttacks;
 
-      const list = contributions.get(value) ?? [];
-      list.push({
-        unitId: u.id,
-        unitLabel: u.unit_definition.name,
-        weaponName: profile.name,
-        count: item.count,
-        attacksPerModel: Math.round(attacksPerModel * 10) / 10,
-        totalAttacks: Math.round(totalAttacks * 10) / 10,
-      });
-      contributions.set(value, list);
+        const list = contributions.get(value) ?? [];
+        list.push({
+          unitId: u.id,
+          unitLabel: u.unit_definition.name,
+          weaponName: profile.name,
+          count: item.count,
+          attacksPerModel: Math.round(attacksPerModel * 10) / 10,
+          totalAttacks: Math.round(totalAttacks * 10) / 10,
+        });
+        contributions.set(value, list);
+      }
     }
   }
 

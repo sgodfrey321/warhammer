@@ -1,19 +1,17 @@
 from __future__ import annotations
 
-import json
-from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter
 from pydantic import BaseModel
 
+from ..reference_data import REPO_ROOT, load_reference_json
+
 router = APIRouter(prefix="/secondary-missions", tags=["secondary-missions"])
 
 # Static reference data -- same pattern as army_rules.py/primary_missions.py.
 # Regenerate with: python tools/gdmissions/fetch_secondary_missions.py
-OUTPUT_PATH = (
-    Path(__file__).resolve().parent.parent.parent.parent / "tools" / "gdmissions" / "output" / "secondary-missions.json"
-)
+OUTPUT_PATH = REPO_ROOT / "tools/gdmissions/output/secondary-missions.json"
 
 
 class ActionRowOut(BaseModel):
@@ -48,6 +46,4 @@ class SecondaryMissionOut(BaseModel):
 
 @router.get("", response_model=list[SecondaryMissionOut])
 def list_secondary_missions() -> list[dict]:
-    if not OUTPUT_PATH.exists():
-        return []
-    return json.loads(OUTPUT_PATH.read_text(encoding="utf-8"))
+    return load_reference_json(OUTPUT_PATH)

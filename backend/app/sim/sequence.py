@@ -39,7 +39,11 @@ class AttackOptions:
     grant_devastating_wounds: bool = False
     fnp: int | None = None  # the X in "Feel No Pain X+"
     anti_active: bool = False
-    anti_threshold: int | None = None  # the Y in "Anti-X Y+"; only matters if anti_active
+    anti_threshold: int | None = None  # manual Y in "Anti-X Y+"; only used if anti_active (min'd with the auto-matched one)
+    damage_reduction: int = 0  # "subtract N from the Damage characteristic", applied per attack, min 1
+    halve_damage: bool = False  # "halve the Damage characteristic" (rounds up), applied before damage_reduction
+    stationary: bool = False  # Heavy: +1 to hit if the attacker remained stationary
+    not_visible: bool = False  # Indirect Fire at a non-visible target: -1 to hit and the target gets cover
 
 
 @dataclass
@@ -100,6 +104,24 @@ def _wound_target(strength: int, toughness: int) -> int:
     return 5
 
 
+def _effective_anti_threshold(attacker: AttackerProfile, defender: DefenderProfile, options: AttackOptions) -> int | None:
+    """Lowest threshold among the weapon's Anti-X entries that match the defender's keywords,
+    min'd with the manual override when `anti_active` is set."""
+
+    have = {k.casefold() for k in defender.defender_keywords}
+    best: int | None = None
+    for targets, threshold in attacker.keywords.anti:
+        if targets and all(t.startswith("non-") for t in targets):
+            matched = not any(t[4:] in have for t in targets)
+        else:
+            matched = any(t in have for t in targets)
+        if matched and (best is None or threshold < best):
+            best = threshold
+    if options.anti_active and options.anti_threshold is not None:
+        best = options.anti_threshold if best is None else min(best, options.anti_threshold)
+    return best
+
+
 def _hit_outcome(raw: int, skill: int, modifier: int) -> tuple[bool, bool]:
     """(success, crit) for a hit die: unmodified 1 always fails, unmodified 6
     always crits (and hits); otherwise the modified roll must meet the skill."""
@@ -111,16 +133,14 @@ def _hit_outcome(raw: int, skill: int, modifier: int) -> tuple[bool, bool]:
     return (raw + modifier) >= skill, False
 
 
-def _wound_outcome(
-    raw: int, target: int, modifier: int, anti_active: bool, anti_threshold: int | None
-) -> tuple[bool, bool]:
+def _wound_outcome(raw: int, target: int, modifier: int, anti_threshold: int | None) -> tuple[bool, bool]:
     """(success, crit) for a wound die. Same 1-always-fails / 6-always-crits
     rule as hits, plus Anti-X: an unmodified roll >= the anti threshold is also
     a critical wound."""
 
     if raw == 1:
         return False, False
-    crit = raw == 6 or (anti_active and anti_threshold is not None and raw >= anti_threshold)
+    crit = raw == 6 or (anti_threshold is not None and raw >= anti_threshold)
     if crit:
         return True, True
     return (raw + modifier) >= target, False
@@ -165,26 +185,27 @@ def _resolve_hits(attacker: AttackerProfile, options: AttackOptions, num_attacks
         return [False] * num_attacks
 
     skill = attacker.skill if attacker.skill is not None else 7  # no BS/WS -> can never hit
-    hit_mod = _clamp_modifier(options.hit_modifier)
+    hit_mod = _clamp_modifier(
+        options.hit_modifier
+        + (1 if kw.heavy and options.stationary else 0)
+        - (1 if kw.indirect_fire and options.not_visible else 0)
+    )
 
     # Effective crit-triggered keywords = the weapon's own plus any granted by an ability
     # (e.g. Bladestorm grants [Sustained Hits 1]).
-    sustained = (kw.sustained_hits or 0) + options.grant_sustained_hits
+    sustained = kw.sustained_hits
     lethal = kw.lethal_hits or options.grant_lethal_hits
     devastating = kw.devastating_wounds or options.grant_devastating_wounds
 
     def record_hit(crit: bool) -> None:
-        # Lethal + Devastating interaction: if a weapon has BOTH keywords,
-        # auto-wounding a Lethal crit would skip the wound roll entirely and so
-        # could never roll a *critical* wound -- meaning Devastating Wounds
-        # could never trigger. Since rolling to wound is strictly better then,
-        # we only take the Lethal auto-wound shortcut when Devastating Wounds is
-        # NOT also present; otherwise the crit hit rolls to wound like any hit.
-        events.append(crit and lethal and not devastating)
-        if crit and sustained:
+        # Lethal Hits is mandatory: a crit hit auto-wounds (no wound roll), so it is never a
+        # critical wound and can't trigger Devastating Wounds even if the weapon has both.
+        events.append(crit and lethal)
+        if crit:
             # Sustained extra hits are themselves normal hits (not crits) -- they
             # proceed to the wound roll but can't re-trigger Lethal/Sustained.
-            events.extend([False] * sustained)
+            extra = (sustained.roll(rng) if sustained else 0) + options.grant_sustained_hits
+            events.extend([False] * extra)
 
     events: list[bool] = []
     eligible_failures = 0  # failed dice NOT already re-rolled by policy -- candidates for the single re-roll
@@ -232,7 +253,7 @@ def _resolve_wounds(
     # Twin-linked means "always re-roll failed wound rolls" -- it overrides a
     # weaker/absent reroll_wounds choice but never conflicts with "all".
     reroll_policy: RerollPolicy = "all" if kw.twin_linked else options.reroll_wounds
-    anti_threshold = options.anti_threshold if options.anti_threshold is not None else kw.anti_threshold
+    anti_threshold = _effective_anti_threshold(attacker, defender, options)
     devastating = kw.devastating_wounds or options.grant_devastating_wounds  # incl. an ability-granted keyword
 
     events: list[_WoundEvent] = []
@@ -240,18 +261,16 @@ def _resolve_wounds(
     for guaranteed_wound in hit_events:
         if guaranteed_wound:
             # Lethal Hits auto-wound: skips the wound roll entirely, so it
-            # can't be a critical wound and can't trigger Devastating Wounds
-            # (see the comment in _resolve_hits for why this case only
-            # happens when Devastating Wounds isn't also on the weapon).
+            # can't be a critical wound and can't trigger Devastating Wounds.
             events.append(_WoundEvent(devastating=False))
             continue
 
         raw = rng.randint(1, 6)
-        success, crit = _wound_outcome(raw, target, wound_mod, options.anti_active, anti_threshold)
+        success, crit = _wound_outcome(raw, target, wound_mod, anti_threshold)
         rerolled = False
         if _reroll_applies(raw, success, reroll_policy):
             raw = rng.randint(1, 6)
-            success, crit = _wound_outcome(raw, target, wound_mod, options.anti_active, anti_threshold)
+            success, crit = _wound_outcome(raw, target, wound_mod, anti_threshold)
             rerolled = True
         if success:
             events.append(_WoundEvent(devastating=crit and devastating))
@@ -262,7 +281,7 @@ def _resolve_wounds(
     # matching note in _resolve_hits).
     if options.single_reroll_wound and eligible_failures > 0:
         raw = rng.randint(1, 6)
-        success, crit = _wound_outcome(raw, target, wound_mod, options.anti_active, anti_threshold)
+        success, crit = _wound_outcome(raw, target, wound_mod, anti_threshold)
         if success:
             events.append(_WoundEvent(devastating=crit and devastating))
 
@@ -271,7 +290,8 @@ def _resolve_wounds(
 
 def _armour_save_needed(attacker: AttackerProfile, defender: DefenderProfile, options: AttackOptions) -> int:
     needed = defender.save - attacker.ap  # AP is stored negative, so this raises the number needed
-    if options.cover and not attacker.keywords.ignores_cover:
+    cover = options.cover or (attacker.keywords.indirect_fire and options.not_visible)
+    if cover and not attacker.keywords.ignores_cover:
         # +1 to the armour save. Simplified per task spec: capped so it can
         # never improve past a 2+, rather than implementing the full caveat
         # ("no cover bonus against AP 0 if already 3+ or better").
@@ -336,7 +356,7 @@ def resolve_into_state(
     # 1. Number of attacks.
     num_attacks = attacker.attacks.roll(rng)
     if kw.rapid_fire and options.half_range:
-        num_attacks += kw.rapid_fire
+        num_attacks += kw.rapid_fire.roll(rng)  # rolled once per weapon volley, not per attack
     if kw.blast:
         num_attacks += defender.model_count // 5
 
@@ -349,7 +369,7 @@ def resolve_into_state(
     # 4 & 5. Saves + damage allocation.
     armour_needed = _armour_save_needed(attacker, defender, options)
     invuln_needed = defender.invuln
-    melta_bonus = kw.melta if (kw.melta and options.half_range) else 0
+    melta = kw.melta if (kw.melta and options.half_range) else None
 
     for wound in wound_events:
         if state.wiped:
@@ -369,7 +389,11 @@ def resolve_into_state(
         if not unsaved:
             continue
 
-        damage = _roll_damage(attacker.damage, options.reroll_damage, rng) + melta_bonus
+        damage = _roll_damage(attacker.damage, options.reroll_damage, rng) + (melta.roll(rng) if melta else 0)
+        if damage > 0:
+            if options.halve_damage:
+                damage = (damage + 1) // 2
+            damage = max(1, damage - options.damage_reduction)  # reduction can't take an attack below 1 damage
         _allocate_damage(state, damage, options.fnp, rng)
 
 

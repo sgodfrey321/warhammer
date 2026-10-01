@@ -5,26 +5,19 @@ from datetime import datetime, timezone
 from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 from sqlmodel import Session, select
 
-from .. import battlescribe_import, phases
+from .. import battlescribe_import, cascade, phases
 from ..army_rule_handlers import bootstrap_army_rules
 from ..db import get_session
 from ..models import (
-    ActiveEffect,
-    BattleSession,
     DeclaredStatePool,
-    DeclaredStatePoolEntry,
-    DeclaredStatePoolState,
-    PlayerState,
     Roster,
-    SynergyAcknowledgment,
     Unit,
     UnitAttachment,
     UnitDefinition,
     UnitSynergy,
-    UnitTurnState,
 )
 
 router = APIRouter(prefix="/rosters", tags=["rosters"])
@@ -39,6 +32,7 @@ class UnitOut(BaseModel):
     loadout: list[dict]
     model_groups: list[dict]
     buffs: list[dict]
+    points: int  # real cost of this entry -- see _effective_points
     unit_definition: UnitDefinition
 
 
@@ -62,7 +56,7 @@ class RosterUpdate(BaseModel):
 
 class UnitCreate(BaseModel):
     unit_definition_id: str
-    quantity: int = 1
+    quantity: int = Field(default=1, ge=1)
     notes: Optional[str] = None
 
 
@@ -73,6 +67,27 @@ class UnitUpdate(BaseModel):
     # Lets a hand-added unit declare its per-model-type counts (roster import is the only other
     # source). Each entry is {"name", "count"}; the update handler persists it like any field.
     model_groups: Optional[list[dict]] = None
+
+    @field_validator("quantity")
+    @classmethod
+    def _quantity_positive(cls, v: Optional[int]) -> Optional[int]:
+        # An explicit null would be setattr'd onto a non-nullable column.
+        if v is None or v < 1:
+            raise ValueError("quantity must be >= 1")
+        return v
+
+    @field_validator("model_groups")
+    @classmethod
+    def _model_groups_valid(cls, v: Optional[list[dict]]) -> Optional[list[dict]]:
+        if v is None:
+            return v
+        for g in v:
+            name, count = g.get("name"), g.get("count")
+            if not isinstance(name, str) or not name.strip():
+                raise ValueError("model_groups entries need a non-empty name")
+            if isinstance(count, bool) or not isinstance(count, int) or count < 0:
+                raise ValueError("model_groups entries need an integer count >= 0")
+        return v
 
 
 class SynergyCreate(BaseModel):
@@ -101,11 +116,43 @@ class RosterImportResult(BaseModel):
     attachments_created: int
 
 
+def _require_roster_units(session: Session, roster_id: int, *unit_ids: int) -> None:
+    for unit_id in unit_ids:
+        unit = session.get(Unit, unit_id)
+        if unit is None or unit.roster_id != roster_id:
+            raise HTTPException(status_code=404, detail=f"Unit {unit_id} not found on this roster")
+
+
 def _get_roster_or_404(roster_id: int, session: Session) -> Roster:
     roster = session.get(Roster, roster_id)
     if roster is None:
         raise HTTPException(status_code=404, detail="Roster not found")
     return roster
+
+
+def _resolve_definitions(
+    entries: list[battlescribe_import.ParsedEntry], faction_hint: Optional[str], session: Session
+) -> list[Optional[UnitDefinition]]:
+    """Maps each parsed entry to a UnitDefinition by source_entry_id. Several factions share
+    some catalogue entries (same source_entry_id, different UnitDefinition), so ambiguous
+    matches prefer the export's own faction (catalogueName), then the majority faction of the
+    unambiguous matches, else the first."""
+    candidates = [
+        session.exec(select(UnitDefinition).where(UnitDefinition.source_entry_id == e.unit_definition_id)).all()
+        or [d for d in [session.get(UnitDefinition, e.unit_definition_id)] if d is not None]
+        for e in entries
+    ]
+    majority = Counter(c[0].faction for c in candidates if len(c) == 1).most_common(1)
+    preferred = [f.casefold() for f in ((faction_hint,) if faction_hint else ()) + ((majority[0][0],) if majority else ())]
+    resolved: list[Optional[UnitDefinition]] = []
+    for cands in candidates:
+        pick = None
+        for faction in preferred:
+            pick = next((d for d in cands if d.faction.casefold() == faction), None)
+            if pick:
+                break
+        resolved.append(pick or (cands[0] if cands else None))
+    return resolved
 
 
 @router.get("", response_model=list[Roster])
@@ -133,8 +180,7 @@ def import_roster(payload: dict[str, Any], session: Session = Depends(get_sessio
 
     resolved: list[tuple[battlescribe_import.ParsedEntry, UnitDefinition]] = []
     unmatched: list[str] = []
-    for entry in parsed.entries:
-        definition = session.get(UnitDefinition, entry.unit_definition_id)
+    for entry, definition in zip(parsed.entries, _resolve_definitions(parsed.entries, parsed.faction_hint, session)):
         if definition is None:
             unmatched.append(entry.name)
         else:
@@ -164,6 +210,7 @@ def import_roster(payload: dict[str, Any], session: Session = Depends(get_sessio
             roster_id=roster.id,
             unit_definition_id=definition.id,
             quantity=1,
+            points=entry.points,
             loadout=entry.loadout,
             model_groups=entry.model_groups,
         )
@@ -211,35 +258,23 @@ def update_roster(roster_id: int, payload: RosterUpdate, session: Session = Depe
 
 @router.delete("/{roster_id}", status_code=204)
 def delete_roster(roster_id: int, session: Session = Depends(get_session)):
-    """Cascades by hand -- db.py never turns on SQLite foreign-key enforcement, so without
-    this every unit/attachment/synergy/pool, and every battle (and everything a battle owns:
-    player state, effects, turn states, pool runtime state, synergy acknowledgments) would be
-    silently orphaned forever instead of erroring or being cleaned up."""
-    roster = _get_roster_or_404(roster_id, session)
-
-    battle_ids = [
-        b.id for b in session.exec(select(BattleSession).where(BattleSession.roster_id == roster_id)).all()
-    ]
-    if battle_ids:
-        for model in (
-            PlayerState,
-            ActiveEffect,
-            UnitTurnState,
-            DeclaredStatePoolState,
-            DeclaredStatePoolEntry,
-            SynergyAcknowledgment,
-        ):
-            for row in session.exec(select(model).where(model.battle_session_id.in_(battle_ids))).all():
-                session.delete(row)
-        for battle in session.exec(select(BattleSession).where(BattleSession.roster_id == roster_id)).all():
-            session.delete(battle)
-
-    for model in (UnitAttachment, UnitSynergy, DeclaredStatePool, Unit):
-        for row in session.exec(select(model).where(model.roster_id == roster_id)).all():
-            session.delete(row)
-
-    session.delete(roster)
+    """Cascades by hand (see cascade.py) -- db.py never turns on SQLite foreign-key enforcement."""
+    _get_roster_or_404(roster_id, session)
+    cascade.delete_roster(session, roster_id)
     session.commit()
+
+
+def _effective_points(unit: Unit, definition: UnitDefinition) -> int:
+    """Unit.points (the real cost, set on import) wins; else the pricing tier matching the
+    declared model count; else the base (first-tier) cost."""
+    if unit.points is not None:
+        return unit.points
+    if unit.model_groups:
+        models = sum(g.get("count") or 0 for g in unit.model_groups)
+        for tier in definition.points_tiers or []:
+            if tier.get("models") == models:
+                return tier["points"]
+    return definition.points_cost
 
 
 def _to_unit_out(unit: Unit, session: Session) -> UnitOut:
@@ -253,6 +288,7 @@ def _to_unit_out(unit: Unit, session: Session) -> UnitOut:
         loadout=unit.loadout,
         model_groups=unit.model_groups,
         buffs=unit.buffs,
+        points=_effective_points(unit, definition),
         unit_definition=definition,
     )
 
@@ -267,6 +303,8 @@ def list_units(roster_id: int, session: Session = Depends(get_session)):
 @router.post("/{roster_id}/units", response_model=UnitOut)
 def add_unit(roster_id: int, payload: UnitCreate, session: Session = Depends(get_session)):
     _get_roster_or_404(roster_id, session)
+    if session.get(UnitDefinition, payload.unit_definition_id) is None:
+        raise HTTPException(status_code=404, detail="Unit definition not found")
     unit = Unit(roster_id=roster_id, **payload.model_dump())
     session.add(unit)
     session.commit()
@@ -292,14 +330,7 @@ def delete_unit(roster_id: int, unit_id: int, session: Session = Depends(get_ses
     unit = session.get(Unit, unit_id)
     if unit is None or unit.roster_id != roster_id:
         raise HTTPException(status_code=404, detail="Unit not found on this roster")
-    for attachment in session.exec(
-        select(UnitAttachment).where(
-            UnitAttachment.roster_id == roster_id,
-            (UnitAttachment.leader_unit_id == unit_id) | (UnitAttachment.led_unit_id == unit_id),
-        )
-    ).all():
-        session.delete(attachment)
-    session.delete(unit)
+    cascade.delete_units(session, [unit_id])
     session.commit()
 
 
@@ -312,6 +343,7 @@ def list_synergies(roster_id: int, session: Session = Depends(get_session)):
 @router.post("/{roster_id}/synergies", response_model=UnitSynergy)
 def add_synergy(roster_id: int, payload: SynergyCreate, session: Session = Depends(get_session)):
     _get_roster_or_404(roster_id, session)
+    _require_roster_units(session, roster_id, payload.source_unit_id, payload.target_unit_id)
     synergy = UnitSynergy(roster_id=roster_id, **payload.model_dump())
     session.add(synergy)
     session.commit()
@@ -324,7 +356,7 @@ def delete_synergy(roster_id: int, synergy_id: int, session: Session = Depends(g
     synergy = session.get(UnitSynergy, synergy_id)
     if synergy is None or synergy.roster_id != roster_id:
         raise HTTPException(status_code=404, detail="Synergy not found on this roster")
-    session.delete(synergy)
+    cascade.delete_synergies(session, [synergy_id])
     session.commit()
 
 
@@ -337,6 +369,9 @@ def list_attachments(roster_id: int, session: Session = Depends(get_session)):
 @router.post("/{roster_id}/attachments", response_model=UnitAttachment)
 def add_attachment(roster_id: int, payload: AttachmentCreate, session: Session = Depends(get_session)):
     _get_roster_or_404(roster_id, session)
+    if payload.leader_unit_id == payload.led_unit_id:
+        raise HTTPException(status_code=422, detail="A unit cannot lead itself")
+    _require_roster_units(session, roster_id, payload.leader_unit_id, payload.led_unit_id)
     attachment = UnitAttachment(roster_id=roster_id, **payload.model_dump())
     session.add(attachment)
     session.commit()
@@ -376,5 +411,5 @@ def delete_pool(roster_id: int, pool_id: int, session: Session = Depends(get_ses
     pool = session.get(DeclaredStatePool, pool_id)
     if pool is None or pool.roster_id != roster_id:
         raise HTTPException(status_code=404, detail="Pool not found on this roster")
-    session.delete(pool)
+    cascade.delete_pools(session, [pool_id])
     session.commit()

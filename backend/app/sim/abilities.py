@@ -65,6 +65,16 @@ class DetectedEffect:
     requires_target_keywords: list[str] = field(default_factory=list)
 
 
+_SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+")
+_NEGATION_RE = re.compile(r"\b(cannot|can't|can not|unable to|does not|doesn't|do not|don't|lose|loses|never)\b")
+
+
+def _negated(sentence: str, pos: int) -> bool:
+    """True if a negation precedes `pos` within the sentence ("cannot benefit from Lethal Hits")."""
+
+    return bool(_NEGATION_RE.search(sentence[:pos].replace("\u2019", "'")))
+
+
 def _condition_of(text: str) -> str:
     """Pulls a leading 'While ...,' condition clause out of the ability text, so
     the toggle can be labelled with the circumstance the player must confirm."""
@@ -122,17 +132,15 @@ def extract_effects(abilities: list[dict]) -> list[DetectedEffect]:
         start = len(effects)  # effects added below all share this ability's target-keyword gating
 
         # --- Hit roll modifier ---
+        # The patch is merged into the ATTACKER's options, so "add 1" is always +1 and "subtract 1"
+        # always -1, whichever side the ability is on (+1 to be hit is bad for the defender, but it
+        # is still the attacker's +1).
         if re.search(r"add 1 to (the |your |their )?hit roll", low):
             side = _side_for_roll(low)
-            # "add 1 to the hit roll" targeting this unit means the ENEMY hits it
-            # better -- that's bad for the defender, so flip the sign for that side.
-            value = 1 if side == "attacker" else -1
             effects.append(
-                DetectedEffect(name, f"{'+' if value > 0 else ''}{value} to Hit", condition, side, {"hit_modifier": value})
+                DetectedEffect(name, "+1 to Hit (against this unit)" if side == "defender" else "+1 to Hit", condition, side, {"hit_modifier": 1})
             )
         if re.search(r"subtract 1 from (the |your |their )?hit roll", low):
-            # "subtract 1 from hit rolls that target this unit" is a DEFENDER buff
-            # (attacks against it are worse); otherwise it's a self-penalty (rare).
             side = _side_for_roll(low)
             effects.append(
                 DetectedEffect(name, "-1 to Hit (against this unit)" if side == "defender" else "-1 to Hit", condition, side, {"hit_modifier": -1})
@@ -141,9 +149,8 @@ def extract_effects(abilities: list[dict]) -> list[DetectedEffect]:
         # --- Wound roll modifier ---
         if re.search(r"add 1 to (the |your |their )?wound roll", low):
             side = _side_for_roll(low)
-            value = 1 if side == "attacker" else -1
             effects.append(
-                DetectedEffect(name, f"{'+' if value > 0 else ''}{value} to Wound", condition, side, {"wound_modifier": value})
+                DetectedEffect(name, "+1 to Wound (against this unit)" if side == "defender" else "+1 to Wound", condition, side, {"wound_modifier": 1})
             )
         if re.search(r"subtract 1 from (the |your |their )?wound roll", low):
             side = _side_for_roll(low)
@@ -151,37 +158,56 @@ def extract_effects(abilities: list[dict]) -> list[DetectedEffect]:
                 DetectedEffect(name, "-1 to Wound (against this unit)" if side == "defender" else "-1 to Wound", condition, side, {"wound_modifier": -1})
             )
 
-        # --- Re-rolls ('one' -> a single-die re-roll flag; 'ones'/'all' -> a policy) ---
-        if re.search(r"re-?roll [^.]*hit roll", low):
-            kind = _reroll_kind(low, "hit")
-            if kind == "one":
-                effects.append(DetectedEffect(name, "Re-roll one failed Hit", condition, "attacker", {"single_reroll_hit": True}))
-            else:
-                effects.append(
-                    DetectedEffect(name, f"Re-roll {'1s to' if kind == 'ones' else 'all'} Hit", condition, "attacker", {"reroll_hits": kind})
-                )
-        if re.search(r"re-?roll [^.]*wound roll", low):
-            kind = _reroll_kind(low, "wound")
-            if kind == "one":
-                effects.append(DetectedEffect(name, "Re-roll one failed Wound", condition, "attacker", {"single_reroll_wound": True}))
-            else:
-                effects.append(
-                    DetectedEffect(name, f"Re-roll {'1s to' if kind == 'ones' else 'all'} Wound", condition, "attacker", {"reroll_wounds": kind})
-                )
+        # --- Damage reduction (always defender-side) ---
+        m_dr = re.search(r"subtract (\d) from the damage characteristic", low) or re.search(
+            r"reduce the damage characteristic[^.]*? by (\d)", low
+        )
+        if m_dr:
+            n = int(m_dr.group(1))
+            effects.append(DetectedEffect(name, f"-{n} Damage (against this unit)", condition, "defender", {"damage_reduction": n}))
+        if re.search(r"halve the damage characteristic", low):
+            effects.append(DetectedEffect(name, "Halve Damage (against this unit)", condition, "defender", {"halve_damage": True}))
 
-        # --- Re-roll the Damage roll (variable-damage weapons) ---
-        if re.search(r"re-?roll [^.]*damage roll", low):
-            effects.append(DetectedEffect(name, "Re-roll Damage", condition, "attacker", {"reroll_damage": True}))
+        # --- Re-rolls and granted keywords: per sentence, so a negation ("cannot benefit from Lethal
+        # Hits") or a defender-side clause in one sentence doesn't leak into the grant detection ---
+        for sentence in _SENTENCE_SPLIT.split(low):
+            defender_sentence = any(h in sentence for h in _DEFENDER_HINTS)
 
-        # --- Keywords an ability GRANTS to the unit's weapons (e.g. Bladestorm -> Sustained Hits 1) ---
-        m_sus = re.search(r"sustained hits (\d+)", low)
-        if m_sus:
-            n = int(m_sus.group(1))
-            effects.append(DetectedEffect(name, f"Sustained Hits {n}", condition, "attacker", {"grant_sustained_hits": n}))
-        if "lethal hits" in low:
-            effects.append(DetectedEffect(name, "Lethal Hits", condition, "attacker", {"grant_lethal_hits": True}))
-        if "devastating wounds" in low:
-            effects.append(DetectedEffect(name, "Devastating Wounds", condition, "attacker", {"grant_devastating_wounds": True}))
+            # 'one' -> a single-die re-roll flag; 'ones'/'all' -> a policy
+            m_rr = re.search(r"re-?roll [^.]*hit roll", sentence)
+            if m_rr and not _negated(sentence, m_rr.start()):
+                kind = _reroll_kind(sentence, "hit")
+                if kind == "one":
+                    effects.append(DetectedEffect(name, "Re-roll one failed Hit", condition, "attacker", {"single_reroll_hit": True}))
+                else:
+                    effects.append(
+                        DetectedEffect(name, f"Re-roll {'1s to' if kind == 'ones' else 'all'} Hit", condition, "attacker", {"reroll_hits": kind})
+                    )
+            m_rr = re.search(r"re-?roll [^.]*wound roll", sentence)
+            if m_rr and not _negated(sentence, m_rr.start()):
+                kind = _reroll_kind(sentence, "wound")
+                if kind == "one":
+                    effects.append(DetectedEffect(name, "Re-roll one failed Wound", condition, "attacker", {"single_reroll_wound": True}))
+                else:
+                    effects.append(
+                        DetectedEffect(name, f"Re-roll {'1s to' if kind == 'ones' else 'all'} Wound", condition, "attacker", {"reroll_wounds": kind})
+                    )
+            m_rr = re.search(r"re-?roll [^.]*damage roll", sentence)
+            if m_rr and not _negated(sentence, m_rr.start()):
+                effects.append(DetectedEffect(name, "Re-roll Damage", condition, "attacker", {"reroll_damage": True}))
+
+            if defender_sentence:
+                continue  # "attacks that target this unit ... Lethal Hits" is not a grant to this unit
+            m_sus = re.search(r"sustained hits (\d+)", sentence)
+            if m_sus and not _negated(sentence, m_sus.start()):
+                n = int(m_sus.group(1))
+                effects.append(DetectedEffect(name, f"Sustained Hits {n}", condition, "attacker", {"grant_sustained_hits": n}))
+            i = sentence.find("lethal hits")
+            if i >= 0 and not _negated(sentence, i):
+                effects.append(DetectedEffect(name, "Lethal Hits", condition, "attacker", {"grant_lethal_hits": True}))
+            i = sentence.find("devastating wounds")
+            if i >= 0 and not _negated(sentence, i):
+                effects.append(DetectedEffect(name, "Devastating Wounds", condition, "attacker", {"grant_devastating_wounds": True}))
 
         # --- Feel No Pain (always a defender-side ability) ---
         m = re.search(r"feel no pain (\d)\+", low)

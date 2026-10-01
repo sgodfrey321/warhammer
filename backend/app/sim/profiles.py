@@ -8,6 +8,7 @@ or a missing key).
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 
 from .dice import DiceNotation, parse_dice
@@ -18,12 +19,19 @@ def _clean(value: str | None) -> str:
     return (value or "").strip()
 
 
-def _parse_skill(value: str | None) -> int | None:
-    """"3+" -> 3. Missing/"-"/"N/A" (e.g. a Torrent weapon with no BS) -> None."""
+_SKILL_RE = re.compile(r"(\d)\s*\+")
 
-    text = _clean(value).rstrip("+")
+
+def _parse_skill(value: str | None) -> int | None:
+    """"3+" -> 3, also tolerating annotated values ("4+*", "5+ (Ranged)", "4+* / 5+" -> first).
+    Missing/"-"/"N/A" (e.g. a Torrent weapon with no BS) -> None."""
+
+    text = _clean(value)
     if text in ("", "-", "N/A"):
         return None
+    m = _SKILL_RE.search(text)
+    if m:
+        return int(m.group(1))
     try:
         return int(text)
     except ValueError:
@@ -82,9 +90,10 @@ class DefenderProfile:
     invuln: int | None  # e.g. 4 for "4+"; None if the unit has no invulnerable save
     wounds_per_model: int
     model_count: int
+    defender_keywords: tuple[str, ...] = ()  # lowercased; what Anti-X is matched against
 
     @classmethod
-    def from_stats(cls, stats: dict, model_count: int) -> "DefenderProfile":
+    def from_stats(cls, stats: dict, model_count: int, keywords: list[str] | tuple[str, ...] | None = None) -> "DefenderProfile":
         save = _parse_skill(stats.get("Sv"))
         return cls(
             toughness=_parse_int(stats.get("T"), default=1),
@@ -92,4 +101,5 @@ class DefenderProfile:
             invuln=_parse_skill(stats.get("InSv")),
             wounds_per_model=_parse_int(stats.get("W"), default=1),
             model_count=max(1, model_count),
+            defender_keywords=tuple(" ".join(k.lower().split()) for k in (keywords or ()) if k.strip()),
         )

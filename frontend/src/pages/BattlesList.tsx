@@ -1,16 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api";
+import { capitalize } from "../format";
 import type { BattleOut, Roster } from "../types";
-
-function capitalize(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
 
 export function BattlesList() {
   const [rosters, setRosters] = useState<Roster[]>([]);
   const [battles, setBattles] = useState<BattleOut[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<number | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,6 +18,16 @@ export function BattlesList() {
       .then((b) => setBattles([...b].sort((a, c) => c.started_at.localeCompare(a.started_at))))
       .catch((e) => setError(String(e)));
   }, []);
+
+  async function handleDelete(id: number) {
+    try {
+      await api.deleteBattle(id);
+      setBattles((prev) => prev.filter((b) => b.id !== id));
+      setConfirmingDeleteId(null);
+    } catch (e) {
+      setError(String(e));
+    }
+  }
 
   function rosterName(rosterId: number | null): string {
     return rosters.find((r) => r.id === rosterId)?.name ?? `Roster #${rosterId ?? "?"}`;
@@ -46,6 +54,22 @@ export function BattlesList() {
                 vs {b.opponent_name || "Opponent"} — Round {b.battle_round}, {capitalize(b.current_phase)} phase — You{" "}
                 {you} - {opp} Opponent
               </span>
+              {confirmingDeleteId === b.id ? (
+                <span className="delete-confirm-inline">
+                  {" "}
+                  Delete this battle? This can't be undone.{" "}
+                  <button type="button" className="link-button" onClick={() => handleDelete(b.id)}>
+                    Confirm
+                  </button>
+                  <button type="button" className="link-button" onClick={() => setConfirmingDeleteId(null)}>
+                    Cancel
+                  </button>
+                </span>
+              ) : (
+                <button type="button" className="link-button" onClick={() => setConfirmingDeleteId(b.id)}>
+                  delete
+                </button>
+              )}
             </li>
           );
         })}
