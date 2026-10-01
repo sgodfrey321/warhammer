@@ -10,6 +10,7 @@ from sqlmodel import Session, select
 
 from .. import battlescribe_import, phases
 from ..army_rule_handlers import bootstrap_army_rules
+from ..auth import get_current_user
 from ..db import get_session
 from ..models import (
     ActiveEffect,
@@ -25,6 +26,7 @@ from ..models import (
     UnitDefinition,
     UnitSynergy,
     UnitTurnState,
+    User,
 )
 
 router = APIRouter(prefix="/rosters", tags=["rosters"])
@@ -101,21 +103,25 @@ class RosterImportResult(BaseModel):
     attachments_created: int
 
 
-def _get_roster_or_404(roster_id: int, session: Session) -> Roster:
+def _get_owned_roster_or_404(roster_id: int, user: User, session: Session) -> Roster:
+    """Fetch a roster, 404ing if it doesn't exist OR isn't owned by `user`. Same 404 (not 403)
+    either way so a roster's existence isn't leaked to non-owners."""
     roster = session.get(Roster, roster_id)
-    if roster is None:
+    if roster is None or roster.user_id != user.id:
         raise HTTPException(status_code=404, detail="Roster not found")
     return roster
 
 
 @router.get("", response_model=list[Roster])
-def list_rosters(session: Session = Depends(get_session)):
-    return session.exec(select(Roster)).all()
+def list_rosters(user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    return session.exec(select(Roster).where(Roster.user_id == user.id)).all()
 
 
 @router.post("", response_model=Roster)
-def create_roster(payload: RosterCreate, session: Session = Depends(get_session)):
-    roster = Roster(**payload.model_dump())
+def create_roster(
+    payload: RosterCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)
+):
+    roster = Roster(user_id=user.id, **payload.model_dump())
     session.add(roster)
     session.commit()
     session.refresh(roster)
@@ -123,7 +129,9 @@ def create_roster(payload: RosterCreate, session: Session = Depends(get_session)
 
 
 @router.post("/import", response_model=RosterImportResult)
-def import_roster(payload: dict[str, Any], session: Session = Depends(get_session)):
+def import_roster(
+    payload: dict[str, Any], user: User = Depends(get_current_user), session: Session = Depends(get_session)
+):
     """Imports a BattleScribe/NewRecruit roster export JSON, creating a Roster and
     matching each unit selection against already-imported UnitDefinitions by id
     (see app/battlescribe_import.py). Units that don't match (e.g. a faction whose
@@ -147,6 +155,7 @@ def import_roster(payload: dict[str, Any], session: Session = Depends(get_sessio
     )
 
     roster = Roster(
+        user_id=user.id,
         name=parsed.name,
         faction=faction,
         battle_size=parsed.battle_size,
@@ -193,13 +202,20 @@ def import_roster(payload: dict[str, Any], session: Session = Depends(get_sessio
 
 
 @router.get("/{roster_id}", response_model=Roster)
-def get_roster(roster_id: int, session: Session = Depends(get_session)):
-    return _get_roster_or_404(roster_id, session)
+def get_roster(
+    roster_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)
+):
+    return _get_owned_roster_or_404(roster_id, user, session)
 
 
 @router.patch("/{roster_id}", response_model=Roster)
-def update_roster(roster_id: int, payload: RosterUpdate, session: Session = Depends(get_session)):
-    roster = _get_roster_or_404(roster_id, session)
+def update_roster(
+    roster_id: int,
+    payload: RosterUpdate,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    roster = _get_owned_roster_or_404(roster_id, user, session)
     for field, value in payload.model_dump(exclude_unset=True).items():
         setattr(roster, field, value)
     roster.updated_at = datetime.now(timezone.utc)
@@ -210,12 +226,14 @@ def update_roster(roster_id: int, payload: RosterUpdate, session: Session = Depe
 
 
 @router.delete("/{roster_id}", status_code=204)
-def delete_roster(roster_id: int, session: Session = Depends(get_session)):
+def delete_roster(
+    roster_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)
+):
     """Cascades by hand -- db.py never turns on SQLite foreign-key enforcement, so without
     this every unit/attachment/synergy/pool, and every battle (and everything a battle owns:
     player state, effects, turn states, pool runtime state, synergy acknowledgments) would be
     silently orphaned forever instead of erroring or being cleaned up."""
-    roster = _get_roster_or_404(roster_id, session)
+    roster = _get_owned_roster_or_404(roster_id, user, session)
 
     battle_ids = [
         b.id for b in session.exec(select(BattleSession).where(BattleSession.roster_id == roster_id)).all()
@@ -258,15 +276,22 @@ def _to_unit_out(unit: Unit, session: Session) -> UnitOut:
 
 
 @router.get("/{roster_id}/units", response_model=list[UnitOut])
-def list_units(roster_id: int, session: Session = Depends(get_session)):
-    _get_roster_or_404(roster_id, session)
+def list_units(
+    roster_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)
+):
+    _get_owned_roster_or_404(roster_id, user, session)
     units = session.exec(select(Unit).where(Unit.roster_id == roster_id)).all()
     return [_to_unit_out(u, session) for u in units]
 
 
 @router.post("/{roster_id}/units", response_model=UnitOut)
-def add_unit(roster_id: int, payload: UnitCreate, session: Session = Depends(get_session)):
-    _get_roster_or_404(roster_id, session)
+def add_unit(
+    roster_id: int,
+    payload: UnitCreate,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    _get_owned_roster_or_404(roster_id, user, session)
     unit = Unit(roster_id=roster_id, **payload.model_dump())
     session.add(unit)
     session.commit()
@@ -275,7 +300,14 @@ def add_unit(roster_id: int, payload: UnitCreate, session: Session = Depends(get
 
 
 @router.patch("/{roster_id}/units/{unit_id}", response_model=UnitOut)
-def update_unit(roster_id: int, unit_id: int, payload: UnitUpdate, session: Session = Depends(get_session)):
+def update_unit(
+    roster_id: int,
+    unit_id: int,
+    payload: UnitUpdate,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    _get_owned_roster_or_404(roster_id, user, session)
     unit = session.get(Unit, unit_id)
     if unit is None or unit.roster_id != roster_id:
         raise HTTPException(status_code=404, detail="Unit not found on this roster")
@@ -288,7 +320,13 @@ def update_unit(roster_id: int, unit_id: int, payload: UnitUpdate, session: Sess
 
 
 @router.delete("/{roster_id}/units/{unit_id}", status_code=204)
-def delete_unit(roster_id: int, unit_id: int, session: Session = Depends(get_session)):
+def delete_unit(
+    roster_id: int,
+    unit_id: int,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    _get_owned_roster_or_404(roster_id, user, session)
     unit = session.get(Unit, unit_id)
     if unit is None or unit.roster_id != roster_id:
         raise HTTPException(status_code=404, detail="Unit not found on this roster")
@@ -304,14 +342,21 @@ def delete_unit(roster_id: int, unit_id: int, session: Session = Depends(get_ses
 
 
 @router.get("/{roster_id}/synergies", response_model=list[UnitSynergy])
-def list_synergies(roster_id: int, session: Session = Depends(get_session)):
-    _get_roster_or_404(roster_id, session)
+def list_synergies(
+    roster_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)
+):
+    _get_owned_roster_or_404(roster_id, user, session)
     return session.exec(select(UnitSynergy).where(UnitSynergy.roster_id == roster_id)).all()
 
 
 @router.post("/{roster_id}/synergies", response_model=UnitSynergy)
-def add_synergy(roster_id: int, payload: SynergyCreate, session: Session = Depends(get_session)):
-    _get_roster_or_404(roster_id, session)
+def add_synergy(
+    roster_id: int,
+    payload: SynergyCreate,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    _get_owned_roster_or_404(roster_id, user, session)
     synergy = UnitSynergy(roster_id=roster_id, **payload.model_dump())
     session.add(synergy)
     session.commit()
@@ -320,7 +365,13 @@ def add_synergy(roster_id: int, payload: SynergyCreate, session: Session = Depen
 
 
 @router.delete("/{roster_id}/synergies/{synergy_id}", status_code=204)
-def delete_synergy(roster_id: int, synergy_id: int, session: Session = Depends(get_session)):
+def delete_synergy(
+    roster_id: int,
+    synergy_id: int,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    _get_owned_roster_or_404(roster_id, user, session)
     synergy = session.get(UnitSynergy, synergy_id)
     if synergy is None or synergy.roster_id != roster_id:
         raise HTTPException(status_code=404, detail="Synergy not found on this roster")
@@ -329,14 +380,21 @@ def delete_synergy(roster_id: int, synergy_id: int, session: Session = Depends(g
 
 
 @router.get("/{roster_id}/attachments", response_model=list[UnitAttachment])
-def list_attachments(roster_id: int, session: Session = Depends(get_session)):
-    _get_roster_or_404(roster_id, session)
+def list_attachments(
+    roster_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)
+):
+    _get_owned_roster_or_404(roster_id, user, session)
     return session.exec(select(UnitAttachment).where(UnitAttachment.roster_id == roster_id)).all()
 
 
 @router.post("/{roster_id}/attachments", response_model=UnitAttachment)
-def add_attachment(roster_id: int, payload: AttachmentCreate, session: Session = Depends(get_session)):
-    _get_roster_or_404(roster_id, session)
+def add_attachment(
+    roster_id: int,
+    payload: AttachmentCreate,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    _get_owned_roster_or_404(roster_id, user, session)
     attachment = UnitAttachment(roster_id=roster_id, **payload.model_dump())
     session.add(attachment)
     session.commit()
@@ -345,7 +403,13 @@ def add_attachment(roster_id: int, payload: AttachmentCreate, session: Session =
 
 
 @router.delete("/{roster_id}/attachments/{attachment_id}", status_code=204)
-def delete_attachment(roster_id: int, attachment_id: int, session: Session = Depends(get_session)):
+def delete_attachment(
+    roster_id: int,
+    attachment_id: int,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    _get_owned_roster_or_404(roster_id, user, session)
     attachment = session.get(UnitAttachment, attachment_id)
     if attachment is None or attachment.roster_id != roster_id:
         raise HTTPException(status_code=404, detail="Attachment not found on this roster")
@@ -354,14 +418,21 @@ def delete_attachment(roster_id: int, attachment_id: int, session: Session = Dep
 
 
 @router.get("/{roster_id}/pools", response_model=list[DeclaredStatePool])
-def list_pools(roster_id: int, session: Session = Depends(get_session)):
-    _get_roster_or_404(roster_id, session)
+def list_pools(
+    roster_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)
+):
+    _get_owned_roster_or_404(roster_id, user, session)
     return session.exec(select(DeclaredStatePool).where(DeclaredStatePool.roster_id == roster_id)).all()
 
 
 @router.post("/{roster_id}/pools", response_model=DeclaredStatePool)
-def add_pool(roster_id: int, payload: PoolCreate, session: Session = Depends(get_session)):
-    _get_roster_or_404(roster_id, session)
+def add_pool(
+    roster_id: int,
+    payload: PoolCreate,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    _get_owned_roster_or_404(roster_id, user, session)
     if payload.scope not in phases.POOL_SCOPES:
         raise HTTPException(status_code=422, detail=f"Unknown scope: {payload.scope}")
     pool = DeclaredStatePool(roster_id=roster_id, **payload.model_dump())
@@ -372,7 +443,13 @@ def add_pool(roster_id: int, payload: PoolCreate, session: Session = Depends(get
 
 
 @router.delete("/{roster_id}/pools/{pool_id}", status_code=204)
-def delete_pool(roster_id: int, pool_id: int, session: Session = Depends(get_session)):
+def delete_pool(
+    roster_id: int,
+    pool_id: int,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    _get_owned_roster_or_404(roster_id, user, session)
     pool = session.get(DeclaredStatePool, pool_id)
     if pool is None or pool.roster_id != roster_id:
         raise HTTPException(status_code=404, detail="Pool not found on this roster")

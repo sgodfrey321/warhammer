@@ -14,6 +14,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(name)s:%(message
 from .db import create_db_and_tables
 from .routers import (
     army_rules,
+    auth,
     battles,
     detachments,
     layouts,
@@ -44,6 +45,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router)
 app.include_router(rosters.router)
 app.include_router(unit_definitions.router)
 app.include_router(battles.router)

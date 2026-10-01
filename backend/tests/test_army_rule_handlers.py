@@ -40,7 +40,7 @@ def test_battle_focus_max_by_battle_size():
 
 
 def test_bootstrap_army_rules_creates_battle_focus_pool_for_asuryani(session):
-    roster = Roster(name="R", faction="Aeldari - Craftworlds", battle_size="Strike Force (2000 Point limit)")
+    roster = Roster(user_id=1, name="R", faction="Aeldari - Craftworlds", battle_size="Strike Force (2000 Point limit)")
     session.add(roster)
     session.commit()
     session.refresh(roster)
@@ -57,7 +57,7 @@ def test_bootstrap_army_rules_creates_battle_focus_pool_for_asuryani(session):
 
 
 def test_bootstrap_army_rules_noop_for_unregistered_faction(session):
-    roster = Roster(name="R", faction="Chaos - World Eaters", battle_size="Strike Force (2000 Point limit)")
+    roster = Roster(user_id=1, name="R", faction="Chaos - World Eaters", battle_size="Strike Force (2000 Point limit)")
     session.add(roster)
     session.commit()
     session.refresh(roster)
@@ -70,7 +70,7 @@ def test_bootstrap_army_rules_noop_for_unregistered_faction(session):
 
 
 def test_bootstrap_army_rules_does_not_duplicate_existing_pool(session):
-    roster = Roster(name="R", faction="Aeldari - Craftworlds", battle_size="Strike Force (2000 Point limit)")
+    roster = Roster(user_id=1, name="R", faction="Aeldari - Craftworlds", battle_size="Strike Force (2000 Point limit)")
     session.add(roster)
     session.commit()
     session.refresh(roster)
