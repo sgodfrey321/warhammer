@@ -11,6 +11,26 @@ def _utcnow() -> datetime:
     return datetime.now(timezone.utc)
 
 
+class User(SQLModel, table=True):
+    """An account. Password is stored only as a PBKDF2 hash (see app/auth.py); the plaintext
+    is never persisted. Rosters and battles are owned by a user (user_id FK below)."""
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    username: str = Field(unique=True, index=True)
+    password_hash: str
+    created_at: datetime = Field(default_factory=_utcnow)
+
+
+class AuthSession(SQLModel, table=True):
+    """An opaque bearer token -> user mapping, handed out on register/login and sent back as
+    `Authorization: Bearer <token>`. Deleted on logout; no expiry yet (POC). Kept server-side
+    (rather than a stateless JWT) so it stays revocable and needs no signing-secret story."""
+
+    token: str = Field(primary_key=True)
+    user_id: int = Field(foreign_key="user.id", index=True)
+    created_at: datetime = Field(default_factory=_utcnow)
+
+
 class UnitDefinition(SQLModel, table=True):
     """Reference data, populated only by scripts/import_unit_definitions.py -- never
     created or edited via the API. id = the indexer's source_entry_id."""
@@ -47,6 +67,9 @@ class UnitDefinition(SQLModel, table=True):
 
 class Roster(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
+    # Owning account. Required on new rosters (set from the authenticated user); the API only
+    # ever lists/returns a roster to its owner.
+    user_id: int = Field(foreign_key="user.id", index=True)
     name: str
     faction: str
     battle_size: Optional[str] = None
@@ -105,6 +128,8 @@ class UnitAttachment(SQLModel, table=True):
 
 class BattleSession(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
+    # Owning account (the player running the tracker), same ownership model as Roster.
+    user_id: int = Field(foreign_key="user.id", index=True)
     started_at: datetime = Field(default_factory=_utcnow)
     roster_id: Optional[int] = Field(default=None, foreign_key="roster.id")
     global_step: int = 0

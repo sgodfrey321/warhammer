@@ -1,5 +1,7 @@
 import type {
   ActiveEffectOut,
+  AuthResponse,
+  AuthUser,
   BattleOut,
   DeclaredStatePool,
   Disposition,
@@ -29,20 +31,92 @@ import type {
 // same host, just port 8000 instead of 5173.
 const BASE_URL = `http://${window.location.hostname}:8000`;
 
+// --- Auth token (bearer) -----------------------------------------------------
+// Persisted in localStorage so a reload stays logged in. Kept as a module-level value so
+// request() below can attach it without every call site threading it through.
+const TOKEN_KEY = "wh_token";
+let authToken: string | null = localStorage.getItem(TOKEN_KEY);
+// The app registers this so a 401 (expired/cleared token) can bounce the user back to login.
+let onUnauthorized: (() => void) | null = null;
+
+export function getToken(): string | null {
+  return authToken;
+}
+
+export function setToken(token: string | null): void {
+  authToken = token;
+  if (token) localStorage.setItem(TOKEN_KEY, token);
+  else localStorage.removeItem(TOKEN_KEY);
+}
+
+export function setUnauthorizedHandler(handler: (() => void) | null): void {
+  onUnauthorized = handler;
+}
+
+/** Carries the HTTP status so callers can react to it (e.g. 409 vs a server/network failure).
+ *  status is 0 when the request never reached the server (network error / CORS / server down). */
+export class ApiError extends Error {
+  status: number;
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const resp = await fetch(`${BASE_URL}${path}`, {
-    headers: { "Content-Type": "application/json" },
-    ...options,
-  });
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
+  let resp: Response;
+  try {
+    resp = await fetch(`${BASE_URL}${path}`, {
+      ...options,
+      headers: { ...headers, ...(options?.headers as Record<string, string> | undefined) },
+    });
+  } catch {
+    // Never reached the server: backend down, wrong host, or CORS blocked the request.
+    throw new ApiError(0, `${options?.method ?? "GET"} ${path} failed: could not reach the server`);
+  }
   if (!resp.ok) {
+    // A 401 means the stored token is gone/invalid -- drop it and let the app show login.
+    if (resp.status === 401) {
+      setToken(null);
+      onUnauthorized?.();
+    }
     const body = await resp.text();
-    throw new Error(`${options?.method ?? "GET"} ${path} failed: ${resp.status} ${body}`);
+    throw new ApiError(resp.status, `${options?.method ?? "GET"} ${path} failed: ${resp.status} ${body}`);
   }
   if (resp.status === 204) return undefined as T;
   return resp.json() as Promise<T>;
 }
 
 export const api = {
+  // --- Auth. register/login store the returned token; logout/me use the current one. ---
+  register: async (username: string, password: string) => {
+    const res = await request<AuthResponse>("/auth/register", {
+      method: "POST",
+      body: JSON.stringify({ username, password }),
+    });
+    setToken(res.token);
+    return res;
+  },
+  login: async (username: string, password: string) => {
+    const res = await request<AuthResponse>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ username, password }),
+    });
+    setToken(res.token);
+    return res;
+  },
+  logout: async () => {
+    try {
+      await request<void>("/auth/logout", { method: "POST" });
+    } finally {
+      setToken(null);
+    }
+  },
+  me: () => request<AuthUser>("/auth/me"),
+
   listRosters: () => request<Roster[]>("/rosters"),
   getRoster: (id: number) => request<Roster>(`/rosters/${id}`),
   createRoster: (payload: { name: string; faction: string; points_limit?: number | null }) =>

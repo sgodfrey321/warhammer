@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from sqlmodel import Session, select
 
 from .. import cascade, phases
+from ..auth import get_current_user
 from ..db import get_session
 from ..models import (
     ActiveEffect,
@@ -21,6 +22,7 @@ from ..models import (
     Unit,
     UnitSynergy,
     UnitTurnState,
+    User,
 )
 from ..reference_data import find_mission
 from . import primary_missions
@@ -159,9 +161,11 @@ class BattleOut(BaseModel):
     mission_scores: list[MissionScoreOut]
 
 
-def _get_battle_or_404(battle_id: int, session: Session) -> BattleSession:
+def _get_owned_battle_or_404(battle_id: int, user: User, session: Session) -> BattleSession:
+    """Fetch a battle, 404ing if missing OR not owned by `user` (same 404 either way, so a
+    battle's existence isn't leaked to non-owners)."""
     battle = session.get(BattleSession, battle_id)
-    if battle is None:
+    if battle is None or battle.user_id != user.id:
         raise HTTPException(status_code=404, detail="Battle not found")
     return battle
 
@@ -371,12 +375,12 @@ def _to_out(battle: BattleSession, session: Session) -> BattleOut:
 
 
 @router.get("", response_model=list[BattleOut])
-def list_battles(roster_id: Optional[int] = None, session: Session = Depends(get_session)):
+def list_battles(roster_id: Optional[int] = None, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
     """The database has always persisted every battle (SQLite, durable across restarts) --
     what was missing was any way to find one again without already knowing its id. Filter
     by roster_id for "which battles has this roster played" (a roster can have more than
     one, e.g. replaying the same list); omit it to list every battle."""
-    query = select(BattleSession)
+    query = select(BattleSession).where(BattleSession.user_id == user.id)
     if roster_id is not None:
         query = query.where(BattleSession.roster_id == roster_id)
     battles = session.exec(query.order_by(BattleSession.started_at.desc())).all()
@@ -384,10 +388,15 @@ def list_battles(roster_id: Optional[int] = None, session: Session = Depends(get
 
 
 @router.post("", response_model=BattleOut)
-def create_battle(payload: BattleCreate, session: Session = Depends(get_session)):
-    _require_roster(session, payload.roster_id, "Roster")
-    _require_roster(session, payload.opponent_roster_id, "Opponent roster")
+def create_battle(payload: BattleCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    # Both rosters must exist AND belong to the caller (same 404 either way).
+    for roster_id in (payload.roster_id, payload.opponent_roster_id):
+        if roster_id is not None:
+            roster = session.get(Roster, roster_id)
+            if roster is None or roster.user_id != user.id:
+                raise HTTPException(status_code=404, detail="Roster not found")
     battle = BattleSession(
+        user_id=user.id,
         roster_id=payload.roster_id,
         opponent_name=payload.opponent_name,
         opponent_roster_id=payload.opponent_roster_id,
@@ -407,17 +416,17 @@ def create_battle(payload: BattleCreate, session: Session = Depends(get_session)
 
 
 @router.get("/{battle_id}", response_model=BattleOut)
-def get_battle(battle_id: int, session: Session = Depends(get_session)):
-    battle = _get_battle_or_404(battle_id, session)
+def get_battle(battle_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    battle = _get_owned_battle_or_404(battle_id, user, session)
     return _to_out(battle, session)
 
 
 @router.patch("/{battle_id}/setup", response_model=BattleOut)
-def update_battle_setup(battle_id: int, payload: BattleSetupUpdate, session: Session = Depends(get_session)):
+def update_battle_setup(battle_id: int, payload: BattleSetupUpdate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
     """Setup is never a one-shot, create-only thing -- a battle can be started without a
     mission and have it filled in later, or a misclick during setup can be corrected, so this
     stays editable for the life of the battle the same way CP/VP already are."""
-    battle = _get_battle_or_404(battle_id, session)
+    battle = _get_owned_battle_or_404(battle_id, user, session)
     changes = payload.model_dump(exclude_unset=True)
     _require_roster(session, changes.get("opponent_roster_id"), "Opponent roster")
     mission_changed = any(
@@ -439,8 +448,8 @@ def update_battle_setup(battle_id: int, payload: BattleSetupUpdate, session: Ses
 
 
 @router.delete("/{battle_id}", status_code=204)
-def delete_battle(battle_id: int, session: Session = Depends(get_session)):
-    _get_battle_or_404(battle_id, session)
+def delete_battle(battle_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    _get_owned_battle_or_404(battle_id, user, session)
     cascade.delete_battles(session, [battle_id])
     session.commit()
 
@@ -465,8 +474,8 @@ def _get_or_create_pool_state(
 
 
 @router.patch("/{battle_id}/advance-phase", response_model=BattleOut)
-def advance_phase(battle_id: int, session: Session = Depends(get_session)):
-    battle = _get_battle_or_404(battle_id, session)
+def advance_phase(battle_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    battle = _get_owned_battle_or_404(battle_id, user, session)
     old_step = battle.global_step
     transition = phases.transition_type(old_step)
     battle.global_step = old_step + 1
@@ -506,7 +515,7 @@ def advance_phase(battle_id: int, session: Session = Depends(get_session)):
 
 
 @router.patch("/{battle_id}/retreat-phase", response_model=BattleOut)
-def retreat_phase(battle_id: int, session: Session = Depends(get_session)):
+def retreat_phase(battle_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
     """Steps global_step back by one, for correcting a misclick -- not a true undo.
 
     CP grants and DeclaredStatePool refill/clear that happened crossing that boundary
@@ -515,7 +524,7 @@ def retreat_phase(battle_id: int, session: Session = Depends(get_session)):
     (CP via the player fields, pools via spend/add) if a retreat leaves them looking
     wrong -- matches the app's "bookkeeping, not a rules engine" philosophy.
     """
-    battle = _get_battle_or_404(battle_id, session)
+    battle = _get_owned_battle_or_404(battle_id, user, session)
     if battle.global_step == 0:
         raise HTTPException(status_code=422, detail="Already at the start of the battle")
     battle.global_step -= 1
@@ -527,9 +536,9 @@ def retreat_phase(battle_id: int, session: Session = Depends(get_session)):
 
 @router.patch("/{battle_id}/players/{player_number}", response_model=PlayerState)
 def update_player_state(
-    battle_id: int, player_number: int, payload: PlayerStateUpdate, session: Session = Depends(get_session)
+    battle_id: int, player_number: int, payload: PlayerStateUpdate, user: User = Depends(get_current_user), session: Session = Depends(get_session)
 ):
-    battle = _get_battle_or_404(battle_id, session)
+    battle = _get_owned_battle_or_404(battle_id, user, session)
     player = session.exec(
         select(PlayerState).where(
             PlayerState.battle_session_id == battle_id,
@@ -548,9 +557,9 @@ def update_player_state(
 
 @router.patch("/{battle_id}/players/{player_number}/mission-score", response_model=BattleOut)
 def adjust_mission_score(
-    battle_id: int, player_number: int, payload: MissionScoreAdjust, session: Session = Depends(get_session)
+    battle_id: int, player_number: int, payload: MissionScoreAdjust, user: User = Depends(get_current_user), session: Session = Depends(get_session)
 ):
-    battle = _get_battle_or_404(battle_id, session)
+    battle = _get_owned_battle_or_404(battle_id, user, session)
     if not battle.your_disposition or not battle.opponent_disposition:
         raise HTTPException(status_code=422, detail="No mission set up for this battle")
     player = session.exec(
@@ -586,8 +595,8 @@ def adjust_mission_score(
 
 
 @router.post("/{battle_id}/effects", response_model=BattleOut)
-def add_effect(battle_id: int, payload: EffectCreate, session: Session = Depends(get_session)):
-    battle = _get_battle_or_404(battle_id, session)
+def add_effect(battle_id: int, payload: EffectCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    battle = _get_owned_battle_or_404(battle_id, user, session)
     if payload.duration_type not in phases.DURATION_TYPES:
         raise HTTPException(status_code=422, detail=f"Unknown duration_type: {payload.duration_type}")
     if payload.unit_id is not None:
@@ -605,8 +614,8 @@ def add_effect(battle_id: int, payload: EffectCreate, session: Session = Depends
 
 
 @router.delete("/{battle_id}/effects/{effect_id}", response_model=BattleOut)
-def dismiss_effect(battle_id: int, effect_id: int, session: Session = Depends(get_session)):
-    battle = _get_battle_or_404(battle_id, session)
+def dismiss_effect(battle_id: int, effect_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    battle = _get_owned_battle_or_404(battle_id, user, session)
     effect = session.get(ActiveEffect, effect_id)
     if effect is None or effect.battle_session_id != battle_id:
         raise HTTPException(status_code=404, detail="Effect not found on this battle")
@@ -616,8 +625,8 @@ def dismiss_effect(battle_id: int, effect_id: int, session: Session = Depends(ge
 
 
 @router.post("/{battle_id}/synergies/{synergy_id}/acknowledge", response_model=BattleOut)
-def acknowledge_synergy(battle_id: int, synergy_id: int, session: Session = Depends(get_session)):
-    battle = _get_battle_or_404(battle_id, session)
+def acknowledge_synergy(battle_id: int, synergy_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    battle = _get_owned_battle_or_404(battle_id, user, session)
     synergy = session.get(UnitSynergy, synergy_id)
     if synergy is None:
         raise HTTPException(status_code=404, detail="Synergy not found")
@@ -637,8 +646,8 @@ def acknowledge_synergy(battle_id: int, synergy_id: int, session: Session = Depe
 
 
 @router.post("/{battle_id}/pools/{pool_id}/spend", response_model=BattleOut)
-def spend_pool(battle_id: int, pool_id: int, payload: PoolSpend, session: Session = Depends(get_session)):
-    battle = _get_battle_or_404(battle_id, session)
+def spend_pool(battle_id: int, pool_id: int, payload: PoolSpend, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    battle = _get_owned_battle_or_404(battle_id, user, session)
     pool = session.get(DeclaredStatePool, pool_id)
     if pool is None or pool.roster_id != battle.roster_id:
         raise HTTPException(status_code=404, detail="Pool not found on this battle's roster")
@@ -654,8 +663,8 @@ def spend_pool(battle_id: int, pool_id: int, payload: PoolSpend, session: Sessio
 
 
 @router.post("/{battle_id}/pools/{pool_id}/add", response_model=BattleOut)
-def add_pool_entry(battle_id: int, pool_id: int, payload: PoolAdd, session: Session = Depends(get_session)):
-    battle = _get_battle_or_404(battle_id, session)
+def add_pool_entry(battle_id: int, pool_id: int, payload: PoolAdd, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    battle = _get_owned_battle_or_404(battle_id, user, session)
     pool = session.get(DeclaredStatePool, pool_id)
     if pool is None or pool.roster_id != battle.roster_id:
         raise HTTPException(status_code=404, detail="Pool not found on this battle's roster")
@@ -677,9 +686,9 @@ def add_pool_entry(battle_id: int, pool_id: int, payload: PoolAdd, session: Sess
 
 @router.patch("/{battle_id}/units/{unit_id}/turn-state", response_model=TurnStateOut)
 def update_turn_state(
-    battle_id: int, unit_id: int, payload: TurnStateUpdate, session: Session = Depends(get_session)
+    battle_id: int, unit_id: int, payload: TurnStateUpdate, user: User = Depends(get_current_user), session: Session = Depends(get_session)
 ):
-    battle = _get_battle_or_404(battle_id, session)
+    battle = _get_owned_battle_or_404(battle_id, user, session)
     unit = session.get(Unit, unit_id)
     if unit is None:
         raise HTTPException(status_code=404, detail="Unit not found")

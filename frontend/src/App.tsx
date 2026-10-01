@@ -1,5 +1,7 @@
 import { Suspense, lazy } from "react";
 import { Link, NavLink, Route, Routes } from "react-router-dom";
+import { useAuth } from "./AuthContext";
+import { Login } from "./pages/Login";
 const ArmyRules = lazy(() => import("./pages/ArmyRules").then((m) => ({ default: m.ArmyRules })));
 const BattleSetup = lazy(() => import("./pages/BattleSetup").then((m) => ({ default: m.BattleSetup })));
 const BattlesList = lazy(() => import("./pages/BattlesList").then((m) => ({ default: m.BattlesList })));
@@ -17,6 +19,13 @@ function navClass({ isActive }: { isActive: boolean }): string {
 }
 
 function App() {
+  const { user, loading, logout } = useAuth();
+
+  // Gate the whole app behind auth: spinner while validating a stored token, login screen
+  // when signed out, the app once we have a user.
+  if (loading) return <div className="auth-screen muted">Loading…</div>;
+  if (!user) return <Login />;
+
   return (
     <>
       <nav className="topnav">
@@ -43,6 +52,12 @@ function App() {
           <NavLink to="/missions" className={navClass}>
             Missions
           </NavLink>
+        </div>
+        <div className="nav-user">
+          <span className="muted">{user.username}</span>
+          <button type="button" className="link-button" onClick={logout}>
+            Sign out
+          </button>
         </div>
       </nav>
       <Suspense fallback={<div className="page">Loading...</div>}>

@@ -3,6 +3,16 @@ export interface Ability {
   text: string;
 }
 
+export interface AuthUser {
+  id: number;
+  username: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: AuthUser;
+}
+
 export interface Weapon {
   name: string;
   range_type: "Ranged Weapons" | "Melee Weapons";
