@@ -52,7 +52,7 @@ export function groupUnitsByRole(units: UnitOut[], attachments: UnitAttachment[]
       const groupUnits = byRole.get(role)!;
       const points = groupUnits
         .filter((u) => !nestedLeaderIds.has(u.id))
-        .reduce((sum, u) => sum + u.unit_definition.points_cost, 0);
+        .reduce((sum, u) => sum + u.points, 0);
       return { role, points, units: groupUnits };
     });
 }

@@ -39,6 +39,8 @@ class UnitDefinition(SQLModel, table=True):
     faction: str
     name: str
     points_cost: int = 0
+    # [{"models": int, "points": int}] -- every pricing tier; points_cost is just the first.
+    points_tiers: list[dict] = Field(default_factory=list, sa_column=Column(JSON))
     # Smallest legal squad size (the min 'models' across the unit's points tiers), used to
     # default the simulator's per-weapon "firing" counts. 0 when the source has no tier data.
     min_models: int = 0
@@ -47,7 +49,7 @@ class UnitDefinition(SQLModel, table=True):
     # the one categoryLink BSData marks primary. None for a unit with no primary category.
     role: Optional[str] = None
     source_catalogue_id: str
-    source_entry_id: str
+    source_entry_id: str = Field(index=True)
     is_legends: bool = False
     stats: dict[str, str] = Field(default_factory=dict, sa_column=Column(JSON))
     abilities: list[dict] = Field(default_factory=list, sa_column=Column(JSON))
@@ -87,6 +89,8 @@ class Unit(SQLModel, table=True):
     roster_id: int = Field(foreign_key="roster.id")
     unit_definition_id: str = Field(foreign_key="unitdefinition.id")
     quantity: int = 1
+    # Real cost of this entry (incl. upgrades), recorded on roster import; None for hand-added units.
+    points: Optional[int] = None
     notes: Optional[str] = None
     loadout: list[dict] = Field(default_factory=list, sa_column=Column(JSON))  # [{"name","count"}], import-only
     # [{"name","count"}] -- which model types make up this unit and how many of each (e.g.

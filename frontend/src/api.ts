@@ -191,6 +191,7 @@ export const api = {
   listBattlesForRoster: (rosterId: number) => request<BattleOut[]>(`/battles?roster_id=${rosterId}`),
   listBattles: () => request<BattleOut[]>("/battles"),
   getBattle: (id: number) => request<BattleOut>(`/battles/${id}`),
+  deleteBattle: (id: number) => request<void>(`/battles/${id}`, { method: "DELETE" }),
   updateBattleSetup: (
     battleId: number,
     payload: Partial<{
@@ -232,10 +233,10 @@ export const api = {
   acknowledgeSynergy: (battleId: number, synergyId: number) =>
     request<BattleOut>(`/battles/${battleId}/synergies/${synergyId}/acknowledge`, { method: "POST" }),
 
-  spendPool: (battleId: number, poolId: number, amount = 1) =>
+  spendPool: (battleId: number, poolId: number, amount = 1, ownerPlayer = 1) =>
     request<BattleOut>(`/battles/${battleId}/pools/${poolId}/spend`, {
       method: "POST",
-      body: JSON.stringify({ amount }),
+      body: JSON.stringify({ amount, owner_player: ownerPlayer }),
     }),
   addPoolEntry: (battleId: number, poolId: number, ownerPlayer: number, value: number) =>
     request<BattleOut>(`/battles/${battleId}/pools/${poolId}/add`, {

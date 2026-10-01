@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { api } from "../api";
+import { matchFaction } from "../catalog";
+import { capitalize } from "../format";
 import { renderAbilityText } from "../markup";
+import { findMission } from "../missions";
 import { DURATION_TYPES, PHASES, STAT_ORDER, WEAPON_STAT_ORDER } from "../types";
 import type {
   BattleOut,
@@ -78,21 +81,26 @@ function phaseAtStep(step: number): Phase {
 function activePlayerAtStep(step: number): number {
   return Math.floor(step / PHASES.length) % 2 === 0 ? 1 : 2;
 }
-function capitalize(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
 
-// A roster's own faction string doesn't always match an army-rules.json entry exactly --
-// confirmed against real data: "Chaos - World Eaters" has its own named entry, but "Aeldari -
-// Craftworlds" (and Ynnari, Drukhari, Harlequins) all draw their army-level rules from one
-// shared "Aeldari - Aeldari Library" catalogue instead of a Craftworlds-specific one. Falls back
-// to the shared "<category> - ... Library" entry for the same top-level category (Aeldari/Chaos/
-// Imperium/Xenos) when there's no exact match.
-function matchArmyRules(all: FactionArmyRules[], faction: string): FactionArmyRules | undefined {
-  const exact = all.find((f) => f.faction === faction);
-  if (exact) return exact;
-  const category = faction.split(" - ")[0];
-  return all.find((f) => f.faction.startsWith(`${category} - `) && f.faction.includes("Library"));
+// Keeps keystrokes local and only PATCHes on blur/Enter, so typing "12" doesn't fire two requests.
+function CommitNumberInput({ value, title, onCommit }: { value: number; title?: string; onCommit: (n: number) => void }) {
+  const [draft, setDraft] = useState<string | null>(null);
+  function commit() {
+    if (draft === null) return;
+    const n = Number(draft);
+    setDraft(null);
+    if (draft.trim() !== "" && Number.isFinite(n) && n !== value) onCommit(n);
+  }
+  return (
+    <input
+      type="number"
+      title={title}
+      value={draft ?? value}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
+    />
+  );
 }
 
 const PHASE_CHECKLIST: Record<Phase, string[]> = {
@@ -151,7 +159,8 @@ export function BattleTracker() {
     });
   }
 
-  function refresh() {
+  // Full load (battle + both rosters' units/attachments/pools) -- only on mount/battleId change.
+  function loadAll() {
     api.getBattle(battleId).then((b) => {
       setBattle(b);
       if (b.roster_id) {
@@ -172,7 +181,12 @@ export function BattleTracker() {
     }).catch((e) => setError(String(e)));
   }
 
-  useEffect(refresh, [battleId]);
+  // After a mutation only the battle's own state can have changed.
+  function refreshBattle() {
+    api.getBattle(battleId).then(setBattle).catch((e) => setError(String(e)));
+  }
+
+  useEffect(loadAll, [battleId]);
 
   useEffect(() => {
     api.listArmyRules().then(setArmyRules).catch((e) => setError(String(e)));
@@ -253,7 +267,7 @@ export function BattleTracker() {
   ) {
     try {
       await api.updatePlayer(battleId, playerNumber, { [field]: value });
-      refresh();
+      refreshBattle();
     } catch (e) {
       setError(String(e));
     }
@@ -283,7 +297,7 @@ export function BattleTracker() {
 
   async function handleSpendPool(poolId: number) {
     try {
-      setBattle(await api.spendPool(battleId, poolId, 1));
+      setBattle(await api.spendPool(battleId, poolId, 1, 1));
     } catch (e) {
       setError(String(e));
     }
@@ -302,8 +316,16 @@ export function BattleTracker() {
     try {
       // Attached units share one turn state -- every member gets the same update so they
       // stay in sync, since they move/shoot/charge/fight as one combined unit.
-      await Promise.all(unitIds.map((unitId) => api.updateTurnState(battleId, unitId, { [field]: value })));
-      refresh();
+      const updated = await Promise.all(unitIds.map((unitId) => api.updateTurnState(battleId, unitId, { [field]: value })));
+      setBattle((b) => {
+        if (!b) return b;
+        const byUnit = new Map(updated.map((t) => [t.unit_id, t]));
+        const known = new Set(b.turn_states.map((t) => t.unit_id));
+        return {
+          ...b,
+          turn_states: [...b.turn_states.map((t) => byUnit.get(t.unit_id) ?? t), ...updated.filter((t) => !known.has(t.unit_id))],
+        };
+      });
     } catch (e) {
       setError(String(e));
     }
@@ -321,7 +343,7 @@ export function BattleTracker() {
   const leaderReferences = leaderAbilityReferences(units);
   const auraReferences = auraAbilityReferences(units);
   const psychicReferences = psychicAbilityReferences(units);
-  const factionRules = roster ? matchArmyRules(armyRules, roster.faction) : undefined;
+  const factionRules = roster ? matchFaction(armyRules, roster.faction) : undefined;
 
   const nextStep = battle.global_step + 1;
   const prevStep = battle.global_step - 1;
@@ -339,7 +361,7 @@ export function BattleTracker() {
     if (!hasMissionSetup) return undefined;
     const deck = playerNumber === 1 ? battle!.your_disposition : battle!.opponent_disposition;
     const vs = playerNumber === 1 ? battle!.opponent_disposition : battle!.your_disposition;
-    return missions.find((m) => m.deck === deck && m.vs === vs);
+    return findMission(missions, deck, vs);
   }
 
   function achievedCount(playerNumber: number, sectionIndex: number, tierIndex: number): number {
@@ -416,18 +438,16 @@ export function BattleTracker() {
                   <div className="cp-block">
                     <span className="player-field">
                       CP
-                      <input
-                        type="number"
+                      <CommitNumberInput
                         title="CP Gained"
                         value={p.cp_gained}
-                        onChange={(e) => handlePlayerChange(playerNumber, "cp_gained", Number(e.target.value))}
+                        onCommit={(n) => handlePlayerChange(playerNumber, "cp_gained", n)}
                       />
                       /
-                      <input
-                        type="number"
+                      <CommitNumberInput
                         title="CP Spent"
                         value={p.cp_spent}
-                        onChange={(e) => handlePlayerChange(playerNumber, "cp_spent", Number(e.target.value))}
+                        onCommit={(n) => handlePlayerChange(playerNumber, "cp_spent", n)}
                       />
                     </span>
                     <span className="cp-total">{p.cp_gained - p.cp_spent} CP</span>
@@ -479,12 +499,9 @@ export function BattleTracker() {
                       )}
                       <label className="vp-adjustment">
                         VP adjustment
-                        <input
-                          type="number"
+                        <CommitNumberInput
                           value={p.vp_adjustment}
-                          onChange={(e) =>
-                            handlePlayerChange(playerNumber, "vp_adjustment", Number(e.target.value))
-                          }
+                          onCommit={(n) => handlePlayerChange(playerNumber, "vp_adjustment", n)}
                         />
                       </label>
                       <div className="vp-total">Total VP: {p.vp}</div>

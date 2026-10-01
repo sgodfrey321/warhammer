@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
-from .. import phases
+from .. import cascade, phases
 from ..auth import get_current_user
 from ..db import get_session
 from ..models import (
@@ -24,6 +24,7 @@ from ..models import (
     UnitTurnState,
     User,
 )
+from ..reference_data import find_mission
 from . import primary_missions
 
 router = APIRouter(prefix="/battles", tags=["battles"])
@@ -77,6 +78,9 @@ class TurnStateUpdate(BaseModel):
 
 class PoolSpend(BaseModel):
     amount: int = 1
+    # Pools are declared on the tracked roster (player 1); who spends isn't implied by whose
+    # turn it is (e.g. Battle Focus used reactively on the opponent's turn).
+    owner_player: int = 1
 
 
 class PoolAdd(BaseModel):
@@ -166,6 +170,16 @@ def _get_owned_battle_or_404(battle_id: int, user: User, session: Session) -> Ba
     return battle
 
 
+def _require_roster(session: Session, roster_id: Optional[int], label: str) -> None:
+    if roster_id is not None and session.get(Roster, roster_id) is None:
+        raise HTTPException(status_code=404, detail=f"{label} not found")
+
+
+def _require_player(owner_player: int) -> None:
+    if owner_player not in (1, 2):
+        raise HTTPException(status_code=422, detail="owner_player must be 1 or 2")
+
+
 def _mission_for_player(battle: BattleSession, player_number: int, missions: list[dict]) -> Optional[dict]:
     """Player 1 is "you" (the tracked roster's owner -- your_disposition is their disposition),
     player 2 is the opponent -- mirrors the asymmetric deck/vs lookup already used by
@@ -177,7 +191,7 @@ def _mission_for_player(battle: BattleSession, player_number: int, missions: lis
         if player_number == 1
         else (battle.opponent_disposition, battle.your_disposition)
     )
-    return next((m for m in missions if m["deck"] == deck and m["vs"] == vs), None)
+    return find_mission(missions, deck, vs)
 
 
 def _recompute_vp(session: Session, battle: BattleSession, player: PlayerState) -> None:
@@ -375,8 +389,7 @@ def list_battles(roster_id: Optional[int] = None, user: User = Depends(get_curre
 
 @router.post("", response_model=BattleOut)
 def create_battle(payload: BattleCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
-    # A battle may reference the player's own rosters (their army and, optionally, an opponent
-    # army also built in the app) -- both must belong to the caller, or it's a 404.
+    # Both rosters must exist AND belong to the caller (same 404 either way).
     for roster_id in (payload.roster_id, payload.opponent_roster_id):
         if roster_id is not None:
             roster = session.get(Roster, roster_id)
@@ -414,12 +427,31 @@ def update_battle_setup(battle_id: int, payload: BattleSetupUpdate, user: User =
     mission and have it filled in later, or a misclick during setup can be corrected, so this
     stays editable for the life of the battle the same way CP/VP already are."""
     battle = _get_owned_battle_or_404(battle_id, user, session)
-    for field, value in payload.model_dump(exclude_unset=True).items():
+    changes = payload.model_dump(exclude_unset=True)
+    _require_roster(session, changes.get("opponent_roster_id"), "Opponent roster")
+    mission_changed = any(
+        k in changes and changes[k] != getattr(battle, k) for k in ("your_disposition", "opponent_disposition")
+    )
+    for field, value in changes.items():
         setattr(battle, field, value)
     session.add(battle)
+    if mission_changed:
+        # Score entries index into the old mission's sections/tiers, so they're meaningless now.
+        for entry in session.exec(select(MissionScoreEntry).where(MissionScoreEntry.battle_session_id == battle_id)).all():
+            session.delete(entry)
+        session.flush()
+        for player in session.exec(select(PlayerState).where(PlayerState.battle_session_id == battle_id)).all():
+            _recompute_vp(session, battle, player)
     session.commit()
     session.refresh(battle)
     return _to_out(battle, session)
+
+
+@router.delete("/{battle_id}", status_code=204)
+def delete_battle(battle_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    _get_owned_battle_or_404(battle_id, user, session)
+    cascade.delete_battles(session, [battle_id])
+    session.commit()
 
 
 def _get_or_create_pool_state(
@@ -497,10 +529,6 @@ def retreat_phase(battle_id: int, user: User = Depends(get_current_user), sessio
         raise HTTPException(status_code=422, detail="Already at the start of the battle")
     battle.global_step -= 1
     session.add(battle)
-    session.commit()
-    session.refresh(battle)
-    return _to_out(battle, session)
-
     session.commit()
     session.refresh(battle)
     return _to_out(battle, session)
@@ -626,8 +654,8 @@ def spend_pool(battle_id: int, pool_id: int, payload: PoolSpend, user: User = De
     if pool.stacking:
         raise HTTPException(status_code=422, detail="Stacking pools use /add, not /spend")
 
-    spender = phases.active_player(battle.global_step)
-    state = _get_or_create_pool_state(session, battle_id, pool, spender)
+    _require_player(payload.owner_player)
+    state = _get_or_create_pool_state(session, battle_id, pool, payload.owner_player)
     state.current_value = max(0, state.current_value - payload.amount)
     session.add(state)
     session.commit()
@@ -642,6 +670,7 @@ def add_pool_entry(battle_id: int, pool_id: int, payload: PoolAdd, user: User = 
         raise HTTPException(status_code=404, detail="Pool not found on this battle's roster")
     if not pool.stacking:
         raise HTTPException(status_code=422, detail="Non-stacking pools use /spend, not /add")
+    _require_player(payload.owner_player)
 
     entry = DeclaredStatePoolEntry(
         battle_session_id=battle_id,

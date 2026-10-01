@@ -2,17 +2,14 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { api } from "../api";
+import { BAR_RADIUS, BAR_SIZE, CHART_COLOR, CHART_COLOR_SECONDARY } from "../charts";
 import { CharacteristicContributionsModal } from "../components/CharacteristicContributionsModal";
 import { UnitListModal } from "../components/UnitListModal";
 import type { Roster, UnitOut } from "../types";
-import { damageVsWounds, parseToughness, parseWounds, strengthVsToughness } from "../weapons";
+import { damageVsWounds, parseLeadingInt, strengthVsToughness } from "../weapons";
 import type { CharacteristicContribution, OverlayBucket, OverlayResult } from "../weapons";
 
-// Same validated pair used by RosterEditor's two-series Save/Invulnerable Save chart.
-const CHART_COLOR = "#e0574a";
-const CHART_COLOR_SECONDARY = "#4a90c9";
-const BAR_SIZE = 24;
-const BAR_RADIUS: [number, number, number, number] = [4, 4, 0, 0];
+const NO_UNITS: UnitOut[] = [];
 
 type RangeTypeFilter = "" | "Ranged Weapons" | "Melee Weapons";
 
@@ -82,8 +79,8 @@ export function CompareRosters() {
   const [rosters, setRosters] = useState<Roster[]>([]);
   const [rosterAId, setRosterAId] = useState<number | null>(null);
   const [rosterBId, setRosterBId] = useState<number | null>(null);
-  const [unitsA, setUnitsA] = useState<UnitOut[]>([]);
-  const [unitsB, setUnitsB] = useState<UnitOut[]>([]);
+  const [loadedUnitsA, setUnitsA] = useState<UnitOut[]>([]);
+  const [loadedUnitsB, setUnitsB] = useState<UnitOut[]>([]);
   const [weaponType, setWeaponType] = useState<RangeTypeFilter>("");
   const [roleFilterA, setRoleFilterA] = useState("");
   const [roleFilterB, setRoleFilterB] = useState("");
@@ -103,30 +100,21 @@ export function CompareRosters() {
   }, []);
 
   useEffect(() => {
-    if (rosterAId === null) {
-      setUnitsA([]);
-      return;
-    }
+    if (rosterAId === null) return;
     api.listUnits(rosterAId).then(setUnitsA).catch((e) => setError(String(e)));
   }, [rosterAId]);
 
   useEffect(() => {
-    if (rosterBId === null) {
-      setUnitsB([]);
-      return;
-    }
+    if (rosterBId === null) return;
     api.listUnits(rosterBId).then(setUnitsB).catch((e) => setError(String(e)));
   }, [rosterBId]);
 
-  // Reset a side's unit-type filter when it switches to a roster that doesn't have that role --
-  // otherwise it silently filters everything out with no visible explanation.
-  useEffect(() => {
-    if (roleFilterA && !unitsA.some((u) => u.unit_definition.role === roleFilterA)) setRoleFilterA("");
-  }, [unitsA, roleFilterA]);
-
-  useEffect(() => {
-    if (roleFilterB && !unitsB.some((u) => u.unit_definition.role === roleFilterB)) setRoleFilterB("");
-  }, [unitsB, roleFilterB]);
+  const unitsA = rosterAId === null ? NO_UNITS : loadedUnitsA;
+  const unitsB = rosterBId === null ? NO_UNITS : loadedUnitsB;
+  // A side's unit-type filter is ignored when its roster has no such role -- otherwise it
+  // silently filters everything out with no visible explanation.
+  const roleA = unitsA.some((u) => u.unit_definition.role === roleFilterA) ? roleFilterA : "";
+  const roleB = unitsB.some((u) => u.unit_definition.role === roleFilterB) ? roleFilterB : "";
 
   const rosterAName = rosters.find((r) => r.id === rosterAId)?.name ?? "Army A";
   const rosterBName = rosters.find((r) => r.id === rosterBId)?.name ?? "Army B";
@@ -134,8 +122,8 @@ export function CompareRosters() {
   function handleSwap() {
     setRosterAId(rosterBId);
     setRosterBId(rosterAId);
-    setRoleFilterA(roleFilterB);
-    setRoleFilterB(roleFilterA);
+    setRoleFilterA(roleB);
+    setRoleFilterB(roleA);
   }
 
   function showContributions(result: OverlayResult, value: number, label: string) {
@@ -143,19 +131,19 @@ export function CompareRosters() {
   }
 
   function showToughnessMatches(toughness: number) {
-    const matches = filteredUnitsB.filter((u) => parseToughness(u.unit_definition.stats.T ?? "") === toughness);
+    const matches = filteredUnitsB.filter((u) => parseLeadingInt(u.unit_definition.stats.T ?? "") === toughness);
     setUnitListModal({ title: `Toughness ${toughness} — ${rosterBName}`, units: matches });
   }
 
   function showWoundsMatches(wounds: number) {
-    const matches = filteredUnitsB.filter((u) => parseWounds(u.unit_definition.stats.W ?? "") === wounds);
+    const matches = filteredUnitsB.filter((u) => parseLeadingInt(u.unit_definition.stats.W ?? "") === wounds);
     setUnitListModal({ title: `Wounds ${wounds} — ${rosterBName}`, units: matches });
   }
 
   const rolesA = distinctRoles(unitsA);
   const rolesB = distinctRoles(unitsB);
-  const filteredUnitsA = roleFilterA ? unitsA.filter((u) => u.unit_definition.role === roleFilterA) : unitsA;
-  const filteredUnitsB = roleFilterB ? unitsB.filter((u) => u.unit_definition.role === roleFilterB) : unitsB;
+  const filteredUnitsA = roleA ? unitsA.filter((u) => u.unit_definition.role === roleA) : unitsA;
+  const filteredUnitsB = roleB ? unitsB.filter((u) => u.unit_definition.role === roleB) : unitsB;
   const rangeType = weaponType || undefined;
   const weaponTypeLabel = weaponType === "Ranged Weapons" ? "ranged" : weaponType === "Melee Weapons" ? "melee" : "ranged + melee";
 
@@ -244,7 +232,7 @@ export function CompareRosters() {
           </label>
           <label className="checkbox-label">
             {rosterAName} unit type
-            <select value={roleFilterA} onChange={(e) => setRoleFilterA(e.target.value)}>
+            <select value={roleA} onChange={(e) => setRoleFilterA(e.target.value)}>
               <option value="">All unit types</option>
               {rolesA.map((role) => (
                 <option key={role} value={role}>
@@ -255,7 +243,7 @@ export function CompareRosters() {
           </label>
           <label className="checkbox-label">
             {rosterBName} unit type
-            <select value={roleFilterB} onChange={(e) => setRoleFilterB(e.target.value)}>
+            <select value={roleB} onChange={(e) => setRoleFilterB(e.target.value)}>
               <option value="">All unit types</option>
               {rolesB.map((role) => (
                 <option key={role} value={role}>

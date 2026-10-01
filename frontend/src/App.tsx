@@ -1,17 +1,18 @@
+import { Suspense, lazy } from "react";
 import { Link, NavLink, Route, Routes } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 import { Login } from "./pages/Login";
-import { ArmyRules } from "./pages/ArmyRules";
-import { BattleSetup } from "./pages/BattleSetup";
-import { BattlesList } from "./pages/BattlesList";
-import { BattleTracker } from "./pages/BattleTracker";
-import { CompareRosters } from "./pages/CompareRosters";
-import { Home } from "./pages/Home";
-import { Missions } from "./pages/Missions";
-import { RosterEditor } from "./pages/RosterEditor";
-import { RosterList } from "./pages/RosterList";
-import { Simulator } from "./pages/Simulator";
-import { UnitsBrowser } from "./pages/UnitsBrowser";
+const ArmyRules = lazy(() => import("./pages/ArmyRules").then((m) => ({ default: m.ArmyRules })));
+const BattleSetup = lazy(() => import("./pages/BattleSetup").then((m) => ({ default: m.BattleSetup })));
+const BattlesList = lazy(() => import("./pages/BattlesList").then((m) => ({ default: m.BattlesList })));
+const BattleTracker = lazy(() => import("./pages/BattleTracker").then((m) => ({ default: m.BattleTracker })));
+const CompareRosters = lazy(() => import("./pages/CompareRosters").then((m) => ({ default: m.CompareRosters })));
+const Home = lazy(() => import("./pages/Home").then((m) => ({ default: m.Home })));
+const Missions = lazy(() => import("./pages/Missions").then((m) => ({ default: m.Missions })));
+const RosterEditor = lazy(() => import("./pages/RosterEditor").then((m) => ({ default: m.RosterEditor })));
+const RosterList = lazy(() => import("./pages/RosterList").then((m) => ({ default: m.RosterList })));
+const Simulator = lazy(() => import("./pages/Simulator").then((m) => ({ default: m.Simulator })));
+const UnitsBrowser = lazy(() => import("./pages/UnitsBrowser").then((m) => ({ default: m.UnitsBrowser })));
 
 function navClass({ isActive }: { isActive: boolean }): string {
   return isActive ? "active" : "";
@@ -59,6 +60,7 @@ function App() {
           </button>
         </div>
       </nav>
+      <Suspense fallback={<div className="page">Loading...</div>}>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/rosters" element={<RosterList />} />
@@ -72,6 +74,7 @@ function App() {
         <Route path="/army-rules" element={<ArmyRules />} />
         <Route path="/missions" element={<Missions />} />
       </Routes>
+      </Suspense>
     </>
   );
 }

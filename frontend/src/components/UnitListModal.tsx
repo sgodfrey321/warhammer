@@ -16,7 +16,7 @@ export function UnitListModal({ title, units, onClose }: { title: string; units:
         <ul className="ability-list">
           {units.map((u) => (
             <li key={u.id}>
-              <strong>{u.unit_definition.name}</strong> <span className="muted">({u.unit_definition.points_cost}pts)</span>
+              <strong>{u.unit_definition.name}</strong> <span className="muted">({u.points}pts)</span>
             </li>
           ))}
           {units.length === 0 && <li className="muted">No units.</li>}

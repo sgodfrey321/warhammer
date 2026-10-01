@@ -15,35 +15,63 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+from .dice import DiceNotation, parse_dice
+
+
+AntiEntry = tuple[tuple[str, ...], int]  # (target keywords any-of, threshold); "non-X" entries mean "has none of X"
+
 
 @dataclass(frozen=True)
 class WeaponKeywords:
-    rapid_fire: int | None = None
+    rapid_fire: DiceNotation | None = None
     blast: bool = False
     torrent: bool = False
-    sustained_hits: int | None = None
+    sustained_hits: DiceNotation | None = None
     lethal_hits: bool = False
     devastating_wounds: bool = False
     twin_linked: bool = False
     lance: bool = False
-    melta: int | None = None
+    melta: DiceNotation | None = None
     ignores_cover: bool = False
-    # Best-effort threshold extracted from an "Anti-X Y+" keyword on the weapon
-    # itself, e.g. "Anti-Vehicle 4+" -> 4. We don't attempt to match the X
-    # against the defender's keyword list (see profiles.py / sequence.py) --
-    # whether Anti applies at all is left to the caller-supplied `anti_active`
-    # option. This field is only a convenience default for that threshold.
-    anti_threshold: int | None = None
+    heavy: bool = False
+    indirect_fire: bool = False
+    # Every "Anti-X Y+" on the weapon, matched against the defender's keywords in sequence.py.
+    # A negated target ("Anti-non-Monster/Vehicle") is stored as "non-monster", "non-vehicle".
+    anti: tuple[AntiEntry, ...] = ()
+
+    def __post_init__(self) -> None:
+        # Tests/callers may pass plain ints for the dice-valued keywords.
+        for name in ("rapid_fire", "sustained_hits", "melta"):
+            value = getattr(self, name)
+            if isinstance(value, int):
+                object.__setattr__(self, name, parse_dice(value))
+
+    @property
+    def anti_threshold(self) -> int | None:
+        """Lowest threshold across all Anti entries, ignoring what they target."""
+
+        return min((t for _, t in self.anti), default=None)
 
 
 def _normalise(token: str) -> str:
+    # U+2010/2011/2013 are hyphen lookalikes that show up in copy-pasted rules text.
+    token = token.translate({0x2010: "-", 0x2011: "-", 0x2013: "-"})
     return re.sub(r"[\s-]+", " ", token.strip().lower())
 
 
-_RAPID_FIRE_RE = re.compile(r"^rapid fire (\d+)$")
-_SUSTAINED_HITS_RE = re.compile(r"^sustained hits (\d+)")
-_MELTA_RE = re.compile(r"^melta (\d+)$")
-_ANTI_RE = re.compile(r"^anti[- ].*?(\d+)\+")
+_DICE = r"(\d*d\d+(?: ?\+ ?\d+)?|\d+)"
+_RAPID_FIRE_RE = re.compile(rf"^rapid fire {_DICE}$")
+_SUSTAINED_HITS_RE = re.compile(rf"^sustained hits {_DICE}")
+_MELTA_RE = re.compile(rf"^melta {_DICE}$")
+_ANTI_RE = re.compile(r"^anti (.+?) (\d)\+")
+
+
+def _parse_anti(target: str, threshold: int) -> AntiEntry:
+    negated = target.startswith("non ")
+    if negated:
+        target = target[4:]
+    kws = tuple(k.strip() for k in target.split("/") if k.strip())
+    return (tuple(f"non-{k}" for k in kws) if negated else kws), threshold
 
 
 def parse_keywords(raw: str | None) -> WeaponKeywords:
@@ -54,6 +82,7 @@ def parse_keywords(raw: str | None) -> WeaponKeywords:
         return WeaponKeywords()
 
     kwargs: dict[str, object] = {}
+    anti: list[AntiEntry] = []
     for token in raw.split(","):
         norm = _normalise(token)
         if not norm:
@@ -71,16 +100,20 @@ def parse_keywords(raw: str | None) -> WeaponKeywords:
             kwargs["twin_linked"] = True
         elif norm == "lance":
             kwargs["lance"] = True
+        elif norm == "heavy":
+            kwargs["heavy"] = True
+        elif norm == "indirect fire":
+            kwargs["indirect_fire"] = True
         elif norm == "ignores cover":
             kwargs["ignores_cover"] = True
         elif (m := _RAPID_FIRE_RE.match(norm)):
-            kwargs["rapid_fire"] = int(m.group(1))
+            kwargs["rapid_fire"] = parse_dice(m.group(1))
         elif (m := _SUSTAINED_HITS_RE.match(norm)):
-            kwargs["sustained_hits"] = int(m.group(1))
+            kwargs["sustained_hits"] = parse_dice(m.group(1))
         elif (m := _MELTA_RE.match(norm)):
-            kwargs["melta"] = int(m.group(1))
+            kwargs["melta"] = parse_dice(m.group(1))
         elif (m := _ANTI_RE.match(norm)):
-            kwargs["anti_threshold"] = int(m.group(1))
+            anti.append(_parse_anti(m.group(1), int(m.group(2))))
         # else: unrecognised keyword, ignored by design (recognized no-op).
 
-    return WeaponKeywords(**kwargs)
+    return WeaponKeywords(anti=tuple(anti), **kwargs)

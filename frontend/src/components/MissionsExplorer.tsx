@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
+import { findMatchup, findMission } from "../missions";
 import { DISPOSITIONS, DISPOSITION_LABELS } from "../types";
 import type { Disposition, LayoutMatchup, Mission } from "../types";
 import { LayoutCarousel } from "./LayoutCarousel";
@@ -25,10 +26,10 @@ export function MissionsExplorer() {
   // Mission than they are, in the same game (confirmed against the real Force Disposition
   // Matrix: Take and Hold vs. Purge the Foe gives you "Immovable Object" while they get
   // "Unstoppable Force" from their own row). Only a same/same pick is a mirror.
-  const mission = missions.find((m) => m.deck === yours && m.vs === theirs);
-  const opponentMission = missions.find((m) => m.deck === theirs && m.vs === yours);
+  const mission = findMission(missions, yours, theirs);
+  const opponentMission = findMission(missions, theirs, yours);
   const isMirror = yours === theirs;
-  const layoutMatchup = layouts.find((l) => l.deck === yours && l.vs === theirs);
+  const layoutMatchup = findMatchup(layouts, yours, theirs);
 
   return (
     <>

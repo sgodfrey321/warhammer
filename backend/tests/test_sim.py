@@ -99,7 +99,7 @@ def test_roll_dice_uses_injected_rng():
 def test_parse_keywords_tolerant_of_case_and_hyphens():
     kw = parse_keywords("twin-linked, SUSTAINED HITS 1, Anti-Vehicle 4+")
     assert kw.twin_linked is True
-    assert kw.sustained_hits == 1
+    assert kw.sustained_hits == DiceNotation(0, 0, 1)
     assert kw.anti_threshold == 4
 
 
@@ -115,8 +115,8 @@ def test_parse_keywords_empty():
 
 def test_parse_keywords_rapid_fire_melta_blast():
     kw = parse_keywords("Rapid Fire 2, Melta 3, Blast")
-    assert kw.rapid_fire == 2
-    assert kw.melta == 3
+    assert kw.rapid_fire == DiceNotation(0, 0, 2)
+    assert kw.melta == DiceNotation(0, 0, 3)
     assert kw.blast is True
 
 
@@ -353,13 +353,14 @@ def test_lethal_hits_auto_wounds_when_devastating_absent():
     assert rng.exhausted()
 
 
-def test_lethal_and_devastating_together_does_not_auto_wound():
-    # When both keywords are present, auto-wounding via Lethal would skip the
-    # wound roll and so could never crit-wound, meaning Devastating Wounds
-    # could never trigger. So the crit hit must roll to wound normally.
+def test_lethal_and_devastating_together_still_auto_wounds():
+    # Lethal Hits is mandatory; an auto-wound is not a critical wound, so no Devastating.
     attacker = _weapon(skill=2, strength=4, keywords=WeaponKeywords(lethal_hits=True, devastating_wounds=True))
     events = _resolve_hits(attacker, AttackOptions(), num_attacks=1, rng=QueueRandom([6]))
-    assert events == [False]  # not guaranteed_wound, despite Lethal Hits being present
+    assert events == [True]
+    defender = _unit(toughness=4, save=7, wounds_per_model=3, model_count=1)
+    wounds = _resolve_wounds(attacker, defender, AttackOptions(), events, QueueRandom([]))
+    assert [w.devastating for w in wounds] == [False]
 
 
 def test_sustained_hits_adds_extra_non_crit_hits():
