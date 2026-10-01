@@ -1,0 +1,15 @@
+# Applies to the backend image's build context (repo root -- see backend/Dockerfile's comment
+# on why). Only backend/ and tools/{bsdata-indexer,gdmissions}/output/ actually get COPYed;
+# everything below just keeps the build context upload small and avoids ever baking in a real
+# .venv or a stray real warhammer.db.
+.venv/
+.git/
+**/__pycache__/
+*.pyc
+*.db
+*.log
+.idea/
+frontend/node_modules/
+frontend/dist/
+docs/
+tools/bsdata-indexer/cache/
