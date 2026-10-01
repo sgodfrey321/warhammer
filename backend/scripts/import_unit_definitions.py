@@ -1,7 +1,8 @@
 """Upserts UnitDefinition rows from the bsdata-indexer's per-faction output JSON.
 
-Safe to re-run after a dataslate refresh: rows are keyed by source_entry_id, so an
-existing unit is updated in place rather than duplicated.
+Safe to re-run after a dataslate refresh: rows are keyed by the indexer's unique `id`, so an
+existing unit is updated in place rather than duplicated. (source_entry_id is shared across
+factions for some units, so it can't be the key -- older DBs keyed on it are migrated below.)
 
 Usage: python -m scripts.import_unit_definitions [--output-dir PATH]
 """
@@ -12,18 +13,16 @@ import argparse
 import json
 from pathlib import Path
 
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from app.db import create_db_and_tables, engine
-from app.models import UnitDefinition
+from app.models import Roster, Unit, UnitDefinition
 
 DEFAULT_OUTPUT_DIR = Path(__file__).resolve().parent.parent.parent / "tools" / "bsdata-indexer" / "output"
 
 
 def _points_cost(points: list[dict]) -> int:
-    # The indexer emits a list of pricing tiers (squad size / copy number). This
-    # skeleton doesn't model multi-tier pricing yet -- take the first tier as a
-    # flat cost. See backend/README.md for the tradeoff.
+    # points_cost stays the first tier (the base price); every tier is kept in points_tiers.
     return points[0]["points"] if points else 0
 
 
@@ -34,15 +33,16 @@ def _min_models(points: list[dict]) -> int:
     return min(sizes) if sizes else 0
 
 
-def import_faction_file(path: Path, session: Session) -> int:
+def import_faction_file(path: Path, session: Session, seen_ids: set[str] | None = None) -> int:
     data = json.loads(path.read_text(encoding="utf-8"))
     count = 0
     for unit in data["units"]:
-        existing = session.get(UnitDefinition, unit["source_entry_id"])
+        existing = session.get(UnitDefinition, unit["id"])
         fields = dict(
             faction=unit["faction"],
             name=unit["name"],
             points_cost=_points_cost(unit.get("points", [])),
+            points_tiers=[{"models": t.get("models"), "points": t.get("points")} for t in unit.get("points", [])],
             min_models=_min_models(unit.get("points", [])),
             keywords=unit.get("keywords", []),
             role=unit.get("role"),
@@ -56,13 +56,49 @@ def import_faction_file(path: Path, session: Session) -> int:
             model_profiles=unit.get("model_profiles", []),
         )
         if existing is None:
-            session.add(UnitDefinition(id=unit["source_entry_id"], **fields))
+            session.add(UnitDefinition(id=unit["id"], **fields))
         else:
             for field, value in fields.items():
                 setattr(existing, field, value)
             session.add(existing)
+        if seen_ids is not None:
+            seen_ids.add(unit["id"])
         count += 1
     return count
+
+
+def migrate_and_prune(session: Session, current_ids: set[str]) -> tuple[int, int]:
+    """Upgrades a DB built when UnitDefinition.id was source_entry_id: repoints each Unit whose
+    definition id isn't a current indexer id to the current definition sharing that
+    source_entry_id (preferring the roster's own faction, since several factions share some
+    entries), then drops stale definitions nothing references. Returns (repointed, deleted)."""
+    session.flush()
+    by_source: dict[str, list[UnitDefinition]] = {}
+    for d in session.exec(select(UnitDefinition)).all():
+        if d.id in current_ids:
+            by_source.setdefault(d.source_entry_id, []).append(d)
+    factions = {r.id: (r.faction or "").casefold() for r in session.exec(select(Roster)).all()}
+
+    repointed = 0
+    for unit in session.exec(select(Unit)).all():
+        if unit.unit_definition_id in current_ids:
+            continue
+        candidates = by_source.get(unit.unit_definition_id)
+        if not candidates:
+            continue
+        faction = factions.get(unit.roster_id, "")
+        unit.unit_definition_id = next((d for d in candidates if d.faction.casefold() == faction), candidates[0]).id
+        session.add(unit)
+        repointed += 1
+    session.flush()
+
+    in_use = set(session.exec(select(Unit.unit_definition_id)).all())
+    deleted = 0
+    for d in session.exec(select(UnitDefinition)).all():
+        if d.id not in current_ids and d.id not in in_use:
+            session.delete(d)
+            deleted += 1
+    return repointed, deleted
 
 
 # Output files that exist alongside per-faction UnitDefinition JSON but aren't shaped like it
@@ -92,11 +128,15 @@ def main(argv: list[str] | None = None) -> int:
 
     with Session(engine) as session:
         total = 0
+        seen_ids: set[str] = set()
         for path in faction_files:
-            n = import_faction_file(path, session)
+            n = import_faction_file(path, session, seen_ids)
             print(f"{path.name}: {n} units")
             total += n
+        repointed, deleted = migrate_and_prune(session, seen_ids)
         session.commit()
+    if repointed or deleted:
+        print(f"Migrated {repointed} roster units to new definition ids; removed {deleted} stale definitions")
     print(f"Total: {total} units imported")
     return 0
 

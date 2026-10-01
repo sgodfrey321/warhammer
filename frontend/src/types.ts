@@ -21,6 +21,7 @@ export interface UnitDefinition {
   faction: string;
   name: string;
   points_cost: number;
+  points_tiers: { models: number; points: number }[];
   // Smallest legal squad size (min models across points tiers); 0 if unknown. Used to
   // default the simulator's per-weapon firing counts.
   min_models: number;
@@ -81,6 +82,8 @@ export interface Unit {
 }
 
 export interface UnitOut extends Unit {
+  // The real cost of this roster entry (tier/loadout-aware); prefer over unit_definition.points_cost.
+  points: number;
   unit_definition: UnitDefinition;
 }
 
@@ -297,6 +300,10 @@ export interface SimulateOptions {
   fnp: number | null; // the X in "Feel No Pain X+", e.g. 5 for 5+; null = none
   anti_active: boolean;
   anti_threshold: number | null;
+  stationary: boolean; // Heavy
+  not_visible: boolean; // Indirect Fire target not visible
+  damage_reduction: number; // defender's -X Damage, 0-3
+  halve_damage: boolean;
   trials: number;
   seed: number | null;
 }
@@ -320,6 +327,7 @@ export interface SimulateRequest {
   attackers: SimulateAttackerGroup[];
   defender_stats: Record<string, string>;
   defender_model_count: number;
+  defender_keywords: string[];
 }
 
 export interface DetectedEffect {

@@ -2,12 +2,15 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { api } from "../api";
+import { groupDefsByRole, isCrucible, matchFaction } from "../catalog";
+import { BAR_RADIUS, BAR_SIZE, CHART_COLOR, CHART_COLOR_SECONDARY, OTHER_COLOR, SKILL_COLORS } from "../charts";
 import { Keyword } from "../components/Keyword";
-import { StatBoxes, statPairs, weaponPairs } from "../components/StatBoxes";
+import { StatBoxes } from "../components/StatBoxes";
 import { UnitDetailsModal } from "../components/UnitDetailsModal";
 import { UnitListModal } from "../components/UnitListModal";
 import { WeaponContributionsModal } from "../components/WeaponContributionsModal";
 import { renderAbilityText } from "../markup";
+import { statPairs, weaponPairs } from "../statPairs";
 import { DISPOSITIONS, DISPOSITION_LABELS, PHASES, POOL_SCOPES, STAT_ORDER } from "../types";
 import type {
   BattleOut,
@@ -26,10 +29,8 @@ import { auraAbilityReferences, groupUnitsByRole, leaderAbilityReferences, psych
 import {
   groupLoadoutByRangeType,
   groupWeaponsByRangeType,
-  parseMovement,
+  parseLeadingInt,
   parseSaveValue,
-  parseToughness,
-  parseWounds,
   unitsByMovement,
   unitsBySave,
   unitsByToughness,
@@ -47,89 +48,6 @@ import type {
   WeaponContribution,
   WoundsBucket,
 } from "../weapons";
-
-// detachments.json / army-rules.json faction keys use a different category-prefix convention than
-// a roster's own faction string for some factions -- confirmed against real data: "Aeldari -
-// Craftworlds"'s detachments live under "Xenos - Aeldari", its army rules under "Aeldari - Aeldari
-// Library"; "Imperium - Space Marines"'s detachments under "Imperium - Adeptus Astartes - Space
-// Marines". Exact match first; otherwise try each of the roster faction's own " - "-separated
-// segments, most specific (last) first, against every candidate faction key -- "Space Marines"
-// alone is specific enough to land correctly, whereas trying the generic "Imperium" segment first
-// would match the wrong (alphabetically first) Imperium entry.
-function matchByFaction<T extends { faction: string }>(all: T[], faction: string): T | undefined {
-  const exact = all.find((f) => f.faction === faction);
-  if (exact) return exact;
-  const segments = faction.split(" - ").reverse();
-  for (const seg of segments) {
-    const match = all.find((f) => f.faction.includes(seg));
-    if (match) return match;
-  }
-  return undefined;
-}
-
-// Same GW Battlefield Role ordering as UnitsBrowser.tsx's archetype grouping -- used here for the
-// "Available Units" browse panel so it reads the same way as the standalone Units catalogue page.
-const ROLE_ORDER = [
-  "Character",
-  "Epic Hero",
-  "Battleline",
-  "Infantry",
-  "Mounted",
-  "Beast",
-  "Monster",
-  "Vehicle",
-  "Dedicated Transport",
-  "Fortification",
-];
-
-function roleRank(role: string): number {
-  const idx = ROLE_ORDER.indexOf(role);
-  return idx === -1 ? ROLE_ORDER.length : idx;
-}
-
-// Same convention as UnitsBrowser.tsx -- no dedicated backend flag for this (unlike is_legends),
-// BSData only marks a Crucible of War datasheet by suffixing the name itself.
-function isCrucible(u: UnitDefinition): boolean {
-  return u.name.includes("[Crucible]");
-}
-
-function groupDefsByRole(defs: UnitDefinition[]): [string, UnitDefinition[]][] {
-  const byRole = new Map<string, UnitDefinition[]>();
-  for (const u of defs) {
-    const role = u.role ?? "Other";
-    const arr = byRole.get(role) ?? [];
-    arr.push(u);
-    byRole.set(role, arr);
-  }
-  return Array.from(byRole.entries()).sort((a, b) => {
-    const rankDiff = roleRank(a[0]) - roleRank(b[0]);
-    return rankDiff !== 0 ? rankDiff : a[0].localeCompare(b[0]);
-  });
-}
-
-// Validated with the dataviz skill's palette checker against this app's dark panel surface
-// (#1e212b): single-series charts share one hue; the two-series save chart uses a pair that
-// passes CVD/contrast checks (`node validate_palette.js "#e0574a,#4a90c9" --mode dark
-// --surface "#1e212b"` -- all checks pass). The app's original --accent (#c0392b) failed the
-// contrast-vs-surface check, hence the lighter red here.
-const CHART_COLOR = "#e0574a";
-const CHART_COLOR_SECONDARY = "#4a90c9";
-
-// Fixed hue order for the Strength/to-hit stacked charts (2+ best -> N/A worst), assigned by
-// to-hit value never by rank, so the same value is always the same color regardless of which
-// values a given roster happens to have. Validated together (`validate_palette.js
-// "#e0574a,#4a90c9,#d95926,#199e70,#9085e9" --mode dark --surface "#1e212b"` -- all checks pass).
-const SKILL_COLORS = ["#e0574a", "#4a90c9", "#d95926", "#199e70", "#9085e9"];
-
-// Neutral "everything else" color for the swapped chart's folded Strength values -- matches
-// this app's own --muted token, so a folded "Other" segment reads as deliberately de-emphasized
-// rather than as a 6th hue competing with the real categorical colors.
-const OTHER_COLOR = "#8b8f9e";
-
-// Shared bar-chart mark spec (dataviz skill: <=24px thick, 4px rounded data-end square at the
-// baseline, solid recessive gridlines -- never dashed).
-const BAR_SIZE = 24;
-const BAR_RADIUS: [number, number, number, number] = [4, 4, 0, 0];
 
 // Ranged Firepower / Melee Onslaught: total attacks by weapon Strength, stacked by to-hit value
 // (BS/WS) so both "what do we wound with" and "what do we hit on" read in one chart. Clicking any
@@ -244,7 +162,7 @@ function UnitRow({
       <div className="unit-row-head">
         <span className="unit-row-identity">
           <span className="unit-name">{unit.unit_definition.name}</span>
-          <span className="muted"> ({unit.unit_definition.points_cost}pts)</span>
+          <span className="muted"> ({unit.points}pts)</span>
           <button type="button" className="link-button" onClick={() => onRemove(unit.id)}>
             remove
           </button>
@@ -394,10 +312,11 @@ export function RosterEditor() {
 
   useEffect(refresh, [rosterId]);
 
+  const faction = roster?.faction;
   useEffect(() => {
-    if (!roster) return;
-    api.listUnitDefinitionsByFaction(roster.faction).then(setAvailableUnits).catch((e) => setError(String(e)));
-  }, [roster?.faction]);
+    if (!faction) return;
+    api.listUnitDefinitionsByFaction(faction).then(setAvailableUnits).catch((e) => setError(String(e)));
+  }, [faction]);
 
   useEffect(() => {
     api.listDetachments().then(setAllDetachments).catch((e) => setError(String(e)));
@@ -406,7 +325,9 @@ export function RosterEditor() {
 
   async function handleSelectDetachment(name: string) {
     try {
-      const updated = await api.updateRoster(rosterId, { detachments: name ? [{ name, dp: 0 }] : [] });
+      const [first, ...rest] = roster?.detachments ?? [];
+      const detachments = name ? [{ ...first, name, dp: first?.dp ?? 0 }, ...rest] : rest;
+      const updated = await api.updateRoster(rosterId, { detachments });
       setRoster(updated);
     } catch (e) {
       setError(String(e));
@@ -598,7 +519,7 @@ export function RosterEditor() {
   }
 
   function showMovementDrilldown(movement: number) {
-    const matches = units.filter((u) => parseMovement(u.unit_definition.stats.M ?? "") === movement);
+    const matches = units.filter((u) => parseLeadingInt(u.unit_definition.stats.M ?? "") === movement);
     setUnitListModal({ title: `Movement ${movement}"`, units: matches });
   }
 
@@ -609,12 +530,12 @@ export function RosterEditor() {
   }
 
   function showToughnessDrilldown(toughness: number) {
-    const matches = units.filter((u) => parseToughness(u.unit_definition.stats.T ?? "") === toughness);
+    const matches = units.filter((u) => parseLeadingInt(u.unit_definition.stats.T ?? "") === toughness);
     setUnitListModal({ title: `Toughness ${toughness}`, units: matches });
   }
 
   function showWoundsDrilldown(wounds: number) {
-    const matches = units.filter((u) => parseWounds(u.unit_definition.stats.W ?? "") === wounds);
+    const matches = units.filter((u) => parseLeadingInt(u.unit_definition.stats.W ?? "") === wounds);
     setUnitListModal({ title: `Wounds ${wounds}`, units: matches });
   }
   const roleGroups = groupUnitsByRole(units, attachments);
@@ -627,10 +548,10 @@ export function RosterEditor() {
   const leaderReferences = leaderAbilityReferences(units);
   const auraReferences = auraAbilityReferences(units);
   const psychicReferences = psychicAbilityReferences(units);
-  const factionDetachments = matchByFaction(allDetachments, roster.faction);
+  const factionDetachments = matchFaction(allDetachments, roster.faction);
   const selectedDetachmentName = roster.detachments[0]?.name ?? "";
   const selectedDetachment = factionDetachments?.detachments.find((d) => d.name === selectedDetachmentName);
-  const factionArmyRules = matchByFaction(allArmyRules, roster.faction);
+  const factionArmyRules = matchFaction(allArmyRules, roster.faction);
 
   return (
     <div className="page roster-editor-page">

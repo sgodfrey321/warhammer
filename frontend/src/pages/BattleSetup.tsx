@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../api";
 import { LayoutCarousel } from "../components/LayoutCarousel";
 import { MissionCard } from "../components/MissionCard";
+import { findMatchup, findMission } from "../missions";
 import { DISPOSITIONS, DISPOSITION_LABELS } from "../types";
 import type { Disposition, LayoutMatchup, Mission, Roster } from "../types";
 
@@ -22,8 +23,10 @@ export function BattleSetup() {
 
   const [opponentName, setOpponentName] = useState("");
   const [opponentRosterId, setOpponentRosterId] = useState<number | null>(null);
-  const [yours, setYours] = useState<Disposition>(DISPOSITIONS[0]);
-  const [theirs, setTheirs] = useState<Disposition>(DISPOSITIONS[0]);
+  // An explicit pick (or a loaded battle's value) wins; otherwise a new battle defaults to each
+  // chosen roster's preferred disposition.
+  const [yoursPick, setYours] = useState<Disposition | null>(null);
+  const [theirsPick, setTheirs] = useState<Disposition | null>(null);
   const [layoutNumber, setLayoutNumber] = useState(1);
   const [showMeasurements, setShowMeasurements] = useState(false);
 
@@ -49,18 +52,10 @@ export function BattleSetup() {
     }
   }, [mode, rosterId, battleId]);
 
-  // For a new battle, pre-fill each side's disposition from the chosen roster's preferred one.
-  useEffect(() => {
-    if (mode !== "roster") return;
-    const r = rosters.find((x) => x.id === currentRosterId);
-    if (r?.disposition) setYours(r.disposition);
-  }, [mode, currentRosterId, rosters]);
-
-  useEffect(() => {
-    if (mode !== "roster") return;
-    const r = rosters.find((x) => x.id === opponentRosterId);
-    if (r?.disposition) setTheirs(r.disposition);
-  }, [mode, opponentRosterId, rosters]);
+  const rosterDisposition = (id: number | null) =>
+    mode === "roster" ? (rosters.find((x) => x.id === id)?.disposition ?? null) : null;
+  const yours = yoursPick ?? rosterDisposition(currentRosterId) ?? DISPOSITIONS[0];
+  const theirs = theirsPick ?? rosterDisposition(opponentRosterId) ?? DISPOSITIONS[0];
 
   function handleYoursChange(value: Disposition) {
     setYours(value);
@@ -105,10 +100,10 @@ export function BattleSetup() {
 
   const opponentRosterOptions = rosters.filter((r) => r.id !== currentRosterId);
 
-  const mission = missions.find((m) => m.deck === yours && m.vs === theirs);
-  const opponentMission = missions.find((m) => m.deck === theirs && m.vs === yours);
+  const mission = findMission(missions, yours, theirs);
+  const opponentMission = findMission(missions, theirs, yours);
   const isMirror = yours === theirs;
-  const layoutMatchup = layouts.find((l) => l.deck === yours && l.vs === theirs);
+  const layoutMatchup = findMatchup(layouts, yours, theirs);
 
   return (
     <div className="page">

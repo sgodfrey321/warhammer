@@ -1,18 +1,15 @@
 from __future__ import annotations
 
-import json
-from pathlib import Path
-
 from fastapi import APIRouter
 from pydantic import BaseModel
+
+from ..reference_data import REPO_ROOT, load_reference_json
 
 router = APIRouter(prefix="/detachments", tags=["detachments"])
 
 # Static reference data (not roster/battle state) -- read straight from the indexer's output,
 # same as ArmyRules. Regenerate with: python -m bsdata_indexer.cli --detachments
-OUTPUT_PATH = (
-    Path(__file__).resolve().parent.parent.parent.parent / "tools" / "bsdata-indexer" / "output" / "detachments.json"
-)
+OUTPUT_PATH = REPO_ROOT / "tools/bsdata-indexer/output/detachments.json"
 
 
 class DetachmentRuleOut(BaseModel):
@@ -32,6 +29,4 @@ class FactionDetachmentsOut(BaseModel):
 
 @router.get("", response_model=list[FactionDetachmentsOut])
 def list_detachments() -> list[dict]:
-    if not OUTPUT_PATH.exists():
-        return []
-    return json.loads(OUTPUT_PATH.read_text(encoding="utf-8"))
+    return load_reference_json(OUTPUT_PATH)

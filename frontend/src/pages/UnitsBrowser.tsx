@@ -1,51 +1,12 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
+import { groupDefsByRole, isCrucible } from "../catalog";
 import { Keyword } from "../components/Keyword";
-import { StatBoxes, statPairs, weaponPairs } from "../components/StatBoxes";
+import { StatBoxes } from "../components/StatBoxes";
 import { renderAbilityText } from "../markup";
+import { statPairs, weaponPairs } from "../statPairs";
 import type { UnitDefinition } from "../types";
 import { groupWeaponsByRangeType } from "../weapons";
-
-// No dedicated backend flag for this (unlike is_legends) -- BSData only marks a Crucible of War
-// datasheet by suffixing the name itself, confirmed against real indexed data (e.g. "Bloodcult
-// Champion [Crucible]").
-function isCrucible(u: UnitDefinition): boolean {
-  return u.name.includes("[Crucible]");
-}
-
-// GW's own datasheet ordering for Battlefield Role, roughly "who leads, who holds the line,
-// who else" -- anything not in this fixed list (or role === null) sorts after it as "Other".
-const ROLE_ORDER = [
-  "Character",
-  "Epic Hero",
-  "Battleline",
-  "Infantry",
-  "Mounted",
-  "Beast",
-  "Monster",
-  "Vehicle",
-  "Dedicated Transport",
-  "Fortification",
-];
-
-function roleRank(role: string): number {
-  const idx = ROLE_ORDER.indexOf(role);
-  return idx === -1 ? ROLE_ORDER.length : idx;
-}
-
-function groupByRole(defs: UnitDefinition[]): [string, UnitDefinition[]][] {
-  const byRole = new Map<string, UnitDefinition[]>();
-  for (const u of defs) {
-    const role = u.role ?? "Other";
-    const arr = byRole.get(role) ?? [];
-    arr.push(u);
-    byRole.set(role, arr);
-  }
-  return Array.from(byRole.entries()).sort((a, b) => {
-    const rankDiff = roleRank(a[0]) - roleRank(b[0]);
-    return rankDiff !== 0 ? rankDiff : a[0].localeCompare(b[0]);
-  });
-}
 
 export function UnitsBrowser() {
   const [unitDefs, setUnitDefs] = useState<UnitDefinition[]>([]);
@@ -122,7 +83,7 @@ export function UnitsBrowser() {
             </button>
             {expandedUnitFactions.has(factionName) && (
               <div className="unit-def-list">
-                {groupByRole(defs).map(([role, roleDefs]) => (
+                {groupDefsByRole(defs).map(([role, roleDefs]) => (
                   <details key={role} className="unit-role-group" open>
                     <summary className="unit-role-heading">
                       {role} <span className="muted">({roleDefs.length})</span>

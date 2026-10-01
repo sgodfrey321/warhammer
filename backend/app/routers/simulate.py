@@ -9,11 +9,12 @@ from __future__ import annotations
 import logging
 from typing import Literal, Optional
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from dataclasses import asdict
 
+from ..sim.dice import parse_dice
 from ..sim.abilities import extract_effects
 from ..sim.montecarlo import DEFAULT_TRIALS, simulate_groups
 from ..sim.profiles import AttackerProfile, DefenderProfile
@@ -30,8 +31,8 @@ class SimulateOptions(BaseModel):
     half_range: bool = False
     charged: bool = False
     cover: bool = False
-    hit_modifier: int = 0
-    wound_modifier: int = 0
+    hit_modifier: int = Field(default=0, ge=-3, le=3)
+    wound_modifier: int = Field(default=0, ge=-3, le=3)
     reroll_hits: RerollChoice = "none"
     reroll_wounds: RerollChoice = "none"
     single_reroll_hit: bool = False
@@ -43,7 +44,11 @@ class SimulateOptions(BaseModel):
     fnp: Optional[int] = None
     anti_active: bool = False
     anti_threshold: Optional[int] = None
-    trials: int = DEFAULT_TRIALS
+    damage_reduction: int = Field(default=0, ge=0, le=3)
+    halve_damage: bool = False
+    stationary: bool = False
+    not_visible: bool = False
+    trials: int = Field(default=DEFAULT_TRIALS, ge=1, le=100_000)
     seed: Optional[int] = None
 
 
@@ -54,22 +59,24 @@ class WeaponLine(BaseModel):
     # mixed loadout is several lines -- e.g. 4 Fusion guns + 1 Exarch weapon.
     weapon_characteristics: dict[str, str] = Field(default_factory=dict)
     range_type: Literal["Ranged Weapons", "Melee Weapons"] = "Ranged Weapons"
-    weapon_count: int = 1
+    weapon_count: int = Field(default=1, ge=1, le=200)
 
 
 class AttackerGroup(BaseModel):
     # One attacking unit: its weapon lines plus the options that apply to ITS attacks (its own
     # abilities/re-rolls/modifiers, plus the shared defender-side cover/FNP the caller repeats).
-    weapons: list[WeaponLine] = Field(default_factory=list)
+    weapons: list[WeaponLine] = Field(default_factory=list, max_length=20)
     options: SimulateOptions = Field(default_factory=SimulateOptions)
 
 
 class SimulateRequest(BaseModel):
     # One or more attacking units firing into the same defender (e.g. Fire Dragons + a Fire Prism).
-    attackers: list[AttackerGroup] = Field(default_factory=list)
+    attackers: list[AttackerGroup] = Field(default_factory=list, max_length=10)
     # A defender's `stats` dict (T/Sv/InSv/W/...) -- same shape as UnitDefinition.stats.
     defender_stats: dict[str, str] = Field(default_factory=dict)
-    defender_model_count: int = 1
+    defender_model_count: int = Field(default=1, ge=1, le=200)
+    # The defender's keywords (e.g. ["Vehicle", "Monster"]); lets Anti-X on weapons auto-apply.
+    defender_keywords: list[str] = Field(default_factory=list, max_length=50)
 
 
 class PerUnitOut(BaseModel):
@@ -148,11 +155,25 @@ def _attack_options(o: SimulateOptions) -> AttackOptions:
         fnp=o.fnp,
         anti_active=o.anti_active,
         anti_threshold=o.anti_threshold,
+        damage_reduction=o.damage_reduction,
+        halve_damage=o.halve_damage,
+        stationary=o.stationary,
+        not_visible=o.not_visible,
     )
 
 
 @router.post("", response_model=SimulateResponse)
 def run_simulation(body: SimulateRequest) -> SimulateResponse:
+    for group in body.attackers:
+        for line in group.weapons:
+            for key in ("A", "D"):
+                try:
+                    parse_dice(line.weapon_characteristics.get(key))
+                except ValueError:
+                    raise HTTPException(
+                        status_code=422,
+                        detail=f"Unparseable dice notation for {key}: {line.weapon_characteristics.get(key)!r}",
+                    )
     groups = [
         (
             [
@@ -168,7 +189,7 @@ def run_simulation(body: SimulateRequest) -> SimulateResponse:
         )
         for group in body.attackers
     ]
-    defender = DefenderProfile.from_stats(body.defender_stats, body.defender_model_count)
+    defender = DefenderProfile.from_stats(body.defender_stats, body.defender_model_count, body.defender_keywords)
     # trials/seed are sim-level; the frontend keeps them consistent across units, so read the first.
     first_opts = body.attackers[0].options if body.attackers else SimulateOptions()
 
